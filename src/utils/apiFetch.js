@@ -4,8 +4,14 @@
  * Har bir API so'roviga Telegram WebApp initData ni avtomatik qo'shadi.
  * Bu backendda foydalanuvchi haqiqiyligini tekshirish uchun kerak.
  */
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 export default function apiFetch(url, options = {}) {
   const initData = window?.Telegram?.WebApp?.initData || '';
+  
+  // Full URL yoki relative URL'ni VITE_API_URL bilan birlashtir
+  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
 
   const headers = {
     ...options.headers,
@@ -16,7 +22,7 @@ export default function apiFetch(url, options = {}) {
     headers['X-Telegram-Init-Data'] = initData;
   }
 
-  return fetch(url, {
+  return fetch(fullUrl, {
     ...options,
     headers,
   });
