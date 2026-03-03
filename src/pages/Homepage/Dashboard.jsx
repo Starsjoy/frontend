@@ -4,7 +4,7 @@ import WebApp from "@twa-dev/sdk";
 import { useTranslation } from "../../context/LanguageContext";
 import apiFetch from "../../utils/apiFetch";
 import { TGSSticker } from "../../components/TGSSticker";
-import "./dashboard.css";
+import "./Dashboard.css";
 
 import starsGif from "../../assets/stars.gif";
 import premiumGif from "../../assets/premium_gif.gif";
@@ -17,6 +17,8 @@ import profileIcon from "../../assets/profile_icon.png";
 import menuIcon from "../../assets/main_icon.png";
 import langIcon from "../../assets/lang.png";
 import starsjoyAvatar from "../../assets/starsjoy.jpg";
+import statsIcon from "../../assets/stats_icon.png";
+import discountIcon from "../../assets/discount_icon.png";
 
 
 // ================== UTILS ==================
@@ -574,27 +576,33 @@ export default function Dashboard() {
       {/* BOTTOM NAVIGATION */}
       <div className="bottom-nav_dashboard">
         <button
+          className={`nav-btn_dashboard ${tab === "home" ? "active" : ""}`}
+          onClick={() => handleNavClick("home")}
+          title={t("dashboard.home")}
+        >
+          <div className="nav-icon">
+            <img src={menuIcon} alt="Home" />
+          </div>
+        </button>
+
+        <button
           className={`nav-btn_dashboard ${tab === "history" ? "active" : ""}`}
           onClick={() => handleNavClick("history")}
           title={t("dashboard.myHistory")}
         >
-          <img
-            src={ordersIcon}
-            alt="Orders"
-            style={{width: '28px', height: '28px', objectFit: 'contain'}}
-          />
+          <div className="nav-icon">
+            <img src={statsIcon} alt="Stats" />
+          </div>
         </button>
 
         <button
-          className={`nav-btn_dashboard center-btn ${tab === "home" ? "active" : ""}`}
-          onClick={() => handleNavClick("home")}
-          title={t("dashboard.home")}
+          className={`nav-btn_dashboard ${tab === "referral" ? "active" : ""}`}
+          onClick={() => handleNavClick("referral")}
+          title={t("dashboard.referral")}
         >
-          <img
-            src={menuIcon}
-            alt="Home"
-            style={{width: '28px', height: '28px', objectFit: 'contain'}}
-          />
+          <div className="nav-icon">
+            <img src={discountIcon} alt="Referral" />
+          </div>
         </button>
 
         <button
@@ -602,11 +610,9 @@ export default function Dashboard() {
           onClick={() => handleNavClick("profile")}
           title={t("dashboard.profile")}
         >
-          <img
-            src={profileIcon}
-            alt="Profile"
-            style={{width: '28px', height: '28px', objectFit: 'contain'}}
-          />
+          <div className="nav-icon">
+            <img src={profileIcon} alt="Profile" />
+          </div>
         </button>
       </div>
 

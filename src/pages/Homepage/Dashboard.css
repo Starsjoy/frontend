@@ -953,7 +953,7 @@
 .nav-btn_dashboard {
   background: transparent;
   border: none;
-  padding: 10px 16px;
+  padding: 10px 14px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -966,10 +966,16 @@
   font-weight: 500;
   border-radius: 14px;
   position: relative;
+  flex: 1;
 }
 
 .nav-btn_dashboard img {
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 6px;
+  opacity: 0.6;
+  transition: all 0.2s ease;
 }
 
 .nav-btn_dashboard:active {
@@ -979,6 +985,11 @@
 .nav-btn_dashboard.active {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-btn_dashboard.active img {
+  opacity: 1;
+  filter: brightness(1.2);
 }
 
 .nav-btn_dashboard.active .nav-icon img {
