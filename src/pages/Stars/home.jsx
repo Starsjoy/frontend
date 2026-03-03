@@ -280,8 +280,8 @@ export default function Home() {
   const handlePayment = async () => {
     const starNum = parseInt(stars);
     
-    if (!stars || starNum < 50 || starNum > 100000) {
-      alert("Stars miqdori 50 dan 100000 gacha bo'lishi kerak!");
+    if (!stars || starNum < 50 || starNum > 10000) {
+      alert("Stars miqdori 50 dan 10000 gacha bo'lishi kerak!");
       return;
     }
 

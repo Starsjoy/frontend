@@ -17,11 +17,20 @@ export default function TelegramGate({ children }) {
   useEffect(() => {
     const check = () => {
       try {
+        // ✅ Agar avvalgi sessionda tekshirilgan bo'lsa, cache dan olamiz
+        const cached = sessionStorage.getItem('tg_gate_allowed');
+        if (cached !== null) {
+          setIsAllowed(cached === 'true');
+          setChecking(false);
+          return;
+        }
+
         const tg = window?.Telegram?.WebApp;
 
         // 1) Telegram WebApp mavjudligini tekshirish
         if (!tg) {
           setIsAllowed(false);
+          sessionStorage.setItem('tg_gate_allowed', 'false');
           setChecking(false);
           return;
         }
@@ -29,6 +38,7 @@ export default function TelegramGate({ children }) {
         // 2) initData bo'sh emasligini tekshirish (haqiqiy Telegram sessiya)
         if (!tg.initData || tg.initData.length === 0) {
           setIsAllowed(false);
+          sessionStorage.setItem('tg_gate_allowed', 'false');
           setChecking(false);
           return;
         }
@@ -38,15 +48,18 @@ export default function TelegramGate({ children }) {
         const blockedPlatforms = ["web", "weba"];
         if (blockedPlatforms.includes(platform)) {
           setIsAllowed(false);
+          sessionStorage.setItem('tg_gate_allowed', 'false');
           setChecking(false);
           return;
         }
 
         // ✅ Hammasi to'g'ri — native Telegram app
         setIsAllowed(true);
+        sessionStorage.setItem('tg_gate_allowed', 'true');
         setChecking(false);
       } catch {
         setIsAllowed(false);
+        sessionStorage.setItem('tg_gate_allowed', 'false');
         setChecking(false);
       }
     };
