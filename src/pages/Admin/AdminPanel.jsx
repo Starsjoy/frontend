@@ -841,6 +841,13 @@ export default function AdminPanel() {
       <header className="admin-header">
         <h1>⚡ Admin Panel</h1>
         <div className="header-controls">
+          <button 
+            className={`header-tab-icon ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+            title="Sozlamalar"
+          >
+            ⚙️
+          </button>
           <label className="auto-refresh">
             <input
               type="checkbox"
@@ -886,12 +893,6 @@ export default function AdminPanel() {
           onClick={() => setActiveTab("users")}
         >
           👥 Users
-        </button>
-        <button 
-          className={`tab ${activeTab === "settings" ? "active" : ""}`}
-          onClick={() => setActiveTab("settings")}
-        >
-          ⚙️ Sozlamalar
         </button>
       </div>
 

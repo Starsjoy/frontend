@@ -579,9 +579,6 @@ export default function Home() {
                   <span>{formatTime(countdown)}</span>
                 </div>
 
-                <button className="modal-close-btn" onClick={() => setShowModal(false)}>
-                  Yopish
-                </button>
                 <p className="modal-close-hint">Oyna yopilsa ham to'lov kuzatiladi</p>
               </div>
             )}

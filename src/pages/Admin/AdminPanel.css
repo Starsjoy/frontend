@@ -76,6 +76,29 @@ html, body {
   background: rgba(255,255,255,0.2);
 }
 
+.header-tab-icon {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.2s;
+  color: rgba(255,255,255,0.6);
+}
+
+.header-tab-icon:hover {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.8);
+}
+
+.header-tab-icon.active {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: #fff;
+  border-color: #5b9cf6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
 /* ==================== TABS ==================== */
 .tabs {
   display: flex;
