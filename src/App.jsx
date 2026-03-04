@@ -12,6 +12,7 @@ import History from "./pages/History/History";
 import Challenges from "./pages/Challenges/Challenges";
 import Gift from "./pages/Gift/Gift";
 import Statistics from "./pages/Statistics/Statistics";
+import Discount from "./pages/Discount/Discount";
 import TermsOfService from "./pages/Legal/TermsOfService";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import MaintenancePage from "./pages/Maintenance/MaintenancePage";
@@ -54,6 +55,7 @@ function App() {
               <Route path="/challenges" element={<Challenges />} />
               <Route path="/gift" element={<Gift />} />
               <Route path="/statistics" element={<Statistics />} />
+              <Route path="/discount" element={<Discount />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/starsadmin" element={<AdminPanel/>} />

@@ -312,7 +312,8 @@ export default function Dashboard() {
       <header className="dash-header_dashboard">
         <div className="header-inner_dashboard">
           <h1 className="brand-title_dashboard">
-            <span className="brand-star">★</span> Starsjoy
+            <img src={starsjoyAvatar} alt="Starsjoy" className="brand-logo_dashboard" />
+            Starsjoy
           </h1>
           <button
             className="language-btn-dashboard"
@@ -377,11 +378,8 @@ export default function Dashboard() {
 
         <button
           className={`nav-btn_dashboard ${tab === "referral" ? "active" : ""}`}
-          onClick={() => {
-            setShowComingSoonToast(true);
-            setTimeout(() => setShowComingSoonToast(false), 2500);
-          }}
-          title="Coming soon"
+          onClick={() => navigate("/discount")}
+          title="Chegirma"
         >
           <div className="nav-icon">
             <img src={discountIcon} alt="Discount" />

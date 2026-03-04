@@ -1,32 +1,22 @@
 import React, { useEffect, useState, useRef } from "react";
-import starsGif from "../../assets/stars.gif";
 import starsSticker from "../../assets/AnimatedSticker_stars.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
-import "./home.css";
+import "./Discount.css";
 
-// 5 daqiqa = 300 sekund
-const POLLING_DURATION = 5 * 60 * 1000; // 5 daqiqa millisekondda
+const POLLING_DURATION = 5 * 60 * 1000;
 
-export default function Home() {
+export default function Discount() {
   const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
   const CARD_NAME = import.meta.env.VITE_CARD_NAME;
-  const NARX = parseInt(import.meta.env.VITE_NARX);
 
-  // Preset options with discount prices
-  const PRESET_OPTIONS = [
-    { stars: 500, discountedPrice: 108000, discount: 10 },
-    { stars: 1000, discountedPrice: 211200, discount: 12 },
-    { stars: 5000, discountedPrice: 1020000, discount: 15 },
-    { stars: 10000, discountedPrice: 1968000, discount: 18 },
-  ];
+  // Discount packages from API
+  const [discountPackages, setDiscountPackages] = useState([]);
+  const [packagesLoading, setPackagesLoading] = useState(true);
 
-  const [backendStatus, setBackendStatus] = useState("");
   const [username, setUsername] = useState("");
-  const [stars, setStars] = useState("");
-  const [price, setPrice] = useState(0);
-
+  const [selectedOption, setSelectedOption] = useState(null);
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("pending");
   const [txId, setTxId] = useState(null);
@@ -35,25 +25,41 @@ export default function Home() {
   const [timer, setTimer] = useState(20);
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
-  const [countdown, setCountdown] = useState(300); // 5 daqiqa
+  const [countdown, setCountdown] = useState(300);
 
-  // Refs for polling (modal yopilsa ham davom etadi)
   const pollingRef = useRef(null);
   const countdownRef = useRef(null);
 
   const navigate = useNavigate();
 
-  const goToPremium = () => {
-    setShowModal(false);
-    navigate("/premium");
-  };
+  // Fetch discount packages from API
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await apiFetch("/api/discount-packages");
+        const data = await res.json();
+        // Map to expected format
+        const packages = data.map(pkg => ({
+          stars: pkg.stars,
+          discountedPrice: pkg.discounted_price,
+          discount: pkg.discount_percent
+        }));
+        setDiscountPackages(packages);
+      } catch (err) {
+        console.error("❌ Paketlarni yuklashda xato:", err);
+      } finally {
+        setPackagesLoading(false);
+      }
+    };
+    fetchPackages();
+  }, []);
 
   const goToHome = () => {
     setShowModal(false);
     navigate("/");
   };
 
-  // 🔹 Telegramdan username olish
+  // Telegramdan username olish
   const fillMyUsername = () => {
     try {
       const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
@@ -69,20 +75,6 @@ export default function Home() {
 
   const formatAmount = (num) =>
     num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-
-  // Backend status
-  useEffect(() => {
-    apiFetch("/api/status")
-      .then((res) => res.json())
-      .then((data) => setBackendStatus(data.message))
-      .catch(() => setBackendStatus("Backend offline ❌"));
-  }, []);
-
-  // Stars price
-  useEffect(() => {
-    const total = stars ? parseInt(stars) * NARX : 0;
-    setPrice(total);
-  }, [stars]);
 
   // Timer for stars_sent
   useEffect(() => {
@@ -100,6 +92,18 @@ export default function Home() {
       return () => clearInterval(countdownInterval);
     }
   }, [status]);
+
+  // Telegram username auto-fill
+  useEffect(() => {
+    try {
+      const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
+      if (tgUser) {
+        setUsername(tgUser);
+      }
+    } catch (err) {
+      console.error("Telegram username olishda xato:", err);
+    }
+  }, []);
 
   // Real-time search (RobynHood API)
   useEffect(() => {
@@ -135,27 +139,22 @@ export default function Home() {
     return () => clearTimeout(timeout);
   }, [username]);
 
-  // Copy card
+  // Copy handlers
   const handleCopy = () => {
     navigator.clipboard.writeText(CARD_NUMBER);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Copy amount
   const handleCopyamount = () => {
     navigator.clipboard.writeText(order?.amount);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // ============================================
-  // 🔄 PERSISTENT POLLING - Modal yopilsa ham davom etadi
-  // ============================================
-
-  // Sahifa yuklanganda saqlangan buyurtmani tekshirish
+  // Polling functions
   useEffect(() => {
-    const savedOrder = localStorage.getItem("pendingStarsOrder");
+    const savedOrder = localStorage.getItem("pendingDiscountOrder");
     if (savedOrder) {
       try {
         const parsed = JSON.parse(savedOrder);
@@ -163,45 +162,36 @@ export default function Home() {
         const now = Date.now();
         const elapsed = now - createdAt;
 
-        // 5 daqiqa o'tmagan bo'lsa, polling davom etadi
         if (elapsed < POLLING_DURATION) {
           setOrder(parsed.order);
           setStatus(parsed.status || "pending");
 
-          // Qolgan vaqtni hisoblash
           const remainingMs = POLLING_DURATION - elapsed;
           const remainingSec = Math.floor(remainingMs / 1000);
           setCountdown(remainingSec);
 
-          // Polling davom ettiramiz
           startPolling(parsed.order);
           startCountdownTimer(remainingSec);
 
-          // Agar status pending/payment_info bo'lsa, modalni ochamiz
-          if (parsed.status === "payment_info" || parsed.status === "pending" || parsed.status === "payment_received") {
+          if (parsed.status === "pending" || parsed.status === "payment_received") {
             setShowModal(true);
           }
-
-          console.log("📦 Avvalgi buyurtma topildi, polling davom etmoqda...");
         } else {
-          // 5 daqiqa o'tgan, buyurtmani o'chiramiz
-          localStorage.removeItem("pendingStarsOrder");
+          localStorage.removeItem("pendingDiscountOrder");
         }
       } catch (e) {
-        localStorage.removeItem("pendingStarsOrder");
+        localStorage.removeItem("pendingDiscountOrder");
       }
     }
 
-    // Cleanup on unmount
     return () => {
       stopPolling();
       stopCountdown();
     };
   }, []);
 
-  // Polling boshlash (modal yopilsa ham davom etadi)
   const startPolling = (orderData) => {
-    stopPolling(); // Avvalgisini to'xtatamiz
+    stopPolling();
 
     pollingRef.current = setInterval(async () => {
       try {
@@ -211,34 +201,31 @@ export default function Home() {
         if (data.status !== status) {
           setStatus(data.status);
 
-          // LocalStorage ni yangilaymiz
-          const saved = localStorage.getItem("pendingStarsOrder");
+          const saved = localStorage.getItem("pendingDiscountOrder");
           if (saved) {
             const parsed = JSON.parse(saved);
             parsed.status = data.status;
-            localStorage.setItem("pendingStarsOrder", JSON.stringify(parsed));
+            localStorage.setItem("pendingDiscountOrder", JSON.stringify(parsed));
           }
         }
 
-        // ✅ Stars yuborildi
         if (data.status === "stars_sent") {
           stopPolling();
           stopCountdown();
-          localStorage.removeItem("pendingStarsOrder");
+          localStorage.removeItem("pendingDiscountOrder");
           setTxId(data.transaction_id);
-          setShowModal(true); // Muvaffaqiyat modalini ko'rsatish
+          setShowModal(true);
         }
 
-        // ❌ Expired yoki failed
         if (["expired", "failed", "error"].includes(data.status)) {
           stopPolling();
           stopCountdown();
-          localStorage.removeItem("pendingStarsOrder");
+          localStorage.removeItem("pendingDiscountOrder");
         }
       } catch (err) {
         console.error("⚠️ Status olish xato:", err);
       }
-    }, 3000); // Har 3 sekundda tekshirish
+    }, 3000);
   };
 
   const stopPolling = () => {
@@ -248,7 +235,6 @@ export default function Home() {
     }
   };
 
-  // Countdown timer (5 daqiqa)
   const startCountdownTimer = (initialSeconds = 300) => {
     stopCountdown();
     setCountdown(initialSeconds);
@@ -258,7 +244,7 @@ export default function Home() {
         if (prev <= 1) {
           stopCountdown();
           stopPolling();
-          localStorage.removeItem("pendingStarsOrder");
+          localStorage.removeItem("pendingDiscountOrder");
           setStatus("expired");
           return 0;
         }
@@ -274,39 +260,29 @@ export default function Home() {
     }
   };
 
-  // Buyurtmani localStorage ga saqlash
   const saveOrderToStorage = (orderData) => {
     const data = {
       order: orderData,
       createdAt: new Date().toISOString(),
-      status: "payment_info",
+      status: "pending",
     };
-    localStorage.setItem("pendingStarsOrder", JSON.stringify(data));
+    localStorage.setItem("pendingDiscountOrder", JSON.stringify(data));
   };
 
-  // "To'lov qildim" tugmasi bosilganda
-  const handlePaymentDone = () => {
-    setStatus("pending");
-    // LocalStorage ni yangilaymiz
-    const saved = localStorage.getItem("pendingStarsOrder");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      parsed.status = "pending";
-      localStorage.setItem("pendingStarsOrder", JSON.stringify(parsed));
-    }
+  // Handle option select
+  const handleOptionSelect = (option) => {
+    setSelectedOption(option);
   };
 
-  // 💳 Create order
+  // Create order
   const handlePayment = async () => {
-    const starNum = parseInt(stars);
-    
-    if (!stars || starNum < 50 || starNum > 10000) {
-      alert("Stars miqdori 50 dan 10000 gacha bo'lishi kerak!");
+    if (!selectedOption) {
+      alert("Iltimos, paketni tanlang!");
       return;
     }
 
     if (!username) {
-      alert("Iltimos, username va stars kiriting!");
+      alert("Iltimos, username kiriting!");
       return;
     }
 
@@ -322,22 +298,19 @@ export default function Home() {
         body: JSON.stringify({
           username: profile.username,
           recipient: profile.recipient,
-          stars: parseInt(stars),
-          amount: price,
+          stars: selectedOption.stars,
+          amount: selectedOption.discountedPrice,
         }),
       });
 
       const newOrder = await res.json();
       setOrder(newOrder);
-      setStatus("payment_info");
+      setStatus("pending");
       setShowModal(true);
 
-      // LocalStorage ga saqlash (modal yopilsa ham polling davom etadi)
       saveOrderToStorage(newOrder);
-
-      // Polling va countdown boshlash
       startPolling(newOrder);
-      startCountdownTimer(300); // 5 daqiqa
+      startCountdownTimer(300);
     } catch (err) {
       console.error("❌ Order yaratishda xato:", err);
       alert("Order yaratishda xato");
@@ -350,25 +323,20 @@ export default function Home() {
     return `${min.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Handle preset option click
-  const handlePresetClick = (option) => {
-    navigate("/discount");
-  };
-
   return (
-    <div className="home-container">
+    <div className="discount-container">
       <button className="btn-back-top" onClick={goToHome}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
         Orqaga
       </button>
 
-      <div className="stars-header-container">
-        <TGSSticker stickerPath={starsSticker} className="stars-header-sticker" />
+      <div className="discount-header-container">
+        <TGSSticker stickerPath={starsSticker} className="discount-header-sticker" />
       </div>
 
-      <div className="stars-page-title">
-        <h1>Telegram Stars</h1>
-        <p>xarid qilish</p>
+      <div className="discount-page-title">
+        <h1>Chegirma Paketlari</h1>
+        <p>Maxsus narxlarda Stars xarid qiling</p>
       </div>
 
       {/* Profile */}
@@ -396,7 +364,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* SEARCH */}
+      {/* Username Input */}
       <div className="search-row">
         <div className="username-row" style={{ width: "100%" }}>
           <input
@@ -404,7 +372,6 @@ export default function Home() {
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Foydalanuvchi nomi @username"
           />
-          {/* 🔹 Faqat Telegram Mini App'da */}
           {window?.Telegram?.WebApp && (
             <button type="button" className="btn-my" onClick={fillMyUsername}>
               O'zim
@@ -413,56 +380,67 @@ export default function Home() {
         </div>
       </div>
 
-      <h3>Stars miqdorini kiriting:</h3>
-      <div className="input-group">
-        <input
-          className="tg-input"
-          type="number"
-          value={stars}
-          onChange={(e) => setStars(e.target.value)}
-          placeholder="50 dan 100,000 tagacha"
-        />
+      {/* Package Options */}
+      <div className="discount-packages">
+        <p className="discount-section-title">Paketni tanlang:</p>
+        {packagesLoading ? (
+          <div className="packages-loading">⏳ Paketlar yuklanmoqda...</div>
+        ) : discountPackages.length === 0 ? (
+          <div className="packages-empty">Hozircha chegirma paketlari yo'q</div>
+        ) : (
+          <div className="package-list">
+            {discountPackages.map((option, idx) => (
+              <div
+                key={idx}
+                className={`package-card ${selectedOption?.stars === option.stars ? "selected" : ""}`}
+                onClick={() => handleOptionSelect(option)}
+              >
+                <div className="package-discount-badge">-{option.discount}%</div>
+                <div className="package-stars">
+                  <span className="package-star-icon">⭐</span>
+                  <span className="package-star-count">{formatAmount(option.stars)}</span>
+                </div>
+                <div className="package-price">
+                  {formatAmount(option.discountedPrice)} so'm
+                </div>
+                <div className="package-original-price">
+                  {formatAmount(Math.round(option.discountedPrice / (1 - option.discount / 100)))} so'm
+                </div>
+                {selectedOption?.stars === option.stars && (
+                  <div className="package-check">✓</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Preset Options */}
-      <div className="preset-options-section">
-        <p className="preset-title">Chegirma taklif:</p>
-        <div className="preset-grid">
-          {PRESET_OPTIONS.map((option, idx) => (
-            <button
-              key={idx}
-              className={`preset-button ${stars === option.stars.toString() ? "active" : ""}`}
-              onClick={() => handlePresetClick(option)}
-            >
-              <span className="preset-stars">⭐ {option.stars}</span>
-              <span className="preset-price">{formatAmount(option.discountedPrice)} so'm</span>
-              <span className="preset-discount">-%{option.discount}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="actions">
-        <button className="tg-button" onClick={handlePayment}>
-          Stars olish {price > 0 && `- ${formatAmount(price)} so'm`}
+      {/* Action Button */}
+      <div className="discount-actions">
+        <button 
+          className={`discount-button ${!selectedOption ? "disabled" : ""}`} 
+          onClick={handlePayment}
+          disabled={!selectedOption}
+        >
+          {selectedOption 
+            ? `Stars olish - ${formatAmount(selectedOption.discountedPrice)} so'm`
+            : "Paketni tanlang"
+          }
         </button>
       </div>
 
-      {/* ---------------- MODAL ---------------- */}
+      {/* Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-
-            {/* PAYMENT INFO - To'lov ma'lumotlari */}
-            {status === "payment_info" && (
-              <div className="payment-info-section">
-                {/* Modal Header */}
+            {/* PENDING */}
+            {status === "pending" && (
+              <div className="pending-section">
                 <div className="modal-header-bar">
-                  <span className="modal-header-title">💳 To'lov ma'lumotlari</span>
+                  <span className="modal-header-title">To'lov ma'lumotlari</span>
                   <button className="modal-close-x" onClick={() => setShowModal(false)}>✕</button>
                 </div>
 
-                {/* Profile Card */}
                 {profile && (
                   <div className="modal-profile-card">
                     <img
@@ -477,7 +455,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Payment Info Cards */}
                 <div className="modal-payment-grid">
                   <div className="modal-pay-item">
                     <div className="modal-pay-label">Karta raqami</div>
@@ -496,7 +473,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="modal-pay-item highlight-amount">
+                  <div className="modal-pay-item highlight">
                     <div className="modal-pay-label">To'lov summasi</div>
                     <div className="modal-pay-row">
                       <span className="modal-pay-value bold">{formatAmount(order?.amount)} so'm</span>
@@ -507,76 +484,20 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Attention Warning */}
-                <div className="modal-warning-attention">
-                  <div className="warning-pulse"></div>
-                  <span className="warning-icon-big">⚠️</span>
-                  <div className="warning-text">
-                    <strong>DIQQAT!</strong>
-                    <p>Aynan <span className="amount-highlight">{formatAmount(order?.amount)} so'm</span> yuboring!</p>
-                    <p className="warning-sub">Boshqa summa yuborilsa to'lov ko'rinmaydi</p>
-                  </div>
+                <div className="modal-warning">
+                  <span className="modal-warning-icon">⚠️</span>
+                  <span>Aynan <b>{formatAmount(order?.amount)} so'm</b> to'lang! Aks holda to'lov ko'rinmaydi.</span>
                 </div>
 
-                {/* Timer */}
-                <div className="modal-timer-bar">
+                <div className="modal-status-bar">
                   <div className="modal-timer">
-                    <span className="timer-icon">⏳</span>
-                    <span className="timer-text">{formatTime(countdown)}</span>
+                    <div className="modal-timer-icon">⏳</div>
+                    <span>{formatTime(countdown)}</span>
                   </div>
-                </div>
-
-                {/* Pay Button */}
-                <button className="btn-payment-done" onClick={handlePaymentDone}>
-                  ✅ To'lov qildim
-                </button>
-                <p className="modal-close-hint">To'lovni amalga oshiring va tugmani bosing</p>
-              </div>
-            )}
-
-            {/* PENDING - To'lov kutilmoqda */}
-            {status === "pending" && (
-              <div className="pending-waiting-section">
-                {/* Modal Header */}
-                <div className="modal-header-bar">
-                  <span className="modal-header-title">⏳ To'lov kutilmoqda</span>
-                  <button className="modal-close-x" onClick={() => setShowModal(false)}>✕</button>
-                </div>
-
-                {/* Waiting Animation */}
-                <div className="waiting-animation-wrap">
-                  <div className="waiting-circle-outer">
-                    <div className="waiting-circle-inner">
-                      <div className="waiting-icon">🔍</div>
-                    </div>
+                  <div className="modal-waiting">
+                    <div className="modal-spinner"></div>
+                    <span>To'lov kutilmoqda...</span>
                   </div>
-                  <div className="waiting-dots">
-                    <span></span><span></span><span></span>
-                  </div>
-                </div>
-
-                <h3 className="waiting-title">To'lov qidirilmoqda...</h3>
-                <p className="waiting-subtitle">To'lovingiz avtomatik aniqlanadi</p>
-
-                {/* Payment Info Mini */}
-                <div className="waiting-payment-info">
-                  <div className="waiting-info-row">
-                    <span className="waiting-label">Karta:</span>
-                    <span className="waiting-value">{CARD_NUMBER}</span>
-                    <button className="modal-copy-btn-sm" onClick={handleCopy}>
-                      {copied ? "✓" : "📋"}
-                    </button>
-                  </div>
-                  <div className="waiting-info-row highlight">
-                    <span className="waiting-label">Summa:</span>
-                    <span className="waiting-value bold">{formatAmount(order?.amount)} so'm</span>
-                  </div>
-                </div>
-
-                {/* Timer */}
-                <div className="waiting-timer">
-                  <span className="timer-icon-sm">⏱️</span>
-                  <span>{formatTime(countdown)}</span>
                 </div>
 
                 <button className="modal-close-btn" onClick={() => setShowModal(false)}>
@@ -644,7 +565,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* STARS SENT - SUCCESS */}
+            {/* STARS SENT */}
             {status === "stars_sent" && (
               <div className="modal-success-section">
                 <div className="success-confetti">

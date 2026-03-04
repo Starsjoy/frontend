@@ -110,6 +110,13 @@ export default function AdminPanel() {
   });
   const [giftShowAll, setGiftShowAll] = useState(false);
 
+  // Discount packages state
+  const [discountPackages, setDiscountPackages] = useState([]);
+  const [newPackage, setNewPackage] = useState({ stars: "", discount_percent: "" });
+  const [packageLoading, setPackageLoading] = useState(false);
+  const [editingPackage, setEditingPackage] = useState(null);
+  const BASE_PRICE = parseInt(import.meta.env.VITE_NARX) || 240;
+
   // ========== MAINTENANCE MODE ==========
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -277,6 +284,100 @@ export default function AdminPanel() {
     }
   };
 
+  // Discount packages fetch
+  const fetchDiscountPackages = async () => {
+    if (!isAuthenticated) return;
+    setLoading(true);
+    try {
+      const res = await apiFetch("/api/admin/discount-packages");
+      const data = await res.json();
+      setDiscountPackages(data);
+    } catch (err) {
+      console.error("❌ Discount packages fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate discounted price
+  const calculateDiscountedPrice = (stars, discountPercent) => {
+    if (!stars || !discountPercent) return 0;
+    const normalPrice = parseInt(stars) * BASE_PRICE;
+    const discount = (normalPrice * parseInt(discountPercent)) / 100;
+    return Math.round(normalPrice - discount);
+  };
+
+  // Add new discount package
+  const addDiscountPackage = async () => {
+    if (!newPackage.stars || !newPackage.discount_percent) {
+      alert("Stars va chegirma foizini kiriting!");
+      return;
+    }
+
+    const discountedPrice = calculateDiscountedPrice(newPackage.stars, newPackage.discount_percent);
+    
+    setPackageLoading(true);
+    try {
+      const res = await apiFetch("/api/admin/discount-packages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stars: parseInt(newPackage.stars),
+          discount_percent: parseInt(newPackage.discount_percent),
+          discounted_price: discountedPrice
+        })
+      });
+
+      if (res.ok) {
+        setNewPackage({ stars: "", discount_percent: "" });
+        fetchDiscountPackages();
+      } else {
+        alert("Xato yuz berdi!");
+      }
+    } catch (err) {
+      console.error("❌ Add package error:", err);
+      alert("Xato yuz berdi!");
+    } finally {
+      setPackageLoading(false);
+    }
+  };
+
+  // Delete discount package
+  const deleteDiscountPackage = async (id) => {
+    if (!confirm("Rostdan o'chirmoqchimisiz?")) return;
+    
+    try {
+      const res = await apiFetch(`/api/admin/discount-packages/${id}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        fetchDiscountPackages();
+      } else {
+        alert("O'chirishda xato!");
+      }
+    } catch (err) {
+      console.error("❌ Delete package error:", err);
+    }
+  };
+
+  // Toggle package active status
+  const togglePackageActive = async (id, currentStatus) => {
+    try {
+      const res = await apiFetch(`/api/admin/discount-packages/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: !currentStatus })
+      });
+
+      if (res.ok) {
+        fetchDiscountPackages();
+      }
+    } catch (err) {
+      console.error("❌ Toggle package error:", err);
+    }
+  };
+
   const handlePasswordSubmit = null; // deprecated - Telegram auth ishlatiladi
 
   // ========== ALL useEffect HOOKS ==========
@@ -291,6 +392,8 @@ export default function AdminPanel() {
       fetchPremiumOrders();
     } else if (activeTab === "gift") {
       fetchGiftOrders();
+    } else if (activeTab === "settings") {
+      fetchDiscountPackages();
     }
   }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter]);
 
@@ -751,6 +854,7 @@ export default function AdminPanel() {
             else if (activeTab === "users") fetchUsers();
             else if (activeTab === "premium") fetchPremiumOrders();
             else if (activeTab === "gift") fetchGiftOrders();
+            else if (activeTab === "settings") fetchDiscountPackages();
           }}>
             🔄
           </button>
@@ -782,6 +886,12 @@ export default function AdminPanel() {
           onClick={() => setActiveTab("users")}
         >
           👥 Users
+        </button>
+        <button 
+          className={`tab ${activeTab === "settings" ? "active" : ""}`}
+          onClick={() => setActiveTab("settings")}
+        >
+          ⚙️ Sozlamalar
         </button>
       </div>
 
@@ -1251,6 +1361,114 @@ export default function AdminPanel() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ==================== SETTINGS TAB ==================== */}
+      {activeTab === "settings" && (
+        <div className="tab-content settings-tab">
+          <h3 className="settings-section-title">🏷️ Chegirma Paketlari</h3>
+          <p className="settings-section-desc">Maxsus chegirmali Stars paketlarini boshqaring</p>
+
+          {/* Add New Package */}
+          <div className="settings-add-package">
+            <div className="package-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Stars miqdori</label>
+                  <input
+                    type="number"
+                    placeholder="500"
+                    value={newPackage.stars}
+                    onChange={(e) => setNewPackage({ ...newPackage, stars: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Chegirma (%)</label>
+                  <input
+                    type="number"
+                    placeholder="10"
+                    max="50"
+                    min="1"
+                    value={newPackage.discount_percent}
+                    onChange={(e) => setNewPackage({ ...newPackage, discount_percent: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Narxi (avto)</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={calculateDiscountedPrice(newPackage.stars, newPackage.discount_percent).toLocaleString() + " so'm"}
+                  />
+                </div>
+              </div>
+              <div className="form-info">
+                <small>
+                  Asl narx: {(parseInt(newPackage.stars || 0) * BASE_PRICE).toLocaleString()} so'm 
+                  | Chegirma: {((parseInt(newPackage.stars || 0) * BASE_PRICE) - calculateDiscountedPrice(newPackage.stars, newPackage.discount_percent)).toLocaleString()} so'm
+                </small>
+              </div>
+              <button 
+                className="add-package-btn"
+                onClick={addDiscountPackage}
+                disabled={packageLoading || !newPackage.stars || !newPackage.discount_percent}
+              >
+                {packageLoading ? "⏳ Yuklanmoqda..." : "➕ Paket qo'shish"}
+              </button>
+            </div>
+          </div>
+
+          {/* Existing Packages */}
+          <div className="packages-list">
+            <h4>Mavjud paketlar ({discountPackages.length} ta)</h4>
+            {loading ? (
+              <div className="loading-text">⏳ Yuklanmoqda...</div>
+            ) : discountPackages.length === 0 ? (
+              <div className="empty-text">Hech qanday paket yo'q</div>
+            ) : (
+              <div className="packages-grid">
+                {discountPackages.map((pkg) => (
+                  <div key={pkg.id} className={`package-item ${!pkg.is_active ? "inactive" : ""}`}>
+                    <div className="package-header">
+                      <span className="package-stars">⭐ {pkg.stars.toLocaleString()}</span>
+                      <span className={`package-status ${pkg.is_active ? "active" : "inactive"}`}>
+                        {pkg.is_active ? "✅ Faol" : "⏸️ O'chirilgan"}
+                      </span>
+                    </div>
+                    <div className="package-details">
+                      <div className="detail-row">
+                        <span className="label">Chegirma:</span>
+                        <span className="value discount">-{pkg.discount_percent}%</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="label">Narx:</span>
+                        <span className="value price">{pkg.discounted_price.toLocaleString()} so'm</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="label">Asl narx:</span>
+                        <span className="value original">{(pkg.stars * BASE_PRICE).toLocaleString()} so'm</span>
+                      </div>
+                    </div>
+                    <div className="package-actions">
+                      <button
+                        className={`toggle-btn ${pkg.is_active ? "deactivate" : "activate"}`}
+                        onClick={() => togglePackageActive(pkg.id, pkg.is_active)}
+                      >
+                        {pkg.is_active ? "⏸️ O'chirish" : "▶️ Yoqish"}
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => deleteDiscountPackage(pkg.id)}
+                      >
+                        🗑️ O'chirish
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
