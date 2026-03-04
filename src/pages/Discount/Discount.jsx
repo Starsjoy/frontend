@@ -484,9 +484,16 @@ export default function Discount() {
                   </div>
                 </div>
 
-                <div className="modal-warning">
-                  <span className="modal-warning-icon">⚠️</span>
-                  <span>Aynan <b>{formatAmount(order?.amount)} so'm</b> to'lang! Aks holda to'lov ko'rinmaydi.</span>
+                <div className="modal-warning-alert">
+                  <div className="warning-pulse"></div>
+                  <div className="warning-content">
+                    <span className="warning-icon-lg">⚠️</span>
+                    <div className="warning-text">
+                      <span className="warning-label">MUHIM!</span>
+                      <span className="warning-amount">Aynan {formatAmount(order?.amount)} so'm</span>
+                      <span className="warning-note">to'lang, aks holda to'lov ko'rinmaydi</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="modal-status-bar">

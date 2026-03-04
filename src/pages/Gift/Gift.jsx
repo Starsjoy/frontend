@@ -4,9 +4,6 @@ import { useTranslation } from "../../context/LanguageContext";
 import apiFetch from "../../utils/apiFetch";
 import yurakImg from "../../assets/yurak_new.png";
 import ayiqImg from "../../assets/ayiq_new.png";
-import ordersIcon from "../../assets/orders_icon.png";
-import profileIcon from "../../assets/profile_icon.png";
-import menuIcon from "../../assets/main_icon.png";
 import "./gift.css";
 
 const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
@@ -281,6 +278,14 @@ export default function Gift() {
 
   return (
     <div className="gift-container">
+      {/* Back Button */}
+      <button className="btn-back-top" onClick={() => navigate("/")}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        Orqaga
+      </button>
+
       {/* Header */}
       <div className="gift-page-title">
         <h1>{t("gift.title")}</h1>
@@ -558,45 +563,6 @@ export default function Gift() {
           </div>
         </div>
       )}
-
-      {/* BOTTOM NAVIGATION */}
-      <div className="bottom-nav_dashboard">
-        <button
-          className="nav-btn_dashboard"
-          onClick={() => navigate("/")}
-          title={t("dashboard.myHistory")}
-        >
-          <img
-            src={ordersIcon}
-            alt="Orders"
-            style={{width: '28px', height: '28px', objectFit: 'contain'}}
-          />
-        </button>
-
-        <button
-          className="nav-btn_dashboard center-btn"
-          onClick={() => navigate("/")}
-          title={t("dashboard.home")}
-        >
-          <img
-            src={menuIcon}
-            alt="Home"
-            style={{width: '28px', height: '28px', objectFit: 'contain'}}
-          />
-        </button>
-
-        <button
-          className="nav-btn_dashboard"
-          onClick={() => navigate("/")}
-          title={t("dashboard.profile")}
-        >
-          <img
-            src={profileIcon}
-            alt="Profile"
-            style={{width: '28px', height: '28px', objectFit: 'contain'}}
-          />
-        </button>
-      </div>
     </div>
   );
 }

@@ -364,12 +364,12 @@
 
 .modal-content {
   background: var(--bg-primary);
-  border-radius: 16px;
-  padding: 18px;
-  max-width: 360px;
+  border-radius: 14px;
+  padding: 14px;
+  max-width: 340px;
   width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
+  max-height: 90vh;
+  overflow: hidden;
   box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
 }
 
@@ -377,11 +377,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .modal-header-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -389,10 +389,10 @@
 .modal-close-x {
   background: var(--bg-secondary);
   border: none;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
   color: var(--text-secondary);
   transition: 0.2s;
@@ -405,16 +405,16 @@
 .modal-profile-card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: var(--bg-secondary);
-  padding: 10px 14px;
-  border-radius: 12px;
-  margin-bottom: 14px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 
 .modal-profile-img {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -425,46 +425,49 @@
 
 .modal-profile-name {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-primary);
 }
 
 .modal-profile-username {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
 .modal-stars-badge {
   background: linear-gradient(135deg, #f9a825, #ffcc02);
   color: #1a1a2e;
-  padding: 5px 10px;
-  border-radius: 16px;
+  padding: 4px 8px;
+  border-radius: 14px;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .modal-payment-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .modal-pay-item {
   background: var(--bg-secondary);
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
 }
 
 .modal-pay-item.highlight {
-  background: linear-gradient(135deg, rgba(0, 136, 204, 0.1) 0%, rgba(249, 168, 37, 0.1) 100%);
-  border: 1px solid var(--color-primary);
+  background: linear-gradient(135deg, rgba(0, 136, 204, 0.15) 0%, rgba(249, 168, 37, 0.15) 100%);
+  border: 2px solid var(--color-primary);
+  padding: 10px 12px;
 }
 
 .modal-pay-label {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-secondary);
-  margin-bottom: 3px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .modal-pay-row {
@@ -474,21 +477,22 @@
 }
 
 .modal-pay-value {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-primary);
 }
 
 .modal-pay-value.bold {
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 14px;
 }
 
 .modal-copy-btn {
   background: var(--bg-primary);
   border: none;
-  padding: 5px 8px;
-  border-radius: 6px;
+  padding: 4px 6px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   transition: 0.2s;
 }
 
@@ -513,37 +517,110 @@
   font-size: 14px;
 }
 
+/* Enhanced Warning Alert */
+.modal-warning-alert {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%);
+  border: 2px solid #ff5722;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.warning-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 87, 34, 0.2), transparent);
+  animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+.warning-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+
+.warning-icon-lg {
+  font-size: 24px;
+  animation: warningShake 0.5s ease-in-out infinite;
+}
+
+@keyframes warningShake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.warning-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.warning-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ff5722;
+  letter-spacing: 1px;
+}
+
+.warning-amount {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.warning-note {
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.9;
+}
+
 .modal-status-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
 }
 
 .modal-timer {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 16px;
+  gap: 5px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--color-primary);
 }
 
 .modal-timer-icon {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .modal-waiting {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 5px;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
 .modal-spinner {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border: 2px solid var(--border-primary);
   border-top-color: var(--color-primary);
   border-radius: 50%;
@@ -552,12 +629,12 @@
 
 .modal-close-btn {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 10px;
+  border-radius: 8px;
   border: none;
   background: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
@@ -574,9 +651,9 @@
 
 .modal-close-hint {
   text-align: center;
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-secondary);
-  margin-top: 8px;
+  margin-top: 6px;
   opacity: 0.7;
 }
 

@@ -397,7 +397,7 @@ export default function AdminPanel() {
     }
   }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter]);
 
-  // Auto refresh
+  // Auto refresh - disabled
   useEffect(() => {
     if (!isAuthenticated) return;
     let interval;
@@ -407,7 +407,7 @@ export default function AdminPanel() {
         else if (activeTab === "users") fetchUsers();
         else if (activeTab === "premium") fetchPremiumOrders();
         else if (activeTab === "gift") fetchGiftOrders();
-      }, 5000);
+      }, 30000); // 30 seconds instead of 5
     }
     return () => clearInterval(interval);
   }, [autoRefresh, filter, activeTab, isAuthenticated]);
@@ -848,14 +848,7 @@ export default function AdminPanel() {
           >
             ⚙️
           </button>
-          <label className="auto-refresh">
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-            />
-            Auto 5s
-          </label>
+
           <button className="refresh-btn" onClick={() => {
             if (activeTab === "transactions") fetchTransactions();
             else if (activeTab === "users") fetchUsers();
