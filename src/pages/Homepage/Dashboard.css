@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
 /* ===============================
-   SPLASH SCREEN — Starsjoy Premium
+   SPLASH SCREEN — StarsJoy Loader
 =============================== */
 .splash-screen {
   position: fixed;
@@ -7,7 +9,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: #0a0a0f;
+  background: #0d0b14;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -16,6 +18,7 @@
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 1;
   overflow: hidden;
+  font-family: 'Poppins', sans-serif;
 }
 
 .splash-screen.fade-out {
@@ -23,224 +26,140 @@
   pointer-events: none;
 }
 
-/* === Gradient Mesh === */
-.splash-mesh {
-  position: absolute;
+/* === Aura Background === */
+.splash-aura {
+  position: fixed;
   inset: 0;
-  background: 
-    radial-gradient(ellipse 50% 80% at 50% 120%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 80% 30%, rgba(37, 99, 235, 0.04) 0%, transparent 35%);
+  background: radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.1) 0%, transparent 65%);
+  animation: splashAura 3s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
-/* === Grid Pattern === */
-.splash-grid {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
-  opacity: 0.5;
-  pointer-events: none;
-  animation: gridFadeIn 1.5s ease forwards;
-}
-
-@keyframes gridFadeIn {
-  from { opacity: 0; }
-  to { opacity: 0.5; }
-}
-
-/* === Splash Content === */
-.splash-content {
+/* === Splash Content (Loader) === */
+.splash-loader {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40px;
-  position: relative;
-  z-index: 2;
+  gap: 28px;
+  animation: splashFadeIn 0.7s ease both;
 }
 
-/* === Logo Container === */
-.splash-logo-container {
+/* === Icon Wrap === */
+.splash-icon-wrap {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 88px;
+  height: 88px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.splash-logo-ring {
+.splash-icon-wrap::before {
+  content: '';
   position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  animation: ringPulse 2s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%);
+  animation: splashAura 3.5s ease-in-out infinite alternate;
 }
 
-.splash-logo-ring.ring-2 {
-  width: 140%;
-  height: 140%;
-  left: -20%;
-  top: -20%;
-  border-color: rgba(59, 130, 246, 0.12);
-  animation-delay: 0.5s;
+/* === Oval Rings === */
+.splash-oval {
+  position: absolute;
+  border-radius: 50%;
 }
 
-@keyframes ringPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.6; }
+.splash-oval-1 {
+  width: 72px;
+  height: 52px;
+  border: 1px solid rgba(167,139,250,0.35);
+  animation: splashSpin 5s linear infinite;
 }
 
-.splash-logo-star {
-  width: 56px;
-  height: 56px;
-  animation: starReveal 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  opacity: 0;
+.splash-oval-2 {
+  width: 52px;
+  height: 72px;
+  border: 1px solid rgba(139,92,246,0.25);
+  animation: splashSpin 7s linear infinite reverse;
 }
 
-.splash-logo-star svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.5));
+.splash-oval-3 {
+  width: 84px;
+  height: 84px;
+  border: 1px dashed rgba(167,139,250,0.12);
+  animation: splashSpin 12s linear infinite;
 }
 
-@keyframes starReveal {
-  from { opacity: 0; transform: scale(0.5) rotate(-30deg); }
-  to { opacity: 1; transform: scale(1) rotate(0deg); }
+/* === Star Icon === */
+.splash-star {
+  position: relative;
+  z-index: 2;
+  animation: splashBob 2.5s ease-in-out infinite alternate;
 }
 
-/* === Typography === */
-.splash-typography {
+/* === Brand Text === */
+.splash-brand {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ede9fe;
+  letter-spacing: -0.02em;
+}
+
+.splash-brand em {
+  font-style: normal;
+  color: #a78bfa;
+}
+
+/* === Loading Dots === */
+.splash-dots {
   display: flex;
-  flex-direction: column;
+  gap: 6px;
   align-items: center;
-  gap: 16px;
-  animation: typographyIn 0.6s ease forwards;
-  animation-delay: 0.4s;
-  opacity: 0;
 }
 
-@keyframes typographyIn {
-  from { opacity: 0; transform: translateY(20px); }
+.splash-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  animation: splashDotPop 1.3s ease-in-out infinite;
+}
+
+.splash-dot:nth-child(1) { background: #a78bfa; animation-delay: 0s; }
+.splash-dot:nth-child(2) { background: #8b5cf6; animation-delay: 0.18s; }
+.splash-dot:nth-child(3) { background: #7c3aed; animation-delay: 0.36s; }
+.splash-dot:nth-child(4) { background: #6d28d9; animation-delay: 0.54s; }
+.splash-dot:nth-child(5) { background: #5b21b6; animation-delay: 0.72s; }
+
+/* === Keyframes === */
+@keyframes splashSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes splashAura {
+  from { transform: scale(1); }
+  to { transform: scale(1.25); }
+}
+
+@keyframes splashBob {
+  from {
+    transform: translateY(-3px);
+    filter: drop-shadow(0 4px 12px rgba(139,92,246,0.4));
+  }
+  to {
+    transform: translateY(3px);
+    filter: drop-shadow(0 8px 24px rgba(139,92,246,0.7));
+  }
+}
+
+@keyframes splashFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.splash-main-title {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: 12px;
-  margin: 0;
-  color: #ffffff;
-  text-transform: uppercase;
-  position: relative;
-}
-
-.splash-main-title::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-  animation: titleLineExpand 0.8s ease forwards;
-  animation-delay: 0.8s;
-}
-
-@keyframes titleLineExpand {
-  from { width: 0; }
-  to { width: 100%; }
-}
-
-.splash-divider {
-  width: 40px;
-  height: 1px;
-  background: rgba(59, 130, 246, 0.5);
-  animation: dividerIn 0.5s ease forwards;
-  animation-delay: 0.7s;
-  opacity: 0;
-}
-
-@keyframes dividerIn {
-  from { opacity: 0; width: 0; }
-  to { opacity: 1; width: 40px; }
-}
-
-.splash-subtitle {
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: rgba(96, 165, 250, 0.8);
-  margin: 0;
-  animation: subtitleIn 0.5s ease forwards;
-  animation-delay: 0.9s;
-  opacity: 0;
-}
-
-@keyframes subtitleIn {
-  from { opacity: 0; letter-spacing: 8px; }
-  to { opacity: 1; letter-spacing: 4px; }
-}
-
-/* === Minimal Loader === */
-.splash-minimal-loader {
-  width: 80px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-  animation: loaderIn 0.4s ease forwards;
-  animation-delay: 1s;
-  opacity: 0;
-}
-
-@keyframes loaderIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.loader-line {
-  width: 30%;
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  border-radius: 2px;
-  animation: loaderSlide 1.2s ease-in-out infinite;
-}
-
-@keyframes loaderSlide {
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(250%); }
-  100% { transform: translateX(-100%); }
-}
-
-/* === Footer === */
-.splash-footer {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: footerIn 0.5s ease forwards;
-  animation-delay: 1.2s;
-  opacity: 0;
-}
-
-.splash-footer span {
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.25);
-  text-transform: uppercase;
-}
-
-@keyframes footerIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+@keyframes splashDotPop {
+  0%, 100% { transform: scale(1); opacity: 0.25; }
+  50% { transform: scale(1.7); opacity: 1; }
 }
 
 /* ===============================
@@ -319,6 +238,39 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* NOTIFICATION BUTTON */
+.notification-btn-dashboard {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-primary);
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.notification-btn-dashboard:hover {
+  border-color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.notification-btn-dashboard:active {
+  transform: scale(0.95);
+}
+
+.notification-btn-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
 }
 
 /* LANGUAGE BUTTON */
@@ -483,6 +435,43 @@
 
   .nav-label {
     font-size: 9px;
+  }
+
+  /* Referral Banner */
+  .referral-invite-banner {
+    padding: 14px 12px;
+    gap: 10px;
+  }
+
+  .referral-banner-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .referral-banner-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .referral-banner-text {
+    font-size: 13px;
+  }
+
+  .referral-banner-rewards {
+    gap: 4px;
+  }
+
+  .referral-reward-badge {
+    padding: 3px 6px;
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .referral-banner-button {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 8px;
   }
 }
 
@@ -2555,6 +2544,123 @@
   font-size: 13px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
+}
+
+/* Referral Banner - Professional Dark Style */
+.referral-invite-banner {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 18px;
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: var(--shadow-lg);
+}
+
+.referral-invite-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+  background: var(--bg-secondary);
+}
+
+.referral-invite-banner:active {
+  transform: scale(0.98);
+}
+
+.referral-invite-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.08) 100%);
+  pointer-events: none;
+}
+
+.referral-banner-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.referral-banner-icon svg {
+  width: 22px;
+  height: 22px;
+  color: #ffffff;
+}
+
+.referral-banner-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 1;
+  min-width: 0;
+}
+
+.referral-banner-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.referral-banner-rewards {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.referral-reward-badge {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.referral-banner-button {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  z-index: 1;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.referral-banner-button:hover {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+.referral-banner-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
 }
 
 /* Gift & Premium Row - Side by Side */

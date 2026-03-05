@@ -15,7 +15,7 @@ import referalSticker from "../../assets/AnimatedSticker_ref.tgs";
 import ordersIcon from "../../assets/orders_icon.png";
 import profileIcon from "../../assets/profile_icon.png";
 import menuIcon from "../../assets/main_icon.png";
-import langIcon from "../../assets/lang.png";
+import bellsIcon from "../../assets/bells_icon.png";
 import starsjoyAvatar from "../../assets/starsjoy.jpg";
 import statsIcon from "../../assets/stats_icon.png";
 import discountIcon from "../../assets/discount_icon.png";
@@ -251,55 +251,45 @@ export default function Dashboard() {
 
   /* ================= UI ================= */
 
-  // Splash screen - Starsjoy Premium Brand
+  // Splash screen - StarsJoy Loader
   if (splashVisible) {
     return (
       <div className={`splash-screen ${splashFading ? 'fade-out' : ''}`}>
-        {/* Gradient mesh background */}
-        <div className="splash-mesh"></div>
+        {/* Aura background */}
+        <div className="splash-aura"></div>
 
-        {/* Subtle grid pattern */}
-        <div className="splash-grid"></div>
-
-        <div className="splash-content">
-          {/* Minimal star logo */}
-          <div className="splash-logo-container">
-            <div className="splash-logo-ring"></div>
-            <div className="splash-logo-ring ring-2"></div>
-            <div className="splash-logo-star">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2L14.09 8.26L21 9.27L16 14.14L17.18 21.02L12 17.77L6.82 21.02L8 14.14L3 9.27L9.91 8.26L12 2Z"
-                  fill="url(#logoGradient)"
-                  stroke="rgba(59,130,246,0.5)"
-                  strokeWidth="0.5"
-                />
-                <defs>
-                  <linearGradient id="logoGradient" x1="12" y1="2" x2="12" y2="21">
-                    <stop offset="0%" stopColor="#60a5fa"/>
-                    <stop offset="100%" stopColor="#3b82f6"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
+        <div className="splash-loader">
+          {/* Icon with oval rings */}
+          <div className="splash-icon-wrap">
+            <div className="splash-oval splash-oval-1"></div>
+            <div className="splash-oval splash-oval-2"></div>
+            <div className="splash-oval splash-oval-3"></div>
+            <svg className="splash-star" viewBox="0 0 48 48" width="40" height="40">
+              <defs>
+                <linearGradient id="splashGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ddd6fe"/>
+                  <stop offset="50%" stopColor="#8b5cf6"/>
+                  <stop offset="100%" stopColor="#6d28d9"/>
+                </linearGradient>
+              </defs>
+              <path 
+                d="M24 4C24 4 26.5 14 30 18C34 22 44 24 44 24C44 24 34 26 30 30C26.5 34 24 44 24 44C24 44 21.5 34 18 30C14 26 4 24 4 24C4 24 14 22 18 18C21.5 14 24 4 24 4Z" 
+                fill="url(#splashGradient)"
+              />
+            </svg>
           </div>
 
-          {/* Brand Typography */}
-          <div className="splash-typography">
-            <h1 className="splash-main-title">STARSJOY</h1>
-            <div className="splash-divider"></div>
-            <p className="splash-subtitle">Telegram Stars</p>
-          </div>
+          {/* Brand name */}
+          <div className="splash-brand">Stars<em>Joy</em></div>
 
-          {/* Minimal loader */}
-          <div className="splash-minimal-loader">
-            <div className="loader-line"></div>
+          {/* Loading dots */}
+          <div className="splash-dots">
+            <div className="splash-dot"></div>
+            <div className="splash-dot"></div>
+            <div className="splash-dot"></div>
+            <div className="splash-dot"></div>
+            <div className="splash-dot"></div>
           </div>
-        </div>
-
-        {/* Bottom branding */}
-        <div className="splash-footer">
-          <span>Powered by Telegram</span>
         </div>
       </div>
     );
@@ -316,14 +306,15 @@ export default function Dashboard() {
             Starsjoy
           </h1>
           <button
-            className="language-btn-dashboard"
+            className="notification-btn-dashboard"
             onClick={() => {
-              setSelectedLanguage(language);
-              setShowLanguageModal(true);
+              // TODO: Navigate to notifications page
+              setShowComingSoonToast(true);
+              setTimeout(() => setShowComingSoonToast(false), 2000);
             }}
-            title={t("profile.language")}
+            title="Notifications"
           >
-            <img src={langIcon} alt="lang" className="lang-btn-img" />
+            <img src={bellsIcon} alt="notifications" className="notification-btn-img" />
           </button>
         </div>
       </header>
@@ -338,6 +329,43 @@ export default function Dashboard() {
               <span className="action-card-wide__title">{t("dashboard.buyStars") || "Stars olish"}</span>
               <span className="action-card-wide__subtitle">{t("dashboard.starsDesc") || "Telegram stars xarid qiling"}</span>
             </div>
+          </div>
+
+          {/* Referral Invite Banner */}
+          <div 
+            className="referral-invite-banner"
+            onClick={() => setTab("referral")}
+          >
+            <div className="referral-banner-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div className="referral-banner-content">
+              <div className="referral-banner-text">
+                {t("dashboard.referralBanner") || "Do'stlaringizni taklif qiling va bonus oling"}
+              </div>
+              <div className="referral-banner-rewards">
+                <div className="referral-reward-badge">
+                  ⭐ +2
+                </div>
+                <div className="referral-reward-badge">
+                  ⭐ +15
+                </div>
+              </div>
+            </div>
+            <button 
+              className="referral-banner-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setTab("referral");
+              }}
+            >
+              {t("dashboard.getLink") || "Havola olish"}
+            </button>
           </div>
 
           {/* Gift & Premium - Side by Side */}

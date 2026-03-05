@@ -53,7 +53,9 @@
     "subscribeChannel": "Kanalimizga obuna bo'ling!",
     "prizesLabel": "Sovrinlar",
     "understood": "Tushundim",
-    "startContest": "Boshlash"
+    "startContest": "Boshlash",
+    "referralBanner": "Do'stlaringizni taklif qiling va bonus oling",
+    "getLink": "Havola olish"
   },
   "history": {
     "subtitle": "Barcha xaridlaringiz tarixi",

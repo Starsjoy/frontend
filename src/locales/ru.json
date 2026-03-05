@@ -52,7 +52,9 @@
     "startBot": "запустить бота",
     "subscribeChannel": "Подпишитесь на наш канал!",
     "prizesLabel": "Призы",
-    "understood": "Понятно"
+    "understood": "Понятно",
+    "referralBanner": "Приглашайте друзей и получайте бонусы",
+    "getLink": "Получить ссылку"
   },
   "history": {
     "subtitle": "История всех ваших покупок",

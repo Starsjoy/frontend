@@ -52,7 +52,9 @@
     "startBot": "start the bot",
     "subscribeChannel": "Subscribe to our channel!",
     "prizesLabel": "Prizes",
-    "understood": "Got it"
+    "understood": "Got it",
+    "referralBanner": "Invite friends and earn bonus stars",
+    "getLink": "Get Link"
   },
   "history": {
     "subtitle": "History of all your purchases",
