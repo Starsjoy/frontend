@@ -1009,20 +1009,8 @@ export default function AdminPanel() {
       <header className="admin-header">
         <h1>⚡ Admin Panel</h1>
         <div className="header-controls">
-          <button 
-            className={`analytics-switch-btn ${activeTab === "analytics" ? "active" : ""}`}
-            onClick={() => setActiveTab(activeTab === "analytics" ? "transactions" : "analytics")}
-            title="Analitika"
-          >
-            📊 Analitika
-          </button>
-          <button 
-            className={`header-tab-icon ${activeTab === "settings" ? "active" : ""}`}
-            onClick={() => setActiveTab("settings")}
-            title="Sozlamalar"
-          >
-            ⚙️
-          </button>
+          
+          
 
           <button className="refresh-btn" onClick={() => {
             if (activeTab === "transactions") fetchTransactions();
@@ -1034,6 +1022,20 @@ export default function AdminPanel() {
           }}>
             🔄
           </button>
+          <button 
+            className={`analytics-switch-btn ${activeTab === "analytics" ? "active" : ""}`}
+            onClick={() => setActiveTab(activeTab === "analytics" ? "transactions" : "analytics")}
+            title="Analitika"
+          >
+            📊
+          </button>
+          <button 
+            className={`header-tab-icon ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+            title="Sozlamalar"
+          >
+            ⚙️
+          </button>
         </div>
       </header>
 
@@ -1043,221 +1045,151 @@ export default function AdminPanel() {
           className={`tab ${activeTab === "transactions" ? "active" : ""}`}
           onClick={() => setActiveTab("transactions")}
         >
-          ⭐ Stars
+          Stars
         </button>
         <button 
           className={`tab ${activeTab === "premium" ? "active" : ""}`}
           onClick={() => setActiveTab("premium")}
         >
-          💎 Premium
+          Premium
         </button>
         <button 
           className={`tab ${activeTab === "gift" ? "active" : ""}`}
           onClick={() => setActiveTab("gift")}
         >
-          🎁 Gift
+          Gift
         </button>
         <button 
           className={`tab ${activeTab === "users" ? "active" : ""}`}
           onClick={() => setActiveTab("users")}
         >
-          👥 Users
+          Users
         </button>
       </div>
 
       {/* ==================== ANALYTICS TAB ==================== */}
       {activeTab === "analytics" && (
-        <div className="tab-content analytics-tab">
+        <div className="tab-content analytics-tab-v2">
           
-          {/* ====== WALLET BALANCE SECTION ====== */}
-          <div className="analytics-section">
-            <div className="analytics-section-header">
-              <span className="section-icon">💰</span>
-              <h3>Bot Hamyon Holati</h3>
-              <button 
-                className="refresh-mini-btn" 
-                onClick={fetchWalletAndPrices}
-                disabled={walletLoading}
-              >
-                {walletLoading ? "⏳" : "🔄"}
-              </button>
-            </div>
-
+          {/* ====== TOP STATS ROW ====== */}
+          <div className="stats-top-row">
             {walletLoading ? (
-              <div className="wallet-loading">Yuklanmoqda...</div>
-            ) : (
-              <div className="wallet-cards">
-                {/* TON Balance Card */}
-                <div className="wallet-card ton-card">
-                  <div className="wallet-card-header">
-                    <span className="wallet-icon">💎</span>
-                    <span className="wallet-label">TON Balans</span>
-                  </div>
-                  <div className="wallet-value">{walletBalance.mainnet.toFixed(4)} TON</div>
-                  <div className="wallet-sub">Testnet: {walletBalance.testnet.toFixed(4)} TON</div>
-                </div>
-
-                {/* Star Price Card */}
-                <div className="wallet-card price-card">
-                  <div className="wallet-card-header">
-                    <span className="wallet-icon">💵</span>
-                    <span className="wallet-label">50 Stars Narxi</span>
-                  </div>
-                  <div className="wallet-value">{(starPrices.priceFor50 || 0).toFixed(4)} TON</div>
-                  <div className="wallet-sub">1 star = {getStarPrice().toFixed(6)} TON</div>
-                </div>
-
-                {/* Available Stars Card */}
-                <div className="wallet-card stars-available-card">
-                  <div className="wallet-card-header">
-                    <span className="wallet-icon">⭐</span>
-                    <span className="wallet-label">Mavjud Stars</span>
-                  </div>
-                  <div className="wallet-value highlight">{getAvailableStars().toLocaleString()}</div>
-                  <div className="wallet-sub">sotib olish mumkin</div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ====== SALES ANALYTICS SECTION ====== */}
-          <div className="analytics-section">
-            <div className="analytics-section-header">
-              <span className="section-icon">📊</span>
-              <h3>Savdo Analitikasi</h3>
-            </div>
-
-            {/* Period Filter */}
-            <div className="analytics-period-filter">
-              <button 
-                className={`period-btn ${analyticsPeriod === "day" ? "active" : ""}`}
-                onClick={() => setAnalyticsPeriod("day")}
-              >
-                Kunlik
-              </button>
-              <button 
-                className={`period-btn ${analyticsPeriod === "week" ? "active" : ""}`}
-                onClick={() => setAnalyticsPeriod("week")}
-              >
-                Haftalik
-              </button>
-              <button 
-                className={`period-btn ${analyticsPeriod === "month" ? "active" : ""}`}
-                onClick={() => setAnalyticsPeriod("month")}
-              >
-                Oylik
-              </button>
-              <button 
-                className={`period-btn ${analyticsPeriod === "all" ? "active" : ""}`}
-                onClick={() => setAnalyticsPeriod("all")}
-              >
-                Barcha
-              </button>
-            </div>
-
-            {analyticsLoading ? (
-              <div className="analytics-loading">⏳ Yuklanmoqda...</div>
+              <div className="mini-loading">⏳</div>
             ) : (
               <>
-                {/* Total Summary Card */}
-                <div className="analytics-total-card">
-                  <div className="analytics-total-title">📈 Umumiy savdo</div>
-                  <div className="analytics-total-row">
-                    <span>Jami buyurtmalar:</span>
-                    <strong>{analyticsData.total.count} ta</strong>
-                  </div>
-                  <div className="analytics-total-row">
-                    <span>Jami summa:</span>
-                    <strong>{analyticsData.total.totalAmount.toLocaleString()} so'm</strong>
+                <div className="stat-mini ton">
+                  <span className="stat-emoji">💎</span>
+                  <div className="stat-info">
+                    <span className="stat-val">{walletBalance.mainnet.toFixed(2)}</span>
+                    <span className="stat-lbl">TON</span>
                   </div>
                 </div>
-
-                {/* Category Cards */}
-                <div className="analytics-cards">
-                  {/* Stars Card */}
-                  <div className="analytics-card stars-card">
-                    <div className="analytics-card-icon">⭐</div>
-                    <div className="analytics-card-title">Stars</div>
-                    <div className="analytics-card-stat">
-                      <span>Buyurtmalar:</span>
-                      <strong>{analyticsData.stars.count} ta</strong>
-                    </div>
-                    <div className="analytics-card-stat">
-                      <span>Jami stars:</span>
-                      <strong>{analyticsData.stars.totalStars.toLocaleString()} ⭐</strong>
-                    </div>
-                    <div className="analytics-card-stat">
-                      <span>Summa:</span>
-                      <strong>{analyticsData.stars.totalAmount.toLocaleString()} so'm</strong>
-                    </div>
-                  </div>
-
-                  {/* Premium Card */}
-                  <div className="analytics-card premium-card">
-                    <div className="analytics-card-icon">💎</div>
-                    <div className="analytics-card-title">Premium</div>
-                    <div className="analytics-card-stat">
-                      <span>Buyurtmalar:</span>
-                      <strong>{analyticsData.premium.count} ta</strong>
-                    </div>
-                    <div className="analytics-card-stat">
-                      <span>Summa:</span>
-                      <strong>{analyticsData.premium.totalAmount.toLocaleString()} so'm</strong>
-                    </div>
-                  </div>
-
-                  {/* Gift Card */}
-                  <div className="analytics-card gift-card">
-                    <div className="analytics-card-icon">🎁</div>
-                    <div className="analytics-card-title">Gift</div>
-                    <div className="analytics-card-stat">
-                      <span>Buyurtmalar:</span>
-                      <strong>{analyticsData.gift.count} ta</strong>
-                    </div>
-                    <div className="analytics-card-stat">
-                      <span>Jami stars:</span>
-                      <strong>{analyticsData.gift.totalStars.toLocaleString()} ⭐</strong>
-                    </div>
-                    <div className="analytics-card-stat">
-                      <span>Summa:</span>
-                      <strong>{analyticsData.gift.totalAmount.toLocaleString()} so'm</strong>
-                    </div>
+                <div className="stat-mini price">
+                  <span className="stat-emoji">💵</span>
+                  <div className="stat-info">
+                    <span className="stat-val">{(starPrices.priceFor50 || 0).toFixed(3)}</span>
+                    <span className="stat-lbl">50⭐ narx</span>
                   </div>
                 </div>
-
-                {/* Daily Stats Section */}
-                <div className="analytics-section" style={{marginTop: '16px'}}>
-                  <div className="analytics-section-header">
-                    <span className="section-icon">📅</span>
-                    <h3>Kunlik Stars Statistikasi (oxirgi 7 kun)</h3>
-                  </div>
-                  
-                  <div className="daily-stats-table">
-                    <div className="daily-stats-header">
-                      <span>Sana</span>
-                      <span>Buyurtmalar</span>
-                      <span>Stars</span>
-                      <span>Summa</span>
-                    </div>
-                    {dailyStats.map((day, idx) => (
-                      <div key={idx} className={`daily-stats-row ${day.count > 0 ? 'has-data' : ''}`}>
-                        <span className="daily-date">{new Date(day.date).toLocaleDateString('uz-UZ', {day: '2-digit', month: 'short'})}</span>
-                        <span className="daily-count">{day.count}</span>
-                        <span className="daily-stars">{day.stars.toLocaleString()} ⭐</span>
-                        <span className="daily-amount">{day.amount.toLocaleString()}</span>
-                      </div>
-                    ))}
-                    <div className="daily-stats-row daily-stats-total">
-                      <span className="daily-date"><strong>Jami:</strong></span>
-                      <span className="daily-count"><strong>{dailyStats.reduce((s, d) => s + d.count, 0)}</strong></span>
-                      <span className="daily-stars"><strong>{dailyStats.reduce((s, d) => s + d.stars, 0).toLocaleString()} ⭐</strong></span>
-                      <span className="daily-amount"><strong>{dailyStats.reduce((s, d) => s + d.amount, 0).toLocaleString()}</strong></span>
-                    </div>
+                <div className="stat-mini stars">
+                  <span className="stat-emoji">⭐</span>
+                  <div className="stat-info">
+                    <span className="stat-val">{getAvailableStars().toLocaleString()}</span>
+                    <span className="stat-lbl">mavjud</span>
                   </div>
                 </div>
               </>
             )}
+            <button className="refresh-icon-btn" onClick={fetchWalletAndPrices} disabled={walletLoading}>
+              {walletLoading ? "⏳" : "🔄"}
+            </button>
           </div>
+
+          {/* ====== PERIOD FILTER ROW ====== */}
+          <div className="period-row">
+            {["day", "week", "month", "all"].map(p => (
+              <button 
+                key={p}
+                className={`period-chip ${analyticsPeriod === p ? "active" : ""}`}
+                onClick={() => setAnalyticsPeriod(p)}
+              >
+                {p === "day" ? "Kun" : p === "week" ? "Hafta" : p === "month" ? "Oy" : "Barchasi"}
+              </button>
+            ))}
+          </div>
+
+          {analyticsLoading ? (
+            <div className="analytics-loading-v2">⏳ Yuklanmoqda...</div>
+          ) : (
+            <>
+              {/* ====== SALES SUMMARY GRID ====== */}
+              <div className="sales-grid">
+                {/* Total */}
+                <div className="sale-box total">
+                  <div className="sale-header">
+                    <span>📈</span>
+                    <span>Jami</span>
+                  </div>
+                  <div className="sale-main">{analyticsData.total.count}</div>
+                  <div className="sale-sub">{analyticsData.total.totalAmount.toLocaleString()} so'm</div>
+                </div>
+                {/* Stars */}
+                <div className="sale-box star">
+                  <div className="sale-header">
+                    <span>⭐</span>
+                    <span>Stars</span>
+                  </div>
+                  <div className="sale-main">{analyticsData.stars.count}</div>
+                  <div className="sale-sub">{analyticsData.stars.totalStars.toLocaleString()} ⭐</div>
+                </div>
+                {/* Premium */}
+                <div className="sale-box premium">
+                  <div className="sale-header">
+                    <span>💎</span>
+                    <span>Premium</span>
+                  </div>
+                  <div className="sale-main">{analyticsData.premium.count}</div>
+                  <div className="sale-sub">{analyticsData.premium.totalAmount.toLocaleString()}</div>
+                </div>
+                {/* Gift */}
+                <div className="sale-box gift">
+                  <div className="sale-header">
+                    <span>🎁</span>
+                    <span>Gift</span>
+                  </div>
+                  <div className="sale-main">{analyticsData.gift.count}</div>
+                  <div className="sale-sub">{analyticsData.gift.totalStars.toLocaleString()} ⭐</div>
+                </div>
+              </div>
+
+              {/* ====== COMPACT DAILY TABLE ====== */}
+              <div className="daily-compact">
+                <div className="daily-title">📅 Oxirgi 7 kun</div>
+                <div className="daily-table">
+                  <div className="daily-head">
+                    <span>Kun</span>
+                    <span>#</span>
+                    <span>Stars</span>
+                    <span>Summa</span>
+                  </div>
+                  {dailyStats.map((day, i) => (
+                    <div key={i} className={`daily-row ${day.count > 0 ? 'active' : ''}`}>
+                      <span>{new Date(day.date).toLocaleDateString('uz-UZ', {day: '2-digit', month: 'short'})}</span>
+                      <span>{day.count}</span>
+                      <span>{day.stars.toLocaleString()}</span>
+                      <span>{day.amount.toLocaleString()}</span>
+                    </div>
+                  ))}
+                  <div className="daily-row total-row">
+                    <span><b>Jami</b></span>
+                    <span><b>{dailyStats.reduce((s, d) => s + d.count, 0)}</b></span>
+                    <span><b>{dailyStats.reduce((s, d) => s + d.stars, 0).toLocaleString()}</b></span>
+                    <span><b>{dailyStats.reduce((s, d) => s + d.amount, 0).toLocaleString()}</b></span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
