@@ -6,6 +6,33 @@ import { useNavigate } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
 import "./home.css";
 
+// Star Icon Component
+const StarIcon = () => (
+  <svg height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" style={{ marginRight: '8px', marginTop: '-2px' }}>
+    <defs>
+      <path id="a" d="m6.02 4.99 2.21-4.42c.25-.51.86-.72 1.37-.46.2.1.36.27.46.47l2.08 4.26c.17.34.5.58.88.63l4.36.52c.59.08 1.02.62.95 1.22-.03.24-.14.47-.32.65l-3.45 3.42c-.14.13-.2.33-.18.53l.57 4.61c.09.66-.38 1.27-1.03 1.35-.25.03-.5-.02-.72-.14l-3.64-2c-.26-.14-.58-.15-.85-.01l-3.77 1.95c-.53.27-1.18.06-1.45-.48-.11-.2-.14-.43-.11-.65l.3-2.12c.15-1.04.79-1.93 1.71-2.41l4.19-2.15c.11-.06.15-.2.1-.31-.05-.09-.14-.14-.24-.12l-5.12.74c-.78.11-1.58-.11-2.19-.62l-1.71-1.4c-.49-.4-.56-1.12-.17-1.62.19-.22.45-.37.74-.41l4.38-.57c.28-.03.52-.21.65-.46z" />
+      <linearGradient id="b" x1="25%" x2="74.92%" y1=".825%" y2="107.86%">
+        <stop offset="0" stopColor="#ffd951" />
+        <stop offset="1" stopColor="#ffb222" />
+      </linearGradient>
+      <linearGradient id="c" x1="50%" x2="50%" y1="0%" y2="99.8%">
+        <stop offset="0" stopColor="#e58f0d" />
+        <stop offset=".9996" stopColor="#eb7915" />
+      </linearGradient>
+      <filter id="d" height="110.6%" width="110.3%" x="-5.2%" y="-5.3%">
+        <feOffset dx="1" dy="1" in="SourceAlpha" result="shadowOffsetInner1" />
+        <feComposite in="shadowOffsetInner1" in2="SourceAlpha" k2="-1" k3="1" operator="arithmetic" result="shadowInnerInner1" />
+        <feColorMatrix in="shadowInnerInner1" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.657 0" />
+      </filter>
+    </defs>
+    <g fill="none" fillRule="evenodd" transform="translate(1.389 1.389)">
+      <use fill="url(#b)" fillRule="evenodd" xlinkHref="#a" />
+      <use fill="#000" filter="url(#d)" xlinkHref="#a" />
+      <use stroke="url(#c)" strokeWidth=".89" xlinkHref="#a" />
+    </g>
+  </svg>
+);
+
 // 5 daqiqa = 300 sekund
 const POLLING_DURATION = 5 * 60 * 1000; // 5 daqiqa millisekondda
 
@@ -14,13 +41,8 @@ export default function Home() {
   const CARD_NAME = import.meta.env.VITE_CARD_NAME;
   const NARX = parseInt(import.meta.env.VITE_NARX);
 
-  // Preset options with discount prices
-  const PRESET_OPTIONS = [
-    { stars: 500, discountedPrice: 108000, discount: 10 },
-    { stars: 1000, discountedPrice: 211200, discount: 12 },
-    { stars: 5000, discountedPrice: 1020000, discount: 15 },
-    { stars: 10000, discountedPrice: 1968000, discount: 18 },
-  ];
+  // Stars options
+  const STARS_OPTIONS = [50, 100, 200, 350, 500, 750, 1000, 2000, 5000, 10000];
 
   const [backendStatus, setBackendStatus] = useState("");
   const [username, setUsername] = useState("");
@@ -36,6 +58,7 @@ export default function Home() {
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [countdown, setCountdown] = useState(300); // 5 daqiqa
+  const [showMorePlans, setShowMorePlans] = useState(false);
 
   // Refs for polling (modal yopilsa ham davom etadi)
   const pollingRef = useRef(null);
@@ -350,11 +373,6 @@ export default function Home() {
     return `${min.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Handle preset option click
-  const handlePresetClick = (option) => {
-    navigate("/discount");
-  };
-
   return (
     <div className="home-container">
       <button className="btn-back-top" onClick={goToHome}>
@@ -424,22 +442,55 @@ export default function Home() {
         />
       </div>
 
-      {/* Preset Options */}
+      {/* Stars Options */}
       <div className="preset-options-section">
-        <p className="preset-title">Chegirma taklif:</p>
-        <div className="preset-grid">
-          {PRESET_OPTIONS.map((option, idx) => (
-            <button
-              key={idx}
-              className={`preset-button ${stars === option.stars.toString() ? "active" : ""}`}
-              onClick={() => handlePresetClick(option)}
-            >
-              <span className="preset-stars">⭐ {option.stars}</span>
-              <span className="preset-price">{formatAmount(option.discountedPrice)} so'm</span>
-              <span className="preset-discount">-%{option.discount}</span>
-            </button>
+        <h3 style={{color: '#fff', margin: '24px 0 12px 0', fontSize: '16px', fontWeight: '600'}}>Yoki to'plamni tanlang:</h3>
+        <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px'}}>
+          {(showMorePlans ? STARS_OPTIONS : STARS_OPTIONS.slice(0, 3)).map((starAmount, idx) => (
+            <label key={idx} style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '10px 14px',
+              background: stars === String(starAmount) ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+              border: stars === String(starAmount) ? '2px solid #667eea' : '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}>
+              <input
+                type="radio"
+                name="stars-plan"
+                value={starAmount}
+                checked={stars === String(starAmount)}
+                onChange={(e) => setStars(e.target.value)}
+                style={{position: 'absolute', opacity: 0, width: 0, height: 0}}
+              />
+              <span style={{color: '#fff', fontSize: '14px', fontWeight: '500', flex: 1, display: 'flex', alignItems: 'center'}}>
+                <StarIcon />
+                {starAmount >= 1000 ? (starAmount / 1000) + 'K' : starAmount} Stars
+              </span>
+              <span style={{color: '#4ee0ff', fontSize: '13px', fontWeight: '600'}}>{formatAmount(starAmount * NARX)} UZS</span>
+            </label>
           ))}
         </div>
+        
+        {/* MORE OPTIONS DROPDOWN */}
+        {STARS_OPTIONS.length > 3 && (
+          <div style={{textAlign: 'center', marginBottom: '20px'}}>
+            <button onClick={() => setShowMorePlans(!showMorePlans)} style={{
+              background: 'none',
+              border: 'none',
+              color: '#667eea',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              textDecoration: 'none',
+              transition: 'all 0.2s ease'
+            }}>
+              {showMorePlans ? 'Kamroq variantlarni yashiring ▲' : "Ko'proq variantlarni ko'rsatish ▼"}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="actions">

@@ -110,6 +110,21 @@ export default function AdminPanel() {
   });
   const [giftShowAll, setGiftShowAll] = useState(false);
 
+  // Analytics state
+  const [analyticsPeriod, setAnalyticsPeriod] = useState("all"); // day, week, month, all
+  const [analyticsData, setAnalyticsData] = useState({
+    stars: { count: 0, totalStars: 0, totalAmount: 0 },
+    premium: { count: 0, totalAmount: 0 },
+    gift: { count: 0, totalStars: 0, totalAmount: 0 },
+    total: { count: 0, totalAmount: 0 }
+  });
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  // Wallet & Prices state
+  const [walletBalance, setWalletBalance] = useState({ mainnet: 0, testnet: 0 });
+  const [starPrices, setStarPrices] = useState([]);
+  const [walletLoading, setWalletLoading] = useState(false);
+
   // Discount packages state
   const [discountPackages, setDiscountPackages] = useState([]);
   const [newPackage, setNewPackage] = useState({ stars: "", discount_percent: "" });
@@ -143,6 +158,131 @@ export default function AdminPanel() {
     }
     setMaintenanceLoading(false);
   };
+
+  // ========== WALLET & PRICES FUNCTION ==========
+  const fetchWalletAndPrices = async () => {
+    setWalletLoading(true);
+    try {
+      // Fetch balance and prices in parallel
+      const [balanceRes, pricesRes] = await Promise.all([
+        fetch("https://robynhood.parssms.info/api/balance"),
+        fetch("https://robynhood.parssms.info/api/prices/list")
+      ]);
+
+      const balanceData = await balanceRes.json();
+      const pricesData = await pricesRes.json();
+
+      setWalletBalance({
+        mainnet: balanceData.mainnet_balance || 0,
+        testnet: balanceData.testnet_balance || 0
+      });
+
+      setStarPrices(pricesData || []);
+    } catch (err) {
+      console.error("❌ Wallet/Prices fetch error:", err);
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
+  // Get star price from prices list
+  const getStarPrice = () => {
+    const starItem = starPrices.find(p => p.product_type === "stars" || p.item_name?.toLowerCase().includes("star"));
+    return starItem?.price || 0;
+  };
+
+  // Calculate available stars
+  const getAvailableStars = () => {
+    const price = getStarPrice();
+    if (price <= 0) return 0;
+    return Math.floor(walletBalance.mainnet / price);
+  };
+
+  // Fetch wallet when analytics tab is active
+  useEffect(() => {
+    if (activeTab === "analytics" && isAuthenticated) {
+      fetchWalletAndPrices();
+    }
+  }, [activeTab, isAuthenticated]);
+
+  // ========== ANALYTICS FUNCTION ==========
+  const fetchAnalytics = async () => {
+    if (!isAuthenticated) return;
+    setAnalyticsLoading(true);
+    try {
+      // Get date range based on period
+      const now = new Date();
+      let startDate = null;
+      
+      if (analyticsPeriod === "day") {
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      } else if (analyticsPeriod === "week") {
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      } else if (analyticsPeriod === "month") {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+
+      // Fetch all data
+      const [starsRes, premiumRes, giftRes] = await Promise.all([
+        apiFetch("/api/transactions/all"),
+        apiFetch("/api/admin/premium-orders"),
+        apiFetch("/api/admin/gift-orders")
+      ]);
+
+      const starsData = await starsRes.json();
+      const premiumData = await premiumRes.json();
+      const giftData = await giftRes.json();
+
+      // Filter by date and completed status
+      const filterByDate = (items, dateField = "created_at") => {
+        if (!startDate) return items;
+        return items.filter(item => new Date(item[dateField]) >= startDate);
+      };
+
+      const filteredStars = filterByDate(starsData).filter(tx => tx.status === "stars_sent" || tx.status === "completed");
+      const filteredPremium = filterByDate(premiumData).filter(tx => tx.status === "premium_sent" || tx.status === "completed");
+      const filteredGift = filterByDate(giftData).filter(tx => tx.status === "gift_sent" || tx.status === "completed");
+
+      // Calculate analytics
+      const starsStats = {
+        count: filteredStars.length,
+        totalStars: filteredStars.reduce((sum, tx) => sum + (tx.stars || 0), 0),
+        totalAmount: filteredStars.reduce((sum, tx) => sum + (tx.amount || 0), 0)
+      };
+
+      const premiumStats = {
+        count: filteredPremium.length,
+        totalAmount: filteredPremium.reduce((sum, tx) => sum + (tx.amount || 0), 0)
+      };
+
+      const giftStats = {
+        count: filteredGift.length,
+        totalStars: filteredGift.reduce((sum, tx) => sum + (tx.stars || 0), 0),
+        totalAmount: filteredGift.reduce((sum, tx) => sum + (tx.amount || 0), 0)
+      };
+
+      setAnalyticsData({
+        stars: starsStats,
+        premium: premiumStats,
+        gift: giftStats,
+        total: {
+          count: starsStats.count + premiumStats.count + giftStats.count,
+          totalAmount: starsStats.totalAmount + premiumStats.totalAmount + giftStats.totalAmount
+        }
+      });
+    } catch (err) {
+      console.error("❌ Analytics fetch error:", err);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  // Fetch analytics when period changes
+  useEffect(() => {
+    if (activeTab === "analytics" && isAuthenticated) {
+      fetchAnalytics();
+    }
+  }, [analyticsPeriod, activeTab, isAuthenticated]);
 
   // ========== ALL FUNCTIONS ==========
   const fetchTransactions = async () => {
@@ -842,6 +982,13 @@ export default function AdminPanel() {
         <h1>⚡ Admin Panel</h1>
         <div className="header-controls">
           <button 
+            className={`analytics-switch-btn ${activeTab === "analytics" ? "active" : ""}`}
+            onClick={() => setActiveTab(activeTab === "analytics" ? "transactions" : "analytics")}
+            title="Analitika"
+          >
+            📊 Analitika
+          </button>
+          <button 
             className={`header-tab-icon ${activeTab === "settings" ? "active" : ""}`}
             onClick={() => setActiveTab("settings")}
             title="Sozlamalar"
@@ -855,6 +1002,7 @@ export default function AdminPanel() {
             else if (activeTab === "premium") fetchPremiumOrders();
             else if (activeTab === "gift") fetchGiftOrders();
             else if (activeTab === "settings") fetchDiscountPackages();
+            else if (activeTab === "analytics") { fetchAnalytics(); fetchWalletAndPrices(); }
           }}>
             🔄
           </button>
@@ -888,6 +1036,171 @@ export default function AdminPanel() {
           👥 Users
         </button>
       </div>
+
+      {/* ==================== ANALYTICS TAB ==================== */}
+      {activeTab === "analytics" && (
+        <div className="tab-content analytics-tab">
+          
+          {/* ====== WALLET BALANCE SECTION ====== */}
+          <div className="analytics-section">
+            <div className="analytics-section-header">
+              <span className="section-icon">💰</span>
+              <h3>Bot Hamyon Holati</h3>
+              <button 
+                className="refresh-mini-btn" 
+                onClick={fetchWalletAndPrices}
+                disabled={walletLoading}
+              >
+                {walletLoading ? "⏳" : "🔄"}
+              </button>
+            </div>
+
+            {walletLoading ? (
+              <div className="wallet-loading">Yuklanmoqda...</div>
+            ) : (
+              <div className="wallet-cards">
+                {/* TON Balance Card */}
+                <div className="wallet-card ton-card">
+                  <div className="wallet-card-header">
+                    <span className="wallet-icon">💎</span>
+                    <span className="wallet-label">TON Balans</span>
+                  </div>
+                  <div className="wallet-value">{walletBalance.mainnet.toFixed(4)} TON</div>
+                  <div className="wallet-sub">Testnet: {walletBalance.testnet.toFixed(4)} TON</div>
+                </div>
+
+                {/* Star Price Card */}
+                <div className="wallet-card price-card">
+                  <div className="wallet-card-header">
+                    <span className="wallet-icon">💵</span>
+                    <span className="wallet-label">Star Narxi</span>
+                  </div>
+                  <div className="wallet-value">{getStarPrice().toFixed(6)} TON</div>
+                  <div className="wallet-sub">1 star uchun</div>
+                </div>
+
+                {/* Available Stars Card */}
+                <div className="wallet-card stars-available-card">
+                  <div className="wallet-card-header">
+                    <span className="wallet-icon">⭐</span>
+                    <span className="wallet-label">Mavjud Stars</span>
+                  </div>
+                  <div className="wallet-value highlight">{getAvailableStars().toLocaleString()}</div>
+                  <div className="wallet-sub">sotib olish mumkin</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ====== SALES ANALYTICS SECTION ====== */}
+          <div className="analytics-section">
+            <div className="analytics-section-header">
+              <span className="section-icon">📊</span>
+              <h3>Savdo Analitikasi</h3>
+            </div>
+
+            {/* Period Filter */}
+            <div className="analytics-period-filter">
+              <button 
+                className={`period-btn ${analyticsPeriod === "day" ? "active" : ""}`}
+                onClick={() => setAnalyticsPeriod("day")}
+              >
+                Kunlik
+              </button>
+              <button 
+                className={`period-btn ${analyticsPeriod === "week" ? "active" : ""}`}
+                onClick={() => setAnalyticsPeriod("week")}
+              >
+                Haftalik
+              </button>
+              <button 
+                className={`period-btn ${analyticsPeriod === "month" ? "active" : ""}`}
+                onClick={() => setAnalyticsPeriod("month")}
+              >
+                Oylik
+              </button>
+              <button 
+                className={`period-btn ${analyticsPeriod === "all" ? "active" : ""}`}
+                onClick={() => setAnalyticsPeriod("all")}
+              >
+                Barcha
+              </button>
+            </div>
+
+            {analyticsLoading ? (
+              <div className="analytics-loading">⏳ Yuklanmoqda...</div>
+            ) : (
+              <>
+                {/* Total Summary Card */}
+                <div className="analytics-total-card">
+                  <div className="analytics-total-title">📈 Umumiy savdo</div>
+                  <div className="analytics-total-row">
+                    <span>Jami buyurtmalar:</span>
+                    <strong>{analyticsData.total.count} ta</strong>
+                  </div>
+                  <div className="analytics-total-row">
+                    <span>Jami summa:</span>
+                    <strong>{analyticsData.total.totalAmount.toLocaleString()} so'm</strong>
+                  </div>
+                </div>
+
+                {/* Category Cards */}
+                <div className="analytics-cards">
+                  {/* Stars Card */}
+                  <div className="analytics-card stars-card">
+                    <div className="analytics-card-icon">⭐</div>
+                    <div className="analytics-card-title">Stars</div>
+                    <div className="analytics-card-stat">
+                      <span>Buyurtmalar:</span>
+                      <strong>{analyticsData.stars.count} ta</strong>
+                    </div>
+                    <div className="analytics-card-stat">
+                      <span>Jami stars:</span>
+                      <strong>{analyticsData.stars.totalStars.toLocaleString()} ⭐</strong>
+                    </div>
+                    <div className="analytics-card-stat">
+                      <span>Summa:</span>
+                      <strong>{analyticsData.stars.totalAmount.toLocaleString()} so'm</strong>
+                    </div>
+                  </div>
+
+                  {/* Premium Card */}
+                  <div className="analytics-card premium-card">
+                    <div className="analytics-card-icon">💎</div>
+                    <div className="analytics-card-title">Premium</div>
+                    <div className="analytics-card-stat">
+                      <span>Buyurtmalar:</span>
+                      <strong>{analyticsData.premium.count} ta</strong>
+                    </div>
+                    <div className="analytics-card-stat">
+                      <span>Summa:</span>
+                      <strong>{analyticsData.premium.totalAmount.toLocaleString()} so'm</strong>
+                    </div>
+                  </div>
+
+                  {/* Gift Card */}
+                  <div className="analytics-card gift-card">
+                    <div className="analytics-card-icon">🎁</div>
+                    <div className="analytics-card-title">Gift</div>
+                    <div className="analytics-card-stat">
+                      <span>Buyurtmalar:</span>
+                      <strong>{analyticsData.gift.count} ta</strong>
+                    </div>
+                    <div className="analytics-card-stat">
+                      <span>Jami stars:</span>
+                      <strong>{analyticsData.gift.totalStars.toLocaleString()} ⭐</strong>
+                    </div>
+                    <div className="analytics-card-stat">
+                      <span>Summa:</span>
+                      <strong>{analyticsData.gift.totalAmount.toLocaleString()} so'm</strong>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ==================== TRANSACTIONS TAB ==================== */}
       {activeTab === "transactions" && (
