@@ -291,22 +291,26 @@ export default function Referral() {
             ) : (
               <div className="friends-list">
                 {myFriends.map((friend, idx) => (
-                  <div key={idx} className="friend-item">
+                  <div key={idx} className={`friend-item ${!friend.subscribe_user ? 'inactive' : ''}`}>
                     <div className="friend-left">
                       <div className="friend-avatar">👤</div>
                       <div className="friend-info">
-                        <p className="friend-name">@{friend.username}</p>
+                        <p className="friend-name">@{friend.username || friend.user_id}</p>
                         <p className="friend-date">
-                          {new Date(friend.created_at).toLocaleDateString("uz-UZ", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric"
-                          })}
+                          {friend.subscribe_user ? (
+                            new Date(friend.created_at).toLocaleDateString("uz-UZ", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric"
+                            })
+                          ) : (
+                            <span className="not-subscribed">{t("referral.notSubscribed") || "Kanalga obuna bo'lmagan"}</span>
+                          )}
                         </p>
                       </div>
                     </div>
-                    <div className="friend-badge">
-                      <span>✓</span>
+                    <div className={`friend-badge ${!friend.subscribe_user ? 'pending' : ''}`}>
+                      <span>{friend.subscribe_user ? '✓' : '⏳'}</span>
                     </div>
                   </div>
                 ))}
