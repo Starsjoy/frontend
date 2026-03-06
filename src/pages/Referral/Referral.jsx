@@ -16,6 +16,7 @@ export default function Referral() {
   const { t } = useTranslation();
   // State
   const [username, setUsername] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [referralCode, setReferralCode] = useState("");
   const [referralLink, setReferralLink] = useState("");
   const [copied, setCopied] = useState(false);
@@ -29,46 +30,31 @@ export default function Referral() {
   });
   const [earnings, setEarnings] = useState([]);
   const [claiming, setClaiming] = useState(false);
-  // Referral leaderboard
-  const [refLeaderboard, setRefLeaderboard] = useState([]);
-  const [myRefRank, setMyRefRank] = useState(null);
-  const [refPeriod, setRefPeriod] = useState("daily");
 
   // My friends state (referrer_username orqali)
   const [myFriends, setMyFriends] = useState([]);
   const [friendsCount, setFriendsCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
 
-  useEffect(() => {
-    if (!username) return;
-    const loadLeaderboard = async () => {
-      try {
-        const params = new URLSearchParams();
-        params.append("username", username);
-        params.append("period", refPeriod);
-        const res = await apiFetch(`/api/referral/leaderboard?${params.toString()}`);
-        const json = await res.json();
-        setRefLeaderboard(json.top10 || []);
-        setMyRefRank(json.me || null);
-      } catch (err) {
-        // ignore
-      }
-    };
-    loadLeaderboard();
-  }, [username, refPeriod]);
-
-  // Get Telegram username
+  // Get Telegram user info
   useEffect(() => {
     const initTelegram = async () => {
       try {
         WebApp.ready();
         const tgUser = WebApp?.initDataUnsafe?.user;
 
-        if (tgUser?.username) {
-          const clean = tgUser.username.replace("@", "");
-          setUsername(clean);
-          localStorage.setItem("username", clean);
-          registerUser(clean);
+        if (tgUser?.id) {
+          const tgUserId = String(tgUser.id);
+          setUserId(tgUserId);
+          localStorage.setItem("userId", tgUserId);
+          
+          if (tgUser.username) {
+            const clean = tgUser.username.replace("@", "");
+            setUsername(clean);
+            localStorage.setItem("username", clean);
+          }
+          
+          registerUser(tgUserId);
         }
       } catch (err) {
         console.error("Telegram error:", err);
@@ -239,30 +225,40 @@ export default function Referral() {
             </div>
           </div>
 
-          {/* Reward Tiers */}
+          {/* Bonus Info Section */}
           <div className="reward-section">
             <h2>{t("referral.howToEarn") || "Qanday ishlash mumkin?"}</h2>
             <div className="reward-tiers">
               <div className="reward-card">
-                <img src={starsGif} alt="Stars" className="reward-img" />
+                <div className="reward-icon">📢</div>
                 <div className="reward-content">
-                  <h3>{t("referral.rewardStars") || "Stars xaridi"}</h3>
+                  <h3>{t("referral.subscribeBonus") || "Kanalga obuna"}</h3>
                   <p className="reward-desc">
-                    {t("referral.rewardStarsDesc") || "Do'stingiz 50+ star sotib olsa"}
+                    {t("referral.subscribeBonusDesc") || "Do'stingiz kanalga obuna bo'lsa"}
                   </p>
-                  <div className="reward-amount">+5 ⭐</div>
+                  <div className="reward-amount bonus-small">+2 ⭐</div>
                 </div>
               </div>
 
-              <div className="reward-card">
-                <img src={premiumGif} alt="Premium" className="reward-img" />
+              <div className="reward-card featured">
+                <div className="reward-icon">🛒</div>
                 <div className="reward-content">
-                  <h3>{t("referral.premiumTitle") || "Premium xaridi"}</h3>
+                  <h3>{t("referral.purchaseBonus") || "Birinchi xarid"}</h3>
                   <p className="reward-desc">
-                    {t("referral.premiumDesc") || "Do'stingiz Premium sotib olsa"}
+                    {t("referral.purchaseBonusDesc") || "Do'stingiz birinchi xarid qilsa"}
                   </p>
-                  <div className="reward-amount">+25 ⭐</div>
+                  <div className="reward-amount bonus-big">+15 ⭐</div>
                 </div>
+              </div>
+            </div>
+
+            <div className="bonus-info-box">
+              <div className="bonus-info-icon">💡</div>
+              <div className="bonus-info-text">
+                <p><strong>{t("referral.howItWorks") || "Qanday ishlaydi?"}</strong></p>
+                <p>{t("referral.step1") || "1. Havolani do'stingizga yuboring"}</p>
+                <p>{t("referral.step2") || "2. Do'stingiz kanalga obuna bo'lsa — +2 ⭐ olasiz"}</p>
+                <p>{t("referral.step3") || "3. Do'stingiz xarid qilsa — +15 ⭐ qo'shimcha olasiz"}</p>
               </div>
             </div>
           </div>
@@ -323,56 +319,6 @@ export default function Referral() {
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Referral Leaderboard */}
-          <div className="ref-leaderboard-section">
-            <h2>{t("referral.topReferrals") || "Top foydalanuvchilar"}</h2>
-            
-            {/* Period Filter */}
-            <div className="ref-period-filters">
-              {["daily", "weekly", "monthly"].map((p) => (
-                <button
-                  key={p}
-                  className={`ref-period-btn ${refPeriod === p ? "active" : ""}`}
-                  onClick={() => setRefPeriod(p)}
-                >
-                  {t(`statistics.period_${p}`) || 
-                    (p === "daily" ? "Bugun" : p === "weekly" ? "Hafta" : "Oy")
-                  }
-                </button>
-              ))}
-            </div>
-            
-            <div className="ref-leaderboard-list">
-              {refLeaderboard.length > 0 ? (
-                <>
-                  {refLeaderboard.map((u, i) => (
-                    <div key={u.user_id || i} className="ref-leaderboard-row">
-                      <span className="ref-rank">
-                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${u.rank}`}
-                      </span>
-                      <span className="ref-user">{u.nickname}</span>
-                      <span className="ref-count">{u.referrals} {t("referral.friendsShort") || "do'st"}</span>
-                    </div>
-                  ))}
-                  {myRefRank && myRefRank.rank > 10 && (
-                    <>
-                      <hr className="leaderboard-divider" />
-                      <div className="ref-leaderboard-row me">
-                        <span className="ref-rank">#{myRefRank.rank}</span>
-                        <span className="ref-user">{myRefRank.nickname} ({t("common.you") || "siz"})</span>
-                        <span className="ref-count">{myRefRank.referrals} {t("referral.friendsShort") || "do'st"}</span>
-                      </div>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className="leaderboard-empty">
-                  <p>{t("referral.noLeaderboard") || "Hali ma'lumot yo'q"}</p>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Earnings History */}

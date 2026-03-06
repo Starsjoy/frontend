@@ -225,6 +225,125 @@
   font-size: 10px;
 }
 
+/* Bonus Info Box */
+.bonus-info-box {
+  background: var(--bg-primary);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-primary);
+}
+
+.bonus-info-box h3 {
+  margin: 0 0 14px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bonus-info-box h3 .reward-icon {
+  font-size: 18px;
+}
+
+.bonus-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bonus-small,
+.bonus-big {
+  flex: 1;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.bonus-small {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.06) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.bonus-big {
+  background: linear-gradient(145deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.08) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.bonus-small .bonus-value,
+.bonus-big .bonus-value {
+  font-size: 26px;
+  font-weight: 800;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.bonus-small .bonus-value {
+  color: #3b82f6;
+}
+
+.bonus-big .bonus-value {
+  color: #f59e0b;
+}
+
+.bonus-small .bonus-label,
+.bonus-big .bonus-label {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: block;
+}
+
+.bonus-small .bonus-label {
+  color: #60a5fa;
+}
+
+.bonus-big .bonus-label {
+  color: #fbbf24;
+}
+
+.bonus-info-subtitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0 0 10px 0;
+}
+
+.bonus-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bonus-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.step-num {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  padding-top: 2px;
+}
+
 /* ===============================
    REFERRAL LINK SECTION
 =============================== */

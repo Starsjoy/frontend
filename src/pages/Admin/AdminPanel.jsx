@@ -1730,20 +1730,24 @@ export default function AdminPanel() {
                   <span className="detail-value">#{userModal.id}</span>
                 </div>
                 <div className="user-detail-row">
+                  <span className="detail-label">Ism:</span>
+                  <span className="detail-value">{userModal.name || "-"}</span>
+                </div>
+                <div className="user-detail-row">
                   <span className="detail-label">Username:</span>
                   <span className="detail-value highlight">@{userModal.username}</span>
                 </div>
                 <div className="user-detail-row">
-                  <span className="detail-label">User ID:</span>
+                  <span className="detail-label">Telegram ID:</span>
                   <span className="detail-value">{userModal.user_id || "-"}</span>
                 </div>
                 <div className="user-detail-row">
                   <span className="detail-label">Referral Code:</span>
-                  <span className="detail-value">{userModal.referral_code || "-"}</span>
+                  <span className="detail-value" style={{fontFamily: 'monospace'}}>{userModal.referral_code || "-"}</span>
                 </div>
                 <div className="user-detail-row">
-                  <span className="detail-label">Referrer:</span>
-                  <span className="detail-value">{userModal.referrer_username ? `@${userModal.referrer_username}` : "-"}</span>
+                  <span className="detail-label">Referrer ID:</span>
+                  <span className="detail-value">{userModal.referrer_user_id || "-"}</span>
                 </div>
                 <div className="user-detail-row">
                   <span className="detail-label">Ref Balance:</span>
@@ -1758,15 +1762,15 @@ export default function AdminPanel() {
                   <span className="detail-value">👥 {userModal.total_referrals || 0}</span>
                 </div>
                 <div className="user-detail-row">
-                  <span className="detail-label">Som Balance:</span>
-                  <span className="detail-value highlight">💵 {(userModal.som_balance || 0).toLocaleString()} so'm</span>
+                  <span className="detail-label">Obuna:</span>
+                  <span className="detail-value">{userModal.subscribe_user ? "✅ Ha" : "❌ Yo'q"}</span>
                 </div>
                 <div className="user-detail-row">
-                  <span className="detail-label">Language:</span>
+                  <span className="detail-label">Til:</span>
                   <span className="detail-value">{userModal.language || "uz"}</span>
                 </div>
                 <div className="user-detail-row">
-                  <span className="detail-label">Created:</span>
+                  <span className="detail-label">Ro'yxatdan o'tgan:</span>
                   <span className="detail-value">{new Date(userModal.created_at).toLocaleString()}</span>
                 </div>
               </div>
@@ -1779,17 +1783,7 @@ export default function AdminPanel() {
                     openBalanceModal(userModal);
                   }}
                 >
-                  ✏️ Star balansni o'zgartirish
-                </button>
-                <button
-                  className="balance-btn add"
-                  style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
-                  onClick={() => {
-                    setUserModal(null);
-                    openSomBalanceModal(userModal);
-                  }}
-                >
-                  💵 Som balansni o'zgartirish
+                  ➕➖ Referral balansni o'zgartirish
                 </button>
               </div>
             </div>
