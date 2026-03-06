@@ -125,6 +125,7 @@ export default function AdminPanel() {
   const [walletBalance, setWalletBalance] = useState({ mainnet: 0, testnet: 0 });
   const [starPrices, setStarPrices] = useState({ priceFor50: 0, pricePerStar: 0, currency: "TON", availableStars: 0 });
   const [walletLoading, setWalletLoading] = useState(false);
+  const [botStarsBalance, setBotStarsBalance] = useState(0);
 
   // Discount packages state
   const [discountPackages, setDiscountPackages] = useState([]);
@@ -164,8 +165,13 @@ export default function AdminPanel() {
   const fetchWalletAndPrices = async () => {
     setWalletLoading(true);
     try {
-      const res = await apiFetch("/api/admin/wallet-info");
-      const data = await res.json();
+      // Parallel fetch wallet info and bot stars balance
+      const [walletRes, botStarsRes] = await Promise.all([
+        apiFetch("/api/admin/wallet-info"),
+        apiFetch("/api/admin/bot-stars-balance")
+      ]);
+      
+      const data = await walletRes.json();
 
       if (data.success) {
         setWalletBalance({
@@ -179,6 +185,12 @@ export default function AdminPanel() {
           currency: data.stars_price.currency || "TON",
           availableStars: data.available_stars || 0
         });
+      }
+
+      // Bot stars balance
+      const botStarsData = await botStarsRes.json();
+      if (botStarsData.success) {
+        setBotStarsBalance(botStarsData.bot_stars_balance || 0);
       }
     } catch (err) {
       console.error("❌ Wallet/Prices fetch error:", err);
@@ -1072,6 +1084,10 @@ export default function AdminPanel() {
 
           {/* Wallet Info List */}
           <div className="info-list wallet-list">
+            <div className="info-row">
+              <span className="info-label">⭐ User stars balansi:</span>
+              <span className="info-value gold">{walletLoading ? '...' : botStarsBalance.toLocaleString()} ⭐</span>
+            </div>
             <div className="info-row">
               <span className="info-label">⭐ Mavjud stars:</span>
               <span className="info-value gold">{walletLoading ? '...' : getAvailableStars().toLocaleString()}</span>
