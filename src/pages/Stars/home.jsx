@@ -740,7 +740,6 @@ export default function Home() {
                 )}
 
                 <p className="modal-auto-close">Oyna {timer}s da yopiladi</p>
-                <button className="modal-close-btn success-close" onClick={() => setShowModal(false)}>Yopish</button>
               </div>
             )}
 
