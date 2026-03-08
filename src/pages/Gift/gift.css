@@ -1081,6 +1081,23 @@
   background: rgba(255,255,255,0.14);
 }
 
+/* Compact pay grid (for pending modal) */
+.gift-modal-pay-grid.compact {
+  margin-bottom: 8px;
+}
+
+.gift-modal-pay-grid.compact .gift-modal-pay-item {
+  padding: 8px 10px;
+}
+
+.gift-modal-pay-grid.compact .gift-modal-pay-value {
+  font-size: 13px;
+}
+
+.gift-modal-pay-grid.compact .gift-modal-pay-value.bold {
+  font-size: 15px;
+}
+
 /* Warning */
 .gift-modal-warning {
   display: flex;

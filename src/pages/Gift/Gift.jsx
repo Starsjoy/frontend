@@ -67,7 +67,7 @@ export default function Gift() {
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("idle"); // idle | payment_info | pending | completed | gift_sent | expired | failed | error
   const [showModal, setShowModal] = useState(false);
-  const [countdown, setCountdown] = useState(1200);
+  const [countdown, setCountdown] = useState(300);
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
 
@@ -146,10 +146,10 @@ export default function Gift() {
       if (!saved) return;
       const parsed = JSON.parse(saved);
       const elapsed = Date.now() - new Date(parsed.createdAt).getTime();
-      if (elapsed < 20 * 60 * 1000) {
+      if (elapsed < 5 * 60 * 1000) {
         setOrder(parsed.order);
         setStatus(parsed.status || "payment_info");
-        const remaining = Math.max(0, 1200 - Math.floor(elapsed / 1000));
+        const remaining = Math.max(0, 300 - Math.floor(elapsed / 1000));
         setCountdown(remaining);
         startPolling(parsed.order);
         startCountdownTimer(remaining);
@@ -565,6 +565,31 @@ export default function Gift() {
                   <div>
                     <div className="gift-modal-recipient">{t("gift.recipient")}: @{order?.recipient_username}</div>
                     <div className="gift-modal-stars">{order?.stars} ⭐</div>
+                  </div>
+                </div>
+
+                {/* Payment info - karta va summa */}
+                <div className="gift-modal-pay-grid compact">
+                  <div className="gift-modal-pay-item">
+                    <div className="gift-modal-pay-label">{t("stars.cardNumber")}</div>
+                    <div className="gift-modal-pay-row">
+                      <span className="gift-modal-pay-value">{CARD_NUMBER}</span>
+                      <button className="gift-modal-copy-btn" onClick={handleCopyCard}>
+                        {copied ? "✓" : "📋"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="gift-modal-pay-item highlight">
+                    <div className="gift-modal-pay-label">{t("stars.totalAmount")}</div>
+                    <div className="gift-modal-pay-row">
+                      <span className="gift-modal-pay-value bold">
+                        {formatAmount(order?.amount)} so'm
+                      </span>
+                      <button className="gift-modal-copy-btn" onClick={handleCopyAmount}>
+                        {copied ? "✓" : "📋"}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
