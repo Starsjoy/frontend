@@ -451,6 +451,57 @@
   height: 100%;
 }
 
+.gift-modal-tgs-large {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 16px;
+}
+
+.gift-modal-tgs-large svg {
+  width: 100%;
+  height: 100%;
+}
+
+.gift-modal-searching {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.gift-modal-searching h3 {
+  margin: 12px 0 4px;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.gift-modal-searching p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.gift-modal-action-btn.payment-done {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.gift-modal-action-btn.payment-done:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(46, 204, 113, 0.4);
+}
+
+.gift-modal-action-btn.payment-done:active {
+  transform: scale(0.98);
+}
+
 .gift-success-tgs {
   width: 32px;
   height: 32px;

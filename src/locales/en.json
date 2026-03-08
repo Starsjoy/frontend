@@ -203,7 +203,18 @@
     "comment": "Add a message",
     "commentPlaceholder": "Write a greeting or message...",
     "sendAnother": "Send another",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "paymentTitle": "Payment Details",
+    "exactAmount": "Send exactly this amount:",
+    "modalHint": "Payment is tracked even if you close this",
+    "paymentConfirmed": "Payment received!",
+    "giftSending": "Gift is being sent...",
+    "iConfirmPayment": "I have paid",
+    "paymentHint": "Complete the payment and press the button",
+    "paymentSearching": "Searching for payment...",
+    "paymentAutoDetect": "Your payment will be detected automatically",
+    "giftDelivered": "Gift delivered!",
+    "recipient": "Recipient"
   },
   "challenges": {
     "title": "Special Missions",

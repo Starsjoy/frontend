@@ -203,7 +203,18 @@
     "comment": "Добавить сообщение",
     "commentPlaceholder": "Напишите поздравление или сообщение...",
     "sendAnother": "Отправить ещё",
-    "tryAgain": "Попробовать снова"
+    "tryAgain": "Попробовать снова",
+    "paymentTitle": "Информация об оплате",
+    "exactAmount": "Отправьте именно эту сумму:",
+    "modalHint": "Оплата отслеживается даже при закрытии окна",
+    "paymentConfirmed": "Оплата принята!",
+    "giftSending": "Подарок отправляется...",
+    "iConfirmPayment": "Я оплатил",
+    "paymentHint": "Выполните оплату и нажмите кнопку",
+    "paymentSearching": "Ищем оплату...",
+    "paymentAutoDetect": "Оплата определится автоматически",
+    "giftDelivered": "Подарок доставлен!",
+    "recipient": "Получатель"
   },
   "challenges": {
     "title": "Специальные миссии",

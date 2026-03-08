@@ -65,7 +65,7 @@ export default function Gift() {
 
   // Step 4: Payment
   const [order, setOrder] = useState(null);
-  const [status, setStatus] = useState("idle"); // idle | pending | completed | gift_sent | expired | failed | error
+  const [status, setStatus] = useState("idle"); // idle | payment_info | pending | completed | gift_sent | expired | failed | error
   const [showModal, setShowModal] = useState(false);
   const [countdown, setCountdown] = useState(1200);
   const [copied, setCopied] = useState(false);
@@ -148,12 +148,12 @@ export default function Gift() {
       const elapsed = Date.now() - new Date(parsed.createdAt).getTime();
       if (elapsed < 20 * 60 * 1000) {
         setOrder(parsed.order);
-        setStatus(parsed.status || "pending");
+        setStatus(parsed.status || "payment_info");
         const remaining = Math.max(0, 1200 - Math.floor(elapsed / 1000));
         setCountdown(remaining);
         startPolling(parsed.order);
         startCountdownTimer(remaining);
-        if (parsed.status === "pending") {
+        if (parsed.status === "pending" || parsed.status === "payment_info") {
           setShowModal(true);
         }
       } else {
@@ -252,7 +252,7 @@ export default function Gift() {
       }
 
       setOrder(newOrder);
-      setStatus("pending");
+      setStatus("payment_info");
       setShowModal(true);
 
       localStorage.setItem(
@@ -260,7 +260,7 @@ export default function Gift() {
         JSON.stringify({
           order: newOrder,
           createdAt: new Date().toISOString(),
-          status: "pending",
+          status: "payment_info",
         })
       );
 
@@ -270,6 +270,17 @@ export default function Gift() {
       alert(t("gift.error"));
     } finally {
       setSending(false);
+    }
+  };
+
+  // === "To'lov qildim" tugmasi ===
+  const handlePaymentDone = () => {
+    setStatus("pending");
+    const saved = localStorage.getItem("pendingGiftOrder");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      parsed.status = "pending";
+      localStorage.setItem("pendingGiftOrder", JSON.stringify(parsed));
     }
   };
 
@@ -462,11 +473,11 @@ export default function Gift() {
         <div className="gift-modal-overlay">
           <div className="gift-modal-content">
 
-            {/* PENDING — karta ma'lumotlari */}
-            {status === "pending" && (
+            {/* PAYMENT_INFO — karta ma'lumotlari va "To'lov qildim" tugmasi */}
+            {status === "payment_info" && (
               <div className="gift-modal-pending">
                 <div className="gift-modal-header">
-                  <span className="gift-modal-title">{t("gift.paymentTitle")}</span>
+                  <span className="gift-modal-title">💳 {t("gift.paymentTitle")}</span>
                   <button className="gift-modal-close" onClick={() => setShowModal(false)}>✕</button>
                 </div>
 
@@ -475,9 +486,10 @@ export default function Gift() {
                   <TGSSticker
                     stickerPath={getGiftStickerPath(selectedGift?.id)}
                     className="gift-modal-tgs"
+                    autoplay={true}
                   />
                   <div>
-                    <div className="gift-modal-recipient">@{order?.recipient_username}</div>
+                    <div className="gift-modal-recipient">{t("gift.recipient")}: @{order?.recipient_username}</div>
                     <div className="gift-modal-stars">{order?.stars} ⭐</div>
                   </div>
                 </div>
@@ -520,14 +532,53 @@ export default function Gift() {
                   <span>{t("gift.exactAmount")} <b>{formatAmount(order?.amount)} so'm</b></span>
                 </div>
 
-                {/* Timer & spinner */}
+                {/* Timer */}
                 <div className="gift-modal-status-bar">
                   <div className="gift-modal-timer">
                     <span>⏳</span> {formatTime(countdown)}
                   </div>
-                  <div className="gift-modal-waiting">
-                    <div className="gift-modal-spinner"></div>
-                    <span>{t("stars.paymentPending")}</span>
+                </div>
+
+                {/* To'lov qildim button */}
+                <button className="gift-modal-action-btn payment-done" onClick={handlePaymentDone}>
+                  ✅ {t("gift.iConfirmPayment")}
+                </button>
+                <p className="gift-modal-hint">{t("gift.paymentHint")}</p>
+              </div>
+            )}
+
+            {/* PENDING — To'lov kutilmoqda */}
+            {status === "pending" && (
+              <div className="gift-modal-pending">
+                <div className="gift-modal-header">
+                  <span className="gift-modal-title">⏳ {t("gift.paymentSearching")}</span>
+                  <button className="gift-modal-close" onClick={() => setShowModal(false)}>✕</button>
+                </div>
+
+                {/* Gift preview */}
+                <div className="gift-modal-preview">
+                  <TGSSticker
+                    stickerPath={getGiftStickerPath(selectedGift?.id)}
+                    className="gift-modal-tgs"
+                    autoplay={true}
+                  />
+                  <div>
+                    <div className="gift-modal-recipient">{t("gift.recipient")}: @{order?.recipient_username}</div>
+                    <div className="gift-modal-stars">{order?.stars} ⭐</div>
+                  </div>
+                </div>
+
+                {/* Searching animation */}
+                <div className="gift-modal-searching">
+                  <div className="gift-modal-spinner"></div>
+                  <h3>{t("gift.paymentSearching")}</h3>
+                  <p>{t("gift.paymentAutoDetect")}</p>
+                </div>
+
+                {/* Timer */}
+                <div className="gift-modal-status-bar">
+                  <div className="gift-modal-timer">
+                    <span>⏳</span> {formatTime(countdown)}
                   </div>
                 </div>
 
@@ -541,11 +592,11 @@ export default function Gift() {
             {/* COMPLETED — gift yuborilmoqda */}
             {status === "completed" && (
               <div className="gift-modal-sending">
-                <div className="gift-sending-anim">
-                  <div className="gift-pulse-ring"></div>
-                  <div className="gift-pulse-ring delay"></div>
-                  <div className="gift-sending-icon">🎁</div>
-                </div>
+                <TGSSticker
+                  stickerPath={getGiftStickerPath(selectedGift?.id)}
+                  className="gift-modal-tgs-large"
+                  autoplay={true}
+                />
                 <h3>{t("gift.paymentConfirmed")}</h3>
                 <p>{t("gift.giftSending")}</p>
                 <div className="gift-sending-bar">
@@ -557,13 +608,13 @@ export default function Gift() {
             {/* GIFT_SENT — muvaffaqiyat */}
             {status === "gift_sent" && (
               <div className="gift-modal-success">
-                <div className="gift-success-icon">✅</div>
-                <h3>{t("gift.success")}</h3>
+                <TGSSticker
+                  stickerPath={getGiftStickerPath(selectedGift?.id)}
+                  className="gift-modal-tgs-large"
+                  autoplay={true}
+                />
+                <h3>✅ {t("gift.giftDelivered")}</h3>
                 <p className="gift-success-detail">
-                  <TGSSticker
-                    stickerPath={getGiftStickerPath(selectedGift?.id)}
-                    className="gift-success-tgs"
-                  />
                   → @{order?.recipient_username}
                 </p>
                 <button className="gift-modal-action-btn" onClick={resetAll}>

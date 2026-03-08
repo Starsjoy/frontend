@@ -204,7 +204,18 @@
     "comment": "Izoh qo'shish",
     "commentPlaceholder": "Tabrik yoki xabar yozing...",
     "sendAnother": "Yana yuborish",
-    "tryAgain": "Qayta urinish"
+    "tryAgain": "Qayta urinish",
+    "paymentTitle": "To'lov ma'lumotlari",
+    "exactAmount": "Aynan shu summani yuboring:",
+    "modalHint": "Oyna yopilsa ham to'lov kuzatiladi",
+    "paymentConfirmed": "To'lov qabul qilindi!",
+    "giftSending": "Gift yuborilmoqda...",
+    "iConfirmPayment": "To'lov qildim",
+    "paymentHint": "To'lovni amalga oshiring va tugmani bosing",
+    "paymentSearching": "To'lov qidirilmoqda...",
+    "paymentAutoDetect": "To'lovingiz avtomatik aniqlanadi",
+    "giftDelivered": "Gift yetkazildi!",
+    "recipient": "Qabul qiluvchi"
   },
   "challenges": {
     "title": "Maxsus Missiyalar",
