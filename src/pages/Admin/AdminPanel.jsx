@@ -143,11 +143,6 @@ export default function AdminPanel() {
   const [editingPackage, setEditingPackage] = useState(null);
   const BASE_PRICE = parseInt(import.meta.env.VITE_NARX) || 240;
 
-  // Broadcast state
-  const [broadcastMessage, setBroadcastMessage] = useState("");
-  const [broadcastLoading, setBroadcastLoading] = useState(false);
-  const [broadcastResult, setBroadcastResult] = useState(null);
-
   // ========== MAINTENANCE MODE ==========
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -1149,106 +1144,12 @@ export default function AdminPanel() {
           Users
         </button>
         <button 
-          className={`tab ${activeTab === "broadcast" ? "active" : ""}`}
-          onClick={() => setActiveTab("broadcast")}
-        >
-          📢
-        </button>
-        <button 
           className={`tab ${activeTab === "notifications" ? "active" : ""}`}
           onClick={() => setActiveTab("notifications")}
         >
-          🔔
+          🔔 Xabar
         </button>
       </div>
-
-      {/* ==================== BROADCAST TAB ==================== */}
-      {activeTab === "broadcast" && (
-        <div className="tab-content broadcast-section">
-          <h3 style={{margin: "0 0 16px", fontSize: "1.1rem", color: "#fff"}}>📢 Barcha foydalanuvchilarga xabar</h3>
-          
-          <textarea
-            style={{
-              width: "100%",
-              minHeight: "120px",
-              padding: "14px",
-              borderRadius: "12px",
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "rgba(255,255,255,0.05)",
-              color: "#fff",
-              fontSize: "14px",
-              fontFamily: "inherit",
-              resize: "vertical",
-              marginBottom: "12px"
-            }}
-            placeholder="Xabar matnini kiriting... (HTML: <b>qalin</b>, <i>kursiv</i>)"
-            value={broadcastMessage}
-            onChange={(e) => setBroadcastMessage(e.target.value)}
-          />
-          
-          <button
-            style={{
-              width: "100%",
-              padding: "14px",
-              background: broadcastLoading ? "rgba(59,130,246,0.3)" : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              border: "none",
-              borderRadius: "12px",
-              color: "#fff",
-              fontSize: "15px",
-              fontWeight: "600",
-              cursor: broadcastLoading ? "not-allowed" : "pointer",
-              opacity: !broadcastMessage.trim() ? 0.5 : 1
-            }}
-            onClick={async () => {
-              if (!broadcastMessage.trim() || broadcastLoading) return;
-              if (!confirm("Barcha foydalanuvchilarga xabar yubormoqchimisiz?")) return;
-              
-              setBroadcastLoading(true);
-              setBroadcastResult(null);
-              
-              try {
-                const res = await apiFetch("/api/admin/broadcast", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ message: broadcastMessage, parseMode: "HTML" })
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                  setBroadcastResult({ success: true, sent: data.sent, failed: data.failed, total: data.total });
-                  setBroadcastMessage("");
-                } else {
-                  setBroadcastResult({ success: false, error: data.error || "Xatolik" });
-                }
-              } catch (err) {
-                setBroadcastResult({ success: false, error: err.message });
-              } finally {
-                setBroadcastLoading(false);
-              }
-            }}
-            disabled={broadcastLoading || !broadcastMessage.trim()}
-          >
-            {broadcastLoading ? "Yuborilmoqda..." : "📤 Xabar yuborish"}
-          </button>
-          
-          {broadcastResult && (
-            <div style={{
-              marginTop: "14px",
-              padding: "14px",
-              borderRadius: "10px",
-              background: broadcastResult.success ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
-              border: `1px solid ${broadcastResult.success ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`,
-              color: broadcastResult.success ? "#10b981" : "#ef4444",
-              fontSize: "14px"
-            }}>
-              {broadcastResult.success 
-                ? `✅ Yuborildi: ${broadcastResult.sent}/${broadcastResult.total} | Xato: ${broadcastResult.failed}`
-                : `❌ ${broadcastResult.error}`
-              }
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ==================== NOTIFICATIONS TAB ==================== */}
       {activeTab === "notifications" && (
