@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Referral.css";
-import starsGif from "../../assets/stars.gif";
-import premiumGif from "../../assets/premium_gif.gif";
+
 import WebApp from "@twa-dev/sdk";
 import { useTranslation } from "../../context/LanguageContext";
 import { TGSSticker } from "../../components/TGSSticker";
@@ -10,6 +9,30 @@ import referralSticker from "../../assets/AnimatedSticker_referal.tgs";
 import loadingSticker from "../../assets/Animated_loading.tgs";
 import apiFetch from "../../utils/apiFetch";
 
+// Gift IDlar - referral yechish uchun
+const GIFTS = [
+  { id: "5170145012310081615", stars: 15 },
+  { id: "5170233102089322756", stars: 15 },
+  { id: "5170250947678437525", stars: 25 },
+  { id: "5168103777563050263", stars: 25 },
+  { id: "5170144170496491616", stars: 50 },
+  { id: "5170314324215857265", stars: 50 },
+  { id: "5170564780938756245", stars: 50 },
+  { id: "6028601630662853006", stars: 50 },
+  { id: "5922558454332916696", stars: 50 },
+  { id: "5801108895304779062", stars: 50 },
+  { id: "5800655655995968830", stars: 50 },
+  { id: "5866352046986232958", stars: 50 },
+  { id: "5956217000635139069", stars: 50 },
+  { id: "5168043875654172773", stars: 100 },
+  { id: "5170690322832818290", stars: 100 },
+  { id: "5170521118301225164", stars: 100 },
+];
+
+// Gift ID dan TGS sticker path olish
+const getGiftStickerPath = (giftId) => {
+  return new URL(`../../assets/${giftId}.tgs`, import.meta.url).href;
+};
 
 export default function Referral() {
   const navigate = useNavigate();
@@ -30,6 +53,13 @@ export default function Referral() {
   });
   const [earnings, setEarnings] = useState([]);
   const [claiming, setClaiming] = useState(false);
+
+  // Withdrawal modal state
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [selectedGift, setSelectedGift] = useState(null);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+  const [hoveredGift, setHoveredGift] = useState(null);
 
   // My friends state (referrer_username orqali)
   const [myFriends, setMyFriends] = useState([]);
@@ -171,24 +201,73 @@ export default function Referral() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Share function
-  const shareLink = async () => {
+  // Share function - Telegram Forward menu
+  const shareLink = () => {
     if (!referralLink) return;
 
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: "⭐ " + t("referral.title"),
-          text: t("referral.shareWithFriends"),
-          url: referralLink,
-        });
-      } else {
-        copyLink();
-      }
+      // Telegram share message - exact format requested
+      const shareText = `Bu bot orqali Telegram Starsni oson sotib olish mumkin:\n\n${referralLink}`;
+      
+      // Use Telegram's share URL to open "Forward to..." menu
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent("Bu bot orqali Telegram Starsni oson sotib olish mumkin:")}`;
+      
+      // Open Telegram share dialog
+      WebApp.openTelegramLink(shareUrl);
     } catch (err) {
       console.error("Share error:", err);
+      // Fallback: copy to clipboard
+      copyLink();
     }
   };
+
+  // Withdraw referral balance as gift
+  const handleWithdraw = async () => {
+    if (!selectedGift || withdrawing) return;
+    
+    try {
+      setWithdrawing(true);
+      const res = await apiFetch("/api/referral/withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ giftId: selectedGift.id }),
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        setWithdrawSuccess(true);
+        // Update balance
+        setStats(prev => ({
+          ...prev,
+          referral_balance: data.new_balance
+        }));
+        // Reset after 3 seconds
+        setTimeout(() => {
+          setShowWithdrawModal(false);
+          setWithdrawSuccess(false);
+          setSelectedGift(null);
+        }, 3000);
+      } else {
+        alert(data.error || "Xatolik yuz berdi");
+      }
+    } catch (err) {
+      console.error("Withdraw error:", err);
+      alert("Server xatosi");
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  // Open withdraw modal
+  const openWithdrawModal = () => {
+    setSelectedGift(null);
+    setWithdrawSuccess(false);
+    setShowWithdrawModal(true);
+  };
+
+  // Check if gift is affordable
+  const canAfford = (gift) => stats.referral_balance >= gift.stars;
 
   return (
     <div className="referral-page">
@@ -239,6 +318,11 @@ export default function Referral() {
                 )}
               </div>
             </div>
+
+            {/* Withdraw Button */}
+            <button className="ref-withdraw-btn" onClick={openWithdrawModal}>
+              {t("referral.withdrawBalance")}
+            </button>
           </div>
 
           {/* Bonus Info Section */}
@@ -370,6 +454,91 @@ export default function Referral() {
           </div>
 
         </>
+      )}
+
+      {/* Withdrawal Modal */}
+      {showWithdrawModal && (
+        <div className="withdraw-modal-overlay" onClick={() => !withdrawing && setShowWithdrawModal(false)}>
+          <div className="withdraw-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="withdraw-modal-header">
+              <h2>{t("referral.withdrawTitle") || "Gift tanlang"}</h2>
+              <button className="withdraw-modal-close" onClick={() => !withdrawing && setShowWithdrawModal(false)}>✕</button>
+            </div>
+
+            {/* Recipient username */}
+            <div className="withdraw-recipient-info">
+              <span>{t("referral.sendTo") || "Yuboriladi"}:</span>
+              <span className="withdraw-recipient-username">@{username}</span>
+            </div>
+
+            {/* Balance info */}
+            <div className="withdraw-balance-info">
+              <span>{t("referral.yourBalance") || "Sizning balans"}:</span>
+              <span className="withdraw-balance-value">{stats.referral_balance} ⭐</span>
+            </div>
+
+            {/* Success state */}
+            {withdrawSuccess ? (
+              <div className="withdraw-success">
+                <TGSSticker 
+                  stickerPath={getGiftStickerPath(selectedGift?.id)} 
+                  className="withdraw-success-sticker"
+                  autoplay={true}
+                />
+                <h3>✅ {t("referral.withdrawSuccess") || "Gift yuborilmoqda!"}</h3>
+                <p>@{username}</p>
+              </div>
+            ) : (
+              <>
+                {/* Gift Grid */}
+                <div className="withdraw-gift-grid">
+                  {GIFTS.map((gift) => {
+                    const affordable = canAfford(gift);
+                    const isSelected = selectedGift?.id === gift.id;
+                    return (
+                      <div
+                        key={gift.id}
+                        className={`withdraw-gift-item ${isSelected ? 'selected' : ''} ${!affordable ? 'disabled' : ''}`}
+                        onClick={() => affordable && setSelectedGift(gift)}
+                        onMouseEnter={() => setHoveredGift(gift.id)}
+                        onMouseLeave={() => setHoveredGift(null)}
+                      >
+                        <TGSSticker
+                          stickerPath={getGiftStickerPath(gift.id)}
+                          className="withdraw-gift-sticker"
+                          autoplay={hoveredGift === gift.id}
+                        />
+                        <span className={`withdraw-gift-stars ${affordable ? 'affordable' : ''}`}>
+                          {gift.stars} ⭐
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Withdraw button */}
+                <button
+                  className={`withdraw-confirm-btn ${!selectedGift || withdrawing ? 'disabled' : ''}`}
+                  onClick={handleWithdraw}
+                  disabled={!selectedGift || withdrawing}
+                >
+                  {withdrawing ? (
+                    <>{t("common.loading") || "Yuklanmoqda..."}</>
+                  ) : selectedGift ? (
+                    <>{t("referral.withdrawGift") || "Yechib olish"} ({selectedGift.stars} ⭐)</>
+                  ) : (
+                    <>{t("referral.selectGift") || "Gift tanlang"}</>
+                  )}
+                </button>
+
+                <p className="withdraw-hint">
+                  {t("referral.withdrawHint") || "Gift sizning Telegram akkauntingizga yuboriladi"}
+                </p>
+              </>
+            )}
+          </div>
+        </div>
       )}
 
       {/* End of main content */}

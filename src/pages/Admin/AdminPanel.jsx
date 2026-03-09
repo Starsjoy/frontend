@@ -83,6 +83,15 @@ export default function AdminPanel() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
 
+  // 🔔 Notifications state
+  const [notifTitle, setNotifTitle] = useState("");
+  const [notifMessage, setNotifMessage] = useState("");
+  const [notifType, setNotifType] = useState("info");
+  const [notifGlobal, setNotifGlobal] = useState(true);
+  const [notifUserId, setNotifUserId] = useState("");
+  const [notifSending, setNotifSending] = useState(false);
+  const [notifHistory, setNotifHistory] = useState([]);
+
   // Premium orders state
   const [premiumOrders, setPremiumOrders] = useState([]);
   const [premiumExpandedId, setPremiumExpandedId] = useState(null);
@@ -565,6 +574,73 @@ export default function AdminPanel() {
 
   const handlePasswordSubmit = null; // deprecated - Telegram auth ishlatiladi
 
+  // 🔔 Fetch notification history
+  const fetchNotifications = async () => {
+    try {
+      const res = await apiFetch("/api/admin/notifications");
+      const data = await res.json();
+      if (data.success) {
+        setNotifHistory(data.notifications || []);
+      }
+    } catch (err) {
+      console.error("Fetch notifications error:", err);
+    }
+  };
+
+  // 🔔 Send notification
+  const sendNotification = async () => {
+    if (!notifTitle.trim() || !notifMessage.trim()) {
+      alert("❌ Sarlavha va xabar kerak!");
+      return;
+    }
+    if (!notifGlobal && !notifUserId.trim()) {
+      alert("❌ User ID kiriting yoki global tanlang!");
+      return;
+    }
+
+    setNotifSending(true);
+    try {
+      const res = await apiFetch("/api/admin/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: notifTitle.trim(),
+          message: notifMessage.trim(),
+          type: notifType,
+          is_global: notifGlobal,
+          user_id: notifGlobal ? null : notifUserId.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Notification yuborildi! (${data.type === 'global' ? 'Barchaga' : 'Shaxsiy'})`);
+        setNotifTitle("");
+        setNotifMessage("");
+        setNotifUserId("");
+        fetchNotifications();
+      } else {
+        alert("❌ Xato: " + data.error);
+      }
+    } catch (err) {
+      console.error("Send notification error:", err);
+      alert("❌ Server xato!");
+    } finally {
+      setNotifSending(false);
+    }
+  };
+
+  // 🔔 Delete notification
+  const deleteNotification = async (id) => {
+    if (!window.confirm("Bu notificationni o'chirasizmi?")) return;
+    try {
+      await apiFetch(`/api/admin/notifications/${id}`, { method: "DELETE" });
+      fetchNotifications();
+    } catch (err) {
+      console.error("Delete notification error:", err);
+    }
+  };
+
   // ========== ALL useEffect HOOKS ==========
   // Fetch data based on active tab
   useEffect(() => {
@@ -579,6 +655,8 @@ export default function AdminPanel() {
       fetchGiftOrders();
     } else if (activeTab === "settings") {
       fetchDiscountPackages();
+    } else if (activeTab === "notifications") {
+      fetchNotifications();
     }
   }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter]);
 
@@ -1076,6 +1154,12 @@ export default function AdminPanel() {
         >
           📢
         </button>
+        <button 
+          className={`tab ${activeTab === "notifications" ? "active" : ""}`}
+          onClick={() => setActiveTab("notifications")}
+        >
+          🔔
+        </button>
       </div>
 
       {/* ==================== BROADCAST TAB ==================== */}
@@ -1163,6 +1247,168 @@ export default function AdminPanel() {
               }
             </div>
           )}
+        </div>
+      )}
+
+      {/* ==================== NOTIFICATIONS TAB ==================== */}
+      {activeTab === "notifications" && (
+        <div className="tab-content notifications-section">
+          <h3 style={{margin: "0 0 16px", fontSize: "1.1rem", color: "#fff"}}>🔔 Bildirishnoma yuborish</h3>
+          
+          <input
+            type="text"
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              borderRadius: "10px",
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(255,255,255,0.05)",
+              color: "#fff",
+              fontSize: "14px",
+              marginBottom: "10px"
+            }}
+            placeholder="Sarlavha..."
+            value={notifTitle}
+            onChange={(e) => setNotifTitle(e.target.value)}
+          />
+          
+          <textarea
+            style={{
+              width: "100%",
+              minHeight: "80px",
+              padding: "12px 14px",
+              borderRadius: "10px",
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(255,255,255,0.05)",
+              color: "#fff",
+              fontSize: "14px",
+              fontFamily: "inherit",
+              resize: "vertical",
+              marginBottom: "10px"
+            }}
+            placeholder="Xabar matni..."
+            value={notifMessage}
+            onChange={(e) => setNotifMessage(e.target.value)}
+          />
+          
+          <div style={{display: "flex", gap: "8px", marginBottom: "10px", flexWrap: "wrap"}}>
+            {["info", "success", "warning", "promo"].map(t => (
+              <button
+                key={t}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: "8px",
+                  border: notifType === t ? "2px solid #3b82f6" : "1px solid rgba(255,255,255,0.15)",
+                  background: notifType === t ? "rgba(59,130,246,0.2)" : "rgba(255,255,255,0.05)",
+                  color: "#fff",
+                  fontSize: "13px",
+                  cursor: "pointer"
+                }}
+                onClick={() => setNotifType(t)}
+              >
+                {t === "info" ? "ℹ️ Info" : t === "success" ? "✅ Success" : t === "warning" ? "⚠️ Warning" : "🎁 Promo"}
+              </button>
+            ))}
+          </div>
+          
+          <div style={{display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px"}}>
+            <label style={{display: "flex", alignItems: "center", gap: "8px", color: "#fff", fontSize: "14px", cursor: "pointer"}}>
+              <input
+                type="checkbox"
+                checked={notifGlobal}
+                onChange={(e) => setNotifGlobal(e.target.checked)}
+                style={{width: "18px", height: "18px", accentColor: "#3b82f6"}}
+              />
+              🌐 Barchaga yuborish
+            </label>
+          </div>
+          
+          {!notifGlobal && (
+            <input
+              type="text"
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                borderRadius: "10px",
+                border: "1px solid rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.05)",
+                color: "#fff",
+                fontSize: "14px",
+                marginBottom: "12px"
+              }}
+              placeholder="User ID (Telegram)"
+              value={notifUserId}
+              onChange={(e) => setNotifUserId(e.target.value)}
+            />
+          )}
+          
+          <button
+            style={{
+              width: "100%",
+              padding: "14px",
+              background: notifSending ? "rgba(59,130,246,0.3)" : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+              border: "none",
+              borderRadius: "12px",
+              color: "#fff",
+              fontSize: "15px",
+              fontWeight: "600",
+              cursor: notifSending ? "not-allowed" : "pointer",
+              opacity: (!notifTitle.trim() || !notifMessage.trim() || (!notifGlobal && !notifUserId.trim())) ? 0.5 : 1,
+              marginBottom: "16px"
+            }}
+            onClick={sendNotification}
+            disabled={notifSending || !notifTitle.trim() || !notifMessage.trim() || (!notifGlobal && !notifUserId.trim())}
+          >
+            {notifSending ? "Yuborilmoqda..." : "🔔 Bildirishnoma yuborish"}
+          </button>
+          
+          <h4 style={{margin: "20px 0 12px", fontSize: "1rem", color: "rgba(255,255,255,0.8)"}}>📋 Oxirgi bildirishnomalar</h4>
+          
+          <div style={{display: "flex", flexDirection: "column", gap: "8px"}}>
+            {notifHistory.length === 0 ? (
+              <div style={{textAlign: "center", padding: "20px", color: "rgba(255,255,255,0.5)", fontSize: "14px"}}>
+                Hozircha bildirishnomalar yo'q
+              </div>
+            ) : (
+              notifHistory.map(n => (
+                <div 
+                  key={n.id}
+                  style={{
+                    padding: "12px",
+                    borderRadius: "10px",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)"
+                  }}
+                >
+                  <div style={{display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px"}}>
+                    <div style={{fontWeight: "600", color: "#fff", fontSize: "14px"}}>
+                      {n.type === "info" ? "ℹ️" : n.type === "success" ? "✅" : n.type === "warning" ? "⚠️" : "🎁"} {n.title}
+                    </div>
+                    <button
+                      onClick={() => deleteNotification(n.id)}
+                      style={{
+                        background: "rgba(239,68,68,0.2)",
+                        border: "none",
+                        borderRadius: "6px",
+                        color: "#ef4444",
+                        padding: "4px 8px",
+                        fontSize: "12px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                  <div style={{color: "rgba(255,255,255,0.7)", fontSize: "13px", marginBottom: "6px"}}>{n.message}</div>
+                  <div style={{display: "flex", gap: "8px", fontSize: "11px", color: "rgba(255,255,255,0.4)"}}>
+                    <span>{n.is_global ? "🌐 Global" : `👤 ${n.user_id}`}</span>
+                    <span>•</span>
+                    <span>{new Date(n.created_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 

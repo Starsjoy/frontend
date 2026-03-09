@@ -55,6 +55,9 @@ export default function Dashboard() {
   const [selectedLanguage, setSelectedLanguage] = useState(language);
   const [showComingSoonToast, setShowComingSoonToast] = useState(false);
 
+  /* ================= NOTIFICATIONS ================= */
+  const [unreadCount, setUnreadCount] = useState(0);
+
   /* ================= CHALLENGE ================= */
   const [myTotal, setMyTotal] = useState(0);
   const [referralBalance, setReferralBalance] = useState(0);
@@ -216,6 +219,27 @@ export default function Dashboard() {
     loadHistory();
   }, [isTelegram, username]);
 
+  /* ================= LOAD UNREAD NOTIFICATIONS ================= */
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const uid = localStorage.getItem("userId");
+        if (!uid) return;
+        const res = await apiFetch(`/api/notifications/unread/${uid}`);
+        const json = await res.json();
+        if (json.success) {
+          setUnreadCount(json.unread_count || 0);
+        }
+      } catch (e) {
+        console.error("Unread count error:", e);
+      }
+    };
+    fetchUnreadCount();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Language confirm function
   const handleLanguageConfirm = () => {
     setLanguage(selectedLanguage);
@@ -314,14 +338,13 @@ export default function Dashboard() {
           </h1>
           <button
             className="notification-btn-dashboard"
-            onClick={() => {
-              // TODO: Navigate to notifications page
-              setShowComingSoonToast(true);
-              setTimeout(() => setShowComingSoonToast(false), 2000);
-            }}
+            onClick={() => navigate("/notifications")}
             title="Notifications"
           >
             <img src={bellsIcon} alt="notifications" className="notification-btn-img" />
+            {unreadCount > 0 && (
+              <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+            )}
           </button>
         </div>
       </header>

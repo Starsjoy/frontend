@@ -112,6 +112,8 @@
     "step3Desc": "Referalingiz Premium obuna olsa",
     "personalLink": "Shaxsiy Referral Link",
     "shareWithFriends": "Do'stlaringizga yuboring",
+    "shareMessage": "StarsJoy orqali Telegram Stars va Premium xarid qiling!",
+    "shareBonus": "Ro'yxatdan o'ting va bonus oling!",
     "statistics": "Statistika",
     "balance": "Referral Balans",
     "earnings": "Jami Earnings",
@@ -140,7 +142,15 @@
     "somBalance": "So'm balansi",
     "somBonusHint": "Har bir referalga +500 so'm bonus",
     "withdrawSom": "Yechib olish",
-    "somInsufficient": "Kamida 11,000 so'm kerak"
+    "somInsufficient": "Kamida 11,000 so'm kerak",
+    "withdrawBalance": "Balansni yechish",
+    "withdrawTitle": "Gift tanlang",
+    "yourBalance": "Sizning balans",
+    "withdrawSuccess": "Gift yuborilmoqda!",
+    "withdrawGift": "Yechib olish",
+    "selectGift": "Gift tanlang",
+    "withdrawHint": "Gift sizning Telegram akkauntingizga yuboriladi",
+    "sendTo": "Yuboriladi"
   },
   "profile": {
     "title": "Sozlamalar",
@@ -244,5 +254,12 @@
     "period_daily": "Bugun",
     "period_weekly": "Hafta",
     "period_monthly": "Oy"
+  },
+  "notifications": {
+    "title": "Bildirishnomalar",
+    "subtitle": "Barcha bildirishnomalar",
+    "noNotifications": "Bildirishnomalar yo'q",
+    "emptyHint": "Yangi bildirishnomalar shu yerda ko'rinadi",
+    "markAllRead": "Barchasini o'qildi deb belgilash"
   }
 }

@@ -1,0 +1,260 @@
+/* ===============================
+   NOTIFICATIONS PAGE - Dashboard Style
+=============================== */
+.notifications-page {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 14px;
+  padding-bottom: 40px;
+  transition: all 0.3s ease;
+}
+
+/* ===============================
+   HEADER
+=============================== */
+.notifications-header {
+  text-align: center;
+  padding: 20px 14px;
+  margin-bottom: 20px;
+}
+
+.notifications-sticker-container {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 16px;
+}
+
+.notifications-sticker {
+  width: 100%;
+  height: 100%;
+}
+
+.notifications-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.notifications-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===============================
+   LOADING
+=============================== */
+.notifications-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.notifications-loading .loading-sticker {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 16px;
+}
+
+.notifications-loading p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===============================
+   EMPTY STATE
+=============================== */
+.notifications-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.notifications-empty .empty-icon {
+  font-size: 60px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.notifications-empty h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.notifications-empty p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===============================
+   NOTIFICATIONS LIST
+=============================== */
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.notification-item:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.notification-item.unread {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.notification-item.read {
+  opacity: 0.75;
+}
+
+/* Type colors */
+.notification-item.type-success {
+  border-left: 3px solid #10b981;
+}
+
+.notification-item.type-warning {
+  border-left: 3px solid #f59e0b;
+}
+
+.notification-item.type-promo {
+  border-left: 3px solid #8b5cf6;
+}
+
+.notification-item.type-info {
+  border-left: 3px solid #3b82f6;
+}
+
+/* Icon */
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+/* Content */
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.notification-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.notification-global-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.notification-message {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0 0 6px 0;
+  word-wrap: break-word;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Unread dot */
+.notification-unread-dot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: dotPulse 2s infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+/* ===============================
+   RESPONSIVE
+=============================== */
+@media (max-width: 380px) {
+  .notifications-header h1 {
+    font-size: 20px;
+  }
+
+  .notification-item {
+    padding: 12px 14px;
+  }
+
+  .notification-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .notification-title {
+    font-size: 14px;
+  }
+
+  .notification-message {
+    font-size: 12px;
+  }
+}

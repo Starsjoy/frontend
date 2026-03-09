@@ -111,6 +111,8 @@
     "step3Desc": "Ваш реферал покупает Премиум подписку",
     "personalLink": "Личная реферальная ссылка",
     "shareWithFriends": "Поделитесь с друзьями",
+    "shareMessage": "Покупайте Telegram Stars и Premium через StarsJoy!",
+    "shareBonus": "Зарегистрируйтесь и получите бонус!",
     "statistics": "Статистика",
     "balance": "Баланс рефеала",
     "earnings": "Общие заработки",
@@ -139,7 +141,15 @@
     "somBalance": "Баланс в сумах",
     "somBonusHint": "+500 сум бонус за каждого реферала",
     "withdrawSom": "Вывести",
-    "somInsufficient": "Минимум 11 000 сум"
+    "somInsufficient": "Минимум 11 000 сум",
+    "withdrawBalance": "Вывести баланс",
+    "withdrawTitle": "Выберите подарок",
+    "yourBalance": "Ваш баланс",
+    "withdrawSuccess": "Подарок отправляется!",
+    "withdrawGift": "Вывести",
+    "selectGift": "Выберите подарок",
+    "withdrawHint": "Подарок будет отправлен на ваш Telegram аккаунт",
+    "sendTo": "Получатель"
   },
   "profile": {
     "title": "Настройки",
@@ -243,5 +253,12 @@
     "period_daily": "Сегодня",
     "period_weekly": "Неделя",
     "period_monthly": "Месяц"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "subtitle": "Все уведомления",
+    "noNotifications": "Уведомлений нет",
+    "emptyHint": "Новые уведомления появятся здесь",
+    "markAllRead": "Отметить все прочитанными"
   }
 }

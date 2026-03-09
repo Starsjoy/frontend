@@ -111,6 +111,8 @@
     "step3Desc": "Your referral buys Premium subscription",
     "personalLink": "Personal Referral Link",
     "shareWithFriends": "Share with Friends",
+    "shareMessage": "Buy Telegram Stars and Premium via StarsJoy!",
+    "shareBonus": "Sign up and get a bonus!",
     "statistics": "Statistics",
     "balance": "Referral Balance",
     "earnings": "Total Earnings",
@@ -139,7 +141,15 @@
     "somBalance": "UZS Balance",
     "somBonusHint": "+500 UZS bonus for each referral",
     "withdrawSom": "Withdraw",
-    "somInsufficient": "Minimum 11,000 UZS required"
+    "somInsufficient": "Minimum 11,000 UZS required",
+    "withdrawBalance": "Withdraw Balance",
+    "withdrawTitle": "Select a Gift",
+    "yourBalance": "Your balance",
+    "withdrawSuccess": "Gift is being sent!",
+    "withdrawGift": "Withdraw",
+    "selectGift": "Select a gift",
+    "withdrawHint": "Gift will be sent to your Telegram account",
+    "sendTo": "Send to"
   },
   "profile": {
     "title": "Settings",
@@ -243,5 +253,12 @@
     "period_daily": "Today",
     "period_weekly": "Week",
     "period_monthly": "Month"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "All notifications",
+    "noNotifications": "No notifications",
+    "emptyHint": "New notifications will appear here",
+    "markAllRead": "Mark all as read"
   }
 }

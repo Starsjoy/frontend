@@ -59,6 +59,7 @@ export default function Home() {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [countdown, setCountdown] = useState(300); // 5 daqiqa
   const [showMorePlans, setShowMorePlans] = useState(false);
+  const [discountPackages, setDiscountPackages] = useState([]); // Chegirmali paketlar
 
   // Refs for polling (modal yopilsa ham davom etadi)
   const pollingRef = useRef(null);
@@ -99,6 +100,14 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => setBackendStatus(data.message))
       .catch(() => setBackendStatus("Backend offline ❌"));
+  }, []);
+
+  // Chegirmali paketlarni yuklash
+  useEffect(() => {
+    apiFetch("/api/discount-packages")
+      .then((res) => res.json())
+      .then((data) => setDiscountPackages(data || []))
+      .catch((err) => console.error("Discount packages error:", err));
   }, []);
 
   // Stars price
@@ -446,32 +455,70 @@ export default function Home() {
       <div className="preset-options-section">
         <h3 style={{color: '#fff', margin: '24px 0 12px 0', fontSize: '16px', fontWeight: '600'}}>Yoki to'plamni tanlang:</h3>
         <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px'}}>
-          {(showMorePlans ? STARS_OPTIONS : STARS_OPTIONS.slice(0, 3)).map((starAmount, idx) => (
-            <label key={idx} style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '10px 14px',
-              background: stars === String(starAmount) ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-              border: stars === String(starAmount) ? '2px solid #667eea' : '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '10px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}>
-              <input
-                type="radio"
-                name="stars-plan"
-                value={starAmount}
-                checked={stars === String(starAmount)}
-                onChange={(e) => setStars(e.target.value)}
-                style={{position: 'absolute', opacity: 0, width: 0, height: 0}}
-              />
-              <span style={{color: '#fff', fontSize: '14px', fontWeight: '500', flex: 1, display: 'flex', alignItems: 'center'}}>
-                <StarIcon />
-                {starAmount >= 1000 ? (starAmount / 1000) + 'K' : starAmount} Stars
-              </span>
-              <span style={{color: '#4ee0ff', fontSize: '13px', fontWeight: '600'}}>{formatAmount(starAmount * NARX)} UZS</span>
-            </label>
-          ))}
+          {(showMorePlans ? STARS_OPTIONS : STARS_OPTIONS.slice(0, 3)).map((starAmount, idx) => {
+            // Chegirmali paketni topish
+            const discountPkg = discountPackages.find(pkg => pkg.stars === starAmount);
+            const hasDiscount = !!discountPkg;
+            
+            return (
+              <div
+                key={idx}
+                onClick={() => {
+                  if (hasDiscount) {
+                    navigate('/discount');
+                  } else {
+                    setStars(String(starAmount));
+                  }
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '10px 14px',
+                  background: stars === String(starAmount) ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                  border: stars === String(starAmount) ? '2px solid #667eea' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  position: 'relative'
+                }}
+              >
+                {/* Chegirma badge */}
+                {hasDiscount && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    right: '10px',
+                    background: 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
+                    color: '#fff',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    padding: '3px 8px',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(238, 90, 36, 0.4)',
+                    animation: 'pulse 2s infinite'
+                  }}>
+                    -{discountPkg.discount_percent}% 🔥
+                  </span>
+                )}
+                <span style={{color: '#fff', fontSize: '14px', fontWeight: '500', flex: 1, display: 'flex', alignItems: 'center'}}>
+                  <StarIcon />
+                  {starAmount >= 1000 ? (starAmount / 1000) + 'K' : starAmount} Stars
+                </span>
+                <span style={{color: hasDiscount ? '#ff6b6b' : '#4ee0ff', fontSize: '13px', fontWeight: '600'}}>
+                  {hasDiscount ? (
+                    <>
+                      <span style={{textDecoration: 'line-through', opacity: 0.6, marginRight: '6px'}}>
+                        {formatAmount(starAmount * NARX)}
+                      </span>
+                      {formatAmount(discountPkg.discounted_price)} UZS
+                    </>
+                  ) : (
+                    <>{formatAmount(starAmount * NARX)} UZS</>
+                  )}
+                </span>
+              </div>
+            );
+          })}
         </div>
         
         {/* MORE OPTIONS DROPDOWN */}
