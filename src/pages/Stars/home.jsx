@@ -55,6 +55,7 @@ export default function Home() {
   const [copiedCard, setCopiedCard] = useState(false);
   const [copiedAmount, setCopiedAmount] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
   const [timer, setTimer] = useState(20);
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
@@ -360,10 +361,25 @@ export default function Home() {
         }),
       });
 
+      // Error tekshirish
+      if (!res.ok) {
+        const errorData = await res.json();
+        
+        // SLOTS_FULL xatosi
+        if (errorData.code === "SLOTS_FULL") {
+          alert("⏳ Hozirda juda ko'p buyurtmalar mavjud.\n\nIltimos, 1-2 daqiqadan keyin qayta urinib ko'ring.");
+          return;
+        }
+        
+        throw new Error(errorData.error || "Server xatosi");
+      }
+
       const newOrder = await res.json();
       setOrder(newOrder);
       setStatus("payment_info");
-      setShowModal(true);
+      
+      // Birinchi ogohlantirish modalini ko'rsatamiz
+      setShowWarningModal(true);
 
       // LocalStorage ga saqlash (modal yopilsa ham polling davom etadi)
       saveOrderToStorage(newOrder);
@@ -373,8 +389,14 @@ export default function Home() {
       startCountdownTimer(300); // 5 daqiqa
     } catch (err) {
       console.error("❌ Order yaratishda xato:", err);
-      alert("Order yaratishda xato");
+      alert(err.message || "Order yaratishda xato");
     }
+  };
+
+  // "Tushundim" tugmasi bosilganda - ogohlantirish modalini yopib, to'lov modalini ochamiz
+  const handleWarningUnderstood = () => {
+    setShowWarningModal(false);
+    setShowModal(true);
   };
 
   const formatTime = (sec) => {
@@ -546,6 +568,37 @@ export default function Home() {
         </button>
       </div>
 
+      {/* ---------------- WARNING MODAL ---------------- */}
+      {showWarningModal && (
+        <div className="modal-overlay">
+          <div className="modal-content warning-modal">
+            <div className="warning-modal-header">
+              <span className="warning-modal-icon">⚠️</span>
+              <h3 className="warning-modal-title">Diqqat</h3>
+            </div>
+            
+            <div className="warning-modal-body">
+              <p className="warning-message">
+                Kartaga bot ko'rsatgan summani aynan o'sha miqdorda yuboring.
+              </p>
+              
+              <p className="warning-message-sub">
+                Summadagi 1 so'mlik farq ham to'lovni aniqlashga xalaqit beradi.
+              </p>
+              
+              <div className="warning-amount-highlight">
+                <span className="warning-label">To'lov summasi</span>
+                <span className="warning-amount">{formatAmount(order?.amount)}</span>
+              </div>
+            </div>
+            
+            <button className="warning-understand-btn" onClick={handleWarningUnderstood}>
+              ✅ Tushundim
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ---------------- MODAL ---------------- */}
       {showModal && (
         <div className="modal-overlay">
@@ -556,7 +609,7 @@ export default function Home() {
               <div className="payment-info-section">
                 {/* Modal Header */}
                 <div className="modal-header-bar">
-                  <span className="modal-header-title">💳 To'lov ma'lumotlari</span>
+                  <span className="modal-header-title">To'lov ma'lumotlari</span>
                   <button className="modal-close-x" onClick={() => setShowModal(false)}>✕</button>
                 </div>
 
@@ -686,35 +739,6 @@ export default function Home() {
                   <div className="sending-center-icon">💫</div>
                 </div>
                 <h3 className="sending-title">To'lov qabul qilindi!</h3>
-                <p className="sending-subtitle">Stars yuborilmoqda...</p>
-
-                {profile && (
-                  <div className="sending-recipient">
-                    <img src={profile.imageUrl || "../src/assets/default_image.png"} className="sending-avatar" />
-                    <div className="sending-info">
-                      <span className="sending-name">{profile.fullName}</span>
-                      <span className="sending-user">@{profile.username}</span>
-                    </div>
-                    <div className="sending-stars-count">⭐ {order?.stars}</div>
-                  </div>
-                )}
-
-                <div className="sending-progress-bar">
-                  <div className="sending-progress-fill"></div>
-                </div>
-                <p className="sending-hint">Biroz kuting, jarayon avtomatik...</p>
-              </div>
-            )}
-
-            {/* COMPLETED */}
-            {status === "completed" && (
-              <div className="modal-sending-section">
-                <div className="sending-anim-wrap">
-                  <div className="sending-pulse-ring"></div>
-                  <div className="sending-pulse-ring delay"></div>
-                  <div className="sending-center-icon">🚀</div>
-                </div>
-                <h3 className="sending-title">To'lov tasdiqlandi!</h3>
                 <p className="sending-subtitle">Stars yuborilmoqda...</p>
 
                 {profile && (
