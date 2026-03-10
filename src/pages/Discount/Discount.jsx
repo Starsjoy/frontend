@@ -38,11 +38,15 @@ export default function Discount() {
       try {
         const res = await apiFetch("/api/discount-packages");
         const data = await res.json();
-        // Map to expected format
+        // Map to expected format with slot pricing
         const packages = data.map(pkg => ({
+          id: pkg.id,
           stars: pkg.stars,
-          discountedPrice: pkg.discounted_price,
-          discount: pkg.discount_percent
+          basePrice: pkg.base_price || pkg.discounted_price,
+          discountedPrice: pkg.current_price, // Slot-based narx
+          discount: pkg.discount_percent,
+          slotAvailable: pkg.slot_available !== false,
+          availableSlots: pkg.available_slots || 20
         }));
         setDiscountPackages(packages);
       } catch (err) {
@@ -302,9 +306,22 @@ export default function Discount() {
           username: profile.username,
           recipient: profile.recipient,
           stars: selectedOption.stars,
-          amount: selectedOption.discountedPrice,
+          discount_package_id: selectedOption.id, // Slot tizimi uchun
         }),
       });
+
+      // Error tekshirish
+      if (!res.ok) {
+        const errorData = await res.json();
+        
+        // SLOTS_FULL xatosi
+        if (errorData.code === "SLOTS_FULL") {
+          alert("⏳ Bu chegirma paketi uchun juda ko'p buyurtmalar mavjud.\n\nIltimos, 1-2 daqiqadan keyin qayta urinib ko'ring.");
+          return;
+        }
+        
+        throw new Error(errorData.error || "Server xatosi");
+      }
 
       const newOrder = await res.json();
       setOrder(newOrder);
@@ -410,8 +427,9 @@ export default function Discount() {
             {discountPackages.map((option, idx) => (
               <div
                 key={idx}
-                className={`package-card ${selectedOption?.stars === option.stars ? "selected" : ""}`}
-                onClick={() => handleOptionSelect(option)}
+                className={`package-card ${selectedOption?.stars === option.stars ? "selected" : ""} ${!option.slotAvailable ? "disabled" : ""}`}
+                onClick={() => option.slotAvailable && handleOptionSelect(option)}
+                style={{ opacity: option.slotAvailable ? 1 : 0.5, cursor: option.slotAvailable ? 'pointer' : 'not-allowed' }}
               >
                 <div className="package-discount-badge">-{option.discount}%</div>
                 <div className="package-stars">
@@ -422,9 +440,12 @@ export default function Discount() {
                   {formatAmount(option.discountedPrice)} so'm
                 </div>
                 <div className="package-original-price">
-                  {formatAmount(Math.round(option.discountedPrice / (1 - option.discount / 100)))} so'm
+                  {formatAmount(option.basePrice)} so'm
                 </div>
-                {selectedOption?.stars === option.stars && (
+                {!option.slotAvailable && (
+                  <div className="package-unavailable">Band</div>
+                )}
+                {selectedOption?.stars === option.stars && option.slotAvailable && (
                   <div className="package-check">✓</div>
                 )}
               </div>

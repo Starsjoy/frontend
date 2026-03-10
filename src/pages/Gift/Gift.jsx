@@ -34,8 +34,8 @@ const getGiftStickerPath = (giftId) => {
   return new URL(`../../assets/${giftId}.tgs`, import.meta.url).href;
 };
 
-// Narxlar (so'mda)
-const PRICE_MAP = { 15: 3500, 25: 5500, 50: 11000, 100: 22000 };
+// Narxlar (so'mda) - Backend bilan sinxronlashtirilgan
+const PRICE_MAP = { 15: 4000, 25: 6000, 50: 12000, 100: 24000 };
 const MAX_COMMENT_LENGTH = 128;
 
 const formatAmount = (num) => Number(num || 0).toLocaleString("ru-RU");
