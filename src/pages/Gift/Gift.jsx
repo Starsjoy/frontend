@@ -249,8 +249,6 @@ export default function Gift() {
       if (!res.ok) {
         if (newOrder.code === "SLOTS_FULL") {
           alert(t("gift.slotsFull") || "Hozirda barcha slotlar band. Iltimos, bir necha soniyadan so'ng qayta urinib ko'ring!");
-        } else if (newOrder.code === "MAX_PENDING_ORDERS") {
-          alert(`⚠️ Sizda ${newOrder.pendingCount} ta faol buyurtma mavjud.\n\nAvval ularni yakunlang yoki 5 daqiqa kutib turing.`);
         } else {
           alert(newOrder.error || t("gift.error"));
         }

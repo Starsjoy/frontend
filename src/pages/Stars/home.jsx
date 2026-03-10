@@ -371,12 +371,6 @@ export default function Home() {
           return;
         }
         
-        // MAX_PENDING_ORDERS xatosi
-        if (errorData.code === "MAX_PENDING_ORDERS") {
-          alert(`⚠️ Sizda ${errorData.pendingCount} ta faol buyurtma mavjud.\n\nAvval ularni yakunlang yoki 5 daqiqa kutib turing.`);
-          return;
-        }
-        
         throw new Error(errorData.error || "Server xatosi");
       }
 

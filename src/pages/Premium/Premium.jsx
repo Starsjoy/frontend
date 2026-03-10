@@ -149,11 +149,6 @@ export default function Premium() {
           alert("⏳ Hozirda juda ko'p buyurtmalar mavjud.\n\nIltimos, 1-2 daqiqadan keyin qayta urinib ko'ring.");
           return;
         }
-        // MAX_PENDING_ORDERS xatosi
-        if (data.code === "MAX_PENDING_ORDERS") {
-          alert(`⚠️ Sizda ${data.pendingCount} ta faol buyurtma mavjud.\n\nAvval ularni yakunlang yoki 5 daqiqa kutib turing.`);
-          return;
-        }
         alert(data.error || "Order yaratishda xato");
         return;
       }
