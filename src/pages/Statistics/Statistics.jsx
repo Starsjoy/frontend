@@ -183,9 +183,9 @@ export default function Statistics() {
                     className={`statistics-row ${i < 3 ? `top-${i + 1}` : ""}`}
                   >
                     <span className="statistics-rank">{getMedal(i)}</span>
-                    <span className="statistics-user">{u.nickname}</span>
+                    <span className="statistics-user">{u.name || u.username}</span>
                     <span className="statistics-value">
-                      {formatAmount(u.total)} so'm
+                      {formatAmount(u.total || u.total_spent)} so'm
                     </span>
                   </div>
                 ))}
@@ -200,12 +200,12 @@ export default function Statistics() {
                 </div>
                 {myRank ? (
                   <div className="statistics-row me">
-                    <span className="statistics-rank">#{myRank.rank}</span>
+                    <span className="statistics-rank">#{myRank.rank || myRank}</span>
                     <span className="statistics-user">
-                      {myRank.nickname}
+                      {myRank.nickname || myRank.name}
                     </span>
                     <span className="statistics-value">
-                      {formatAmount(myRank.total)} so'm
+                      {formatAmount(myRank.total || myRank.my_total)} so'm
                     </span>
                   </div>
                 ) : (
