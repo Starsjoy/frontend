@@ -1554,4 +1554,123 @@ html, body {
   background: rgba(239, 68, 68, 0.3);
 }
 
+/* ==================== PROFIT SUMMARY GRID ==================== */
+.profit-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.profit-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.profit-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.profit-card.today {
+  border-left: 3px solid #10b981;
+}
+
+.profit-card.week {
+  border-left: 3px solid #3b82f6;
+}
+
+.profit-card.month {
+  border-left: 3px solid #8b5cf6;
+}
+
+.profit-card.all {
+  border-left: 3px solid #f59e0b;
+  grid-column: span 2;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(252, 211, 77, 0.05));
+}
+
+.profit-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profit-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.profit-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.profit-value.green {
+  color: #10b981;
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.profit-value.gold {
+  color: #fcd34d;
+  text-shadow: 0 0 20px rgba(252, 211, 77, 0.3);
+}
+
+.profit-unit {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.profit-sub {
+  display: flex;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Config List */
+.config-list {
+  border-left: 3px solid #6366f1;
+  margin-top: 16px;
+}
+
+.config-list .info-value.muted {
+  font-size: 0.75rem;
+}
+
+/* Sub info style */
+.sub-info {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 4px;
+}
+
+/* Muted style */
+.info-value .muted,
+.info-value.muted {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Green profit text */
+.info-value .green,
+b.green {
+  color: #10b981;
+}
+
+/* Additional profit styles */
+.sales-list .total-row {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.1));
+}
+
+.daily-list .info-row.has-data:hover {
+  background: rgba(252, 211, 77, 0.05);
+}
 

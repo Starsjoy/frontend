@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Home from "./pages/Stars/home";
+import Home from "./pages/Stars/Stars";
 import AdminPanel from "./pages/Admin/AdminPanel";
 import Premium from "./pages/Premium/Premium";
 import PremiumSuccess from "./pages/Premium/log/PremiumSuccess";

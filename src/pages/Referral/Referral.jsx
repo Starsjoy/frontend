@@ -6,7 +6,6 @@ import WebApp from "@twa-dev/sdk";
 import { useTranslation } from "../../context/LanguageContext";
 import { TGSSticker } from "../../components/TGSSticker";
 import referralSticker from "../../assets/AnimatedSticker_referal.tgs";
-import loadingSticker from "../../assets/Animated_loading.tgs";
 import apiFetch from "../../utils/apiFetch";
 
 // Gift IDlar - referral yechish uchun
@@ -43,7 +42,6 @@ export default function Referral() {
   const [referralCode, setReferralCode] = useState("");
   const [referralLink, setReferralLink] = useState("");
   const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(false);
   // Stats
   const [stats, setStats] = useState({
     referral_balance: 0,
@@ -65,6 +63,9 @@ export default function Referral() {
   const [myFriends, setMyFriends] = useState([]);
   const [friendsCount, setFriendsCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
+
+  // Withdrawal history state
+  const [withdrawals, setWithdrawals] = useState([]);
 
   // Telegram Mini App Back Button
   useEffect(() => {
@@ -140,8 +141,6 @@ export default function Referral() {
   // Load referral link
   const loadReferralData = async (user) => {
     try {
-      setLoading(true);
-
       // Parallel API calls
       const [linkRes, statsRes, earningsRes, friendsCountRes, myFriendsRes] = await Promise.all([
         apiFetch(`/api/referral/link/${user}`),
@@ -189,8 +188,6 @@ export default function Referral() {
       }
     } catch (err) {
       console.error("Load data error:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -280,20 +277,8 @@ export default function Referral() {
         <p className="header-subtitle">{t("referral.headerDesc") || "Do'stlaringizni taklif qiling va sovg'alar oling"}</p>
       </div>
 
-      {/* Loading Overlay */}
-      {loading && (
-        <div className="referral-loading-overlay">
-          <div className="referral-loading-sticker">
-            <TGSSticker stickerPath={loadingSticker} />
-          </div>
-          <p className="referral-loading-text">{t("common.loading") || "Yuklanmoqda..."}</p>
-        </div>
-      )}
-
-      {!loading && (
-        <>
-          {/* Balance and Friends Stats */}
-          <div className="ref-stats-group">
+      {/* Balance and Friends Stats */}
+      <div className="ref-stats-group">
             <div className="ref-stats-item">
               <div className="ref-stats-left">
                 <div className="ref-stats-icon">💲</div>
@@ -453,8 +438,40 @@ export default function Referral() {
             )}
           </div>
 
-        </>
-      )}
+          {/* Withdrawal History */}
+          {withdrawals.length > 0 && (
+            <div className="withdrawals-section">
+              <h2>{t("referral.withdrawalsHistory") || "Yechib olinganlar"}</h2>
+              <div className="withdrawals-list">
+                {withdrawals.map((item, idx) => (
+                  <div key={idx} className="withdrawal-item">
+                    <div className="withdrawal-left">
+                      <TGSSticker
+                        stickerPath={getGiftStickerPath(item.gift_id)}
+                        className="withdrawal-gift-icon"
+                        autoplay={false}
+                      />
+                      <div className="withdrawal-info">
+                        <p className="withdrawal-stars">-{item.stars} ⭐</p>
+                        <p className="withdrawal-date">
+                          {new Date(item.created_at).toLocaleDateString("uz-UZ", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric"
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="withdrawal-right">
+                      <span className={`withdrawal-status ${item.status}`}>
+                        {item.status === 'completed' ? '✅' : item.status === 'pending' ? '⏳' : '❌'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
       {/* Withdrawal Modal */}
       {showWithdrawModal && (

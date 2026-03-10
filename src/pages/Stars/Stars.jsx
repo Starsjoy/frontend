@@ -4,7 +4,7 @@ import starsSticker from "../../assets/AnimatedSticker_stars.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
-import "./home.css";
+import "./Stars.css";
 
 // Star Icon Component
 const StarIcon = () => (

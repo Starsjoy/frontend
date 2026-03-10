@@ -80,9 +80,9 @@ export default function Discount() {
   const formatAmount = (num) =>
     num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
-  // Timer for stars_sent
+  // Timer for completed
   useEffect(() => {
-    if (status === "stars_sent") {
+    if (status === "completed" || status === "stars_sent") {
       const countdownInterval = setInterval(() => {
         setTimer((prev) => {
           if (prev <= 1) {
@@ -216,7 +216,7 @@ export default function Discount() {
           }
         }
 
-        if (data.status === "stars_sent") {
+        if (data.status === "completed" || data.status === "stars_sent") {
           stopPolling();
           stopCountdown();
           localStorage.removeItem("pendingDiscountOrder");
@@ -652,8 +652,8 @@ export default function Discount() {
               </div>
             )}
 
-            {/* STARS SENT */}
-            {status === "stars_sent" && (
+            {/* COMPLETED */}
+            {(status === "completed" || status === "stars_sent") && (
               <div className="modal-success-section">
                 <div className="success-confetti">
                   <span></span><span></span><span></span><span></span><span></span><span></span>

@@ -4,6 +4,27 @@ import { TGSSticker } from "../../components/TGSSticker";
 import adminSticker from "../../assets/AnimatedSticker_admin.tgs";
 import apiFetch from "../../utils/apiFetch";
 
+// ========== FOYDA HISOBLASH KONSTANTALARI ==========
+const PROFIT_CONFIG = {
+  // Stars: 50 stars = 9500 (tannarx) → 12000 (sotish) = 2500 foyda
+  // 1 star = 50 UZS foyda
+  STARS_PROFIT_PER_UNIT: 50,
+  
+  // Premium: Tannarx → Sotish narxi → Foyda
+  PREMIUM_COST: { 3: 152000, 6: 203000, 12: 367000 },
+  PREMIUM_SELL: { 3: 172000, 6: 232000, 12: 422000 },
+  PREMIUM_PROFIT: { 3: 20000, 6: 29000, 12: 55000 },
+  
+  // Gift: Stars foydasiga teng (stars × 50 UZS)
+  // 15 stars = 750, 25 stars = 1250, 50 stars = 2500, 100 stars = 5000
+  GIFT_PROFIT_PER_STAR: 50
+};
+
+// Foyda hisoblash funksiyalari
+const calculateStarsProfit = (stars) => stars * PROFIT_CONFIG.STARS_PROFIT_PER_UNIT;
+const calculatePremiumProfit = (months) => PROFIT_CONFIG.PREMIUM_PROFIT[months] || 0;
+const calculateGiftProfit = (stars) => stars * PROFIT_CONFIG.GIFT_PROFIT_PER_STAR;
+
 export default function AdminPanel() {
   // ========== TELEGRAM AUTH PROTECTION ==========
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -43,7 +64,6 @@ export default function AdminPanel() {
     completed: 0,
     expired: 0,
     pending: 0,
-    stars_sent: 0,
     failed: 0,
     error: 0,
   });
@@ -99,7 +119,7 @@ export default function AdminPanel() {
   const [premiumStats, setPremiumStats] = useState({
     total: 0,
     pending: 0,
-    premium_sent: 0,
+    completed: 0,
     expired: 0,
     failed: 0
   });
@@ -113,7 +133,6 @@ export default function AdminPanel() {
     total: 0,
     pending: 0,
     completed: 0,
-    gift_sent: 0,
     expired: 0,
     failed: 0
   });
@@ -122,12 +141,18 @@ export default function AdminPanel() {
   // Analytics state
   const [analyticsPeriod, setAnalyticsPeriod] = useState("all"); // day, week, month, all
   const [analyticsData, setAnalyticsData] = useState({
-    stars: { count: 0, totalStars: 0, totalAmount: 0 },
-    premium: { count: 0, totalAmount: 0 },
-    gift: { count: 0, totalStars: 0, totalAmount: 0 },
-    total: { count: 0, totalAmount: 0 }
+    stars: { count: 0, totalStars: 0, totalAmount: 0, profit: 0 },
+    premium: { count: 0, totalAmount: 0, profit: 0, byMonths: { 3: 0, 6: 0, 12: 0 } },
+    gift: { count: 0, totalStars: 0, totalAmount: 0, profit: 0 },
+    total: { count: 0, totalAmount: 0, totalProfit: 0 }
   });
-  const [dailyStats, setDailyStats] = useState([]); // [{date, stars, amount, count}]
+  const [dailyStats, setDailyStats] = useState([]); // [{date, stars, amount, count, profit}]
+  const [periodStats, setPeriodStats] = useState({
+    today: { revenue: 0, profit: 0, count: 0 },
+    week: { revenue: 0, profit: 0, count: 0 },
+    month: { revenue: 0, profit: 0, count: 0 },
+    all: { revenue: 0, profit: 0, count: 0 }
+  });
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   // Wallet & Prices state
@@ -262,33 +287,56 @@ export default function AdminPanel() {
       const premiumData = premiumJson.orders || [];
       const giftData = giftJson.orders || [];
 
-      // Filter by date and sent status only
+      // Filter by date and completed status only
       const filterByDate = (items, dateField = "created_at") => {
         if (!startDate) return items;
         return items.filter(item => new Date(item[dateField]) >= startDate);
       };
 
-      const filteredStars = filterByDate(starsData).filter(tx => tx.status === "stars_sent");
-      const filteredPremium = filterByDate(premiumData).filter(tx => tx.status === "premium_sent");
-      const filteredGift = filterByDate(giftData).filter(tx => tx.status === "gift_sent");
+      const completedStarsAll = starsData.filter(tx => tx.status === "completed");
+      const completedPremiumAll = premiumData.filter(tx => tx.status === "completed");
+      const completedGiftAll = giftData.filter(tx => tx.status === "completed");
 
-      // Calculate analytics
+      const filteredStars = filterByDate(completedStarsAll);
+      const filteredPremium = filterByDate(completedPremiumAll);
+      const filteredGift = filterByDate(completedGiftAll);
+
+      // ========== STARS ANALYTICS ==========
       const starsStats = {
         count: filteredStars.length,
         totalStars: filteredStars.reduce((sum, tx) => sum + (tx.stars || 0), 0),
-        totalAmount: filteredStars.reduce((sum, tx) => sum + (tx.amount || 0), 0)
+        totalAmount: filteredStars.reduce((sum, tx) => sum + (tx.amount || 0), 0),
+        profit: filteredStars.reduce((sum, tx) => sum + calculateStarsProfit(tx.stars || 0), 0)
       };
+
+      // ========== PREMIUM ANALYTICS ==========
+      const premiumByMonths = { 3: 0, 6: 0, 12: 0 };
+      let premiumProfit = 0;
+      filteredPremium.forEach(tx => {
+        const months = tx.months || tx.type_amount || 3;
+        if (premiumByMonths[months] !== undefined) {
+          premiumByMonths[months]++;
+        }
+        premiumProfit += calculatePremiumProfit(months);
+      });
 
       const premiumStats = {
         count: filteredPremium.length,
-        totalAmount: filteredPremium.reduce((sum, tx) => sum + (tx.amount || 0), 0)
+        totalAmount: filteredPremium.reduce((sum, tx) => sum + (tx.amount || 0), 0),
+        profit: premiumProfit,
+        byMonths: premiumByMonths
       };
 
+      // ========== GIFT ANALYTICS ==========
       const giftStats = {
         count: filteredGift.length,
         totalStars: filteredGift.reduce((sum, tx) => sum + (tx.stars || 0), 0),
-        totalAmount: filteredGift.reduce((sum, tx) => sum + (tx.amount || 0), 0)
+        totalAmount: filteredGift.reduce((sum, tx) => sum + (tx.amount || 0), 0),
+        profit: filteredGift.reduce((sum, tx) => sum + calculateGiftProfit(tx.stars || 0), 0)
       };
+
+      // ========== TOTAL ==========
+      const totalProfit = starsStats.profit + premiumStats.profit + giftStats.profit;
 
       setAnalyticsData({
         stars: starsStats,
@@ -296,15 +344,68 @@ export default function AdminPanel() {
         gift: giftStats,
         total: {
           count: starsStats.count + premiumStats.count + giftStats.count,
-          totalAmount: starsStats.totalAmount + premiumStats.totalAmount + giftStats.totalAmount
+          totalAmount: starsStats.totalAmount + premiumStats.totalAmount + giftStats.totalAmount,
+          totalProfit: totalProfit
         }
       });
 
-      // Calculate daily breakdown from all sent transactions (last 7 days)
-      const completedStars = starsData.filter(tx => tx.status === "stars_sent");
-      const completedPremium = premiumData.filter(tx => tx.status === "premium_sent");
-      const completedGift = giftData.filter(tx => tx.status === "gift_sent");
-      
+      // ========== PERIOD STATS (Today, Week, Month, All) ==========
+      const calculatePeriodProfit = (stars, premium, gifts) => {
+        let profit = 0;
+        profit += stars.reduce((sum, tx) => sum + calculateStarsProfit(tx.stars || 0), 0);
+        profit += premium.reduce((sum, tx) => sum + calculatePremiumProfit(tx.months || tx.type_amount || 3), 0);
+        profit += gifts.reduce((sum, tx) => sum + calculateGiftProfit(tx.stars || 0), 0);
+        return profit;
+      };
+
+      const calculatePeriodRevenue = (stars, premium, gifts) => {
+        return stars.reduce((s, tx) => s + (tx.amount || 0), 0) +
+               premium.reduce((s, tx) => s + (tx.amount || 0), 0) +
+               gifts.reduce((s, tx) => s + (tx.amount || 0), 0);
+      };
+
+      // Today
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayStars = completedStarsAll.filter(tx => new Date(tx.created_at) >= todayStart);
+      const todayPremium = completedPremiumAll.filter(tx => new Date(tx.created_at) >= todayStart);
+      const todayGift = completedGiftAll.filter(tx => new Date(tx.created_at) >= todayStart);
+
+      // Week
+      const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const weekStars = completedStarsAll.filter(tx => new Date(tx.created_at) >= weekStart);
+      const weekPremium = completedPremiumAll.filter(tx => new Date(tx.created_at) >= weekStart);
+      const weekGift = completedGiftAll.filter(tx => new Date(tx.created_at) >= weekStart);
+
+      // Month
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthStars = completedStarsAll.filter(tx => new Date(tx.created_at) >= monthStart);
+      const monthPremium = completedPremiumAll.filter(tx => new Date(tx.created_at) >= monthStart);
+      const monthGift = completedGiftAll.filter(tx => new Date(tx.created_at) >= monthStart);
+
+      setPeriodStats({
+        today: {
+          revenue: calculatePeriodRevenue(todayStars, todayPremium, todayGift),
+          profit: calculatePeriodProfit(todayStars, todayPremium, todayGift),
+          count: todayStars.length + todayPremium.length + todayGift.length
+        },
+        week: {
+          revenue: calculatePeriodRevenue(weekStars, weekPremium, weekGift),
+          profit: calculatePeriodProfit(weekStars, weekPremium, weekGift),
+          count: weekStars.length + weekPremium.length + weekGift.length
+        },
+        month: {
+          revenue: calculatePeriodRevenue(monthStars, monthPremium, monthGift),
+          profit: calculatePeriodProfit(monthStars, monthPremium, monthGift),
+          count: monthStars.length + monthPremium.length + monthGift.length
+        },
+        all: {
+          revenue: calculatePeriodRevenue(completedStarsAll, completedPremiumAll, completedGiftAll),
+          profit: calculatePeriodProfit(completedStarsAll, completedPremiumAll, completedGiftAll),
+          count: completedStarsAll.length + completedPremiumAll.length + completedGiftAll.length
+        }
+      });
+
+      // ========== DAILY BREAKDOWN (Last 7 days with profit) ==========
       const dailyMap = {};
       
       // Get last 7 days
@@ -313,24 +414,43 @@ export default function AdminPanel() {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
         const key = d.toISOString().split('T')[0];
-        dailyMap[key] = { date: key, stars: 0, amount: 0, count: 0 };
+        dailyMap[key] = { date: key, stars: 0, amount: 0, count: 0, profit: 0, starsCount: 0, premiumCount: 0, giftCount: 0 };
       }
 
-      // Aggregate all transactions by day
-      const aggregateToDaily = (transactions) => {
-        transactions.forEach(tx => {
-          const txDate = new Date(tx.created_at).toISOString().split('T')[0];
-          if (dailyMap[txDate]) {
-            dailyMap[txDate].stars += tx.stars || 0;
-            dailyMap[txDate].amount += tx.amount || 0;
-            dailyMap[txDate].count += 1;
-          }
-        });
-      };
+      // Aggregate Stars
+      completedStarsAll.forEach(tx => {
+        const txDate = new Date(tx.created_at).toISOString().split('T')[0];
+        if (dailyMap[txDate]) {
+          dailyMap[txDate].stars += tx.stars || 0;
+          dailyMap[txDate].amount += tx.amount || 0;
+          dailyMap[txDate].count += 1;
+          dailyMap[txDate].starsCount += 1;
+          dailyMap[txDate].profit += calculateStarsProfit(tx.stars || 0);
+        }
+      });
 
-      aggregateToDaily(completedStars);
-      aggregateToDaily(completedPremium);
-      aggregateToDaily(completedGift);
+      // Aggregate Premium
+      completedPremiumAll.forEach(tx => {
+        const txDate = new Date(tx.created_at).toISOString().split('T')[0];
+        if (dailyMap[txDate]) {
+          dailyMap[txDate].amount += tx.amount || 0;
+          dailyMap[txDate].count += 1;
+          dailyMap[txDate].premiumCount += 1;
+          dailyMap[txDate].profit += calculatePremiumProfit(tx.months || tx.type_amount || 3);
+        }
+      });
+
+      // Aggregate Gift
+      completedGiftAll.forEach(tx => {
+        const txDate = new Date(tx.created_at).toISOString().split('T')[0];
+        if (dailyMap[txDate]) {
+          dailyMap[txDate].stars += tx.stars || 0;
+          dailyMap[txDate].amount += tx.amount || 0;
+          dailyMap[txDate].count += 1;
+          dailyMap[txDate].giftCount += 1;
+          dailyMap[txDate].profit += calculateGiftProfit(tx.stars || 0);
+        }
+      });
 
       setDailyStats(Object.values(dailyMap));
     } catch (err) {
@@ -366,7 +486,6 @@ export default function AdminPanel() {
         completed: 0,
         expired: 0,
         pending: 0,
-        stars_sent: 0,
         failed: 0,
         error: 0,
       };
@@ -425,7 +544,7 @@ export default function AdminPanel() {
           const stats = {
             total: orders.length,
             pending: orders.filter(o => o.status === 'pending').length,
-            premium_sent: orders.filter(o => o.status === 'premium_sent').length,
+            completed: orders.filter(o => o.status === 'completed').length,
             expired: orders.filter(o => o.status === 'expired').length,
             failed: orders.filter(o => o.status === 'failed' || o.status === 'error').length
           };
@@ -473,7 +592,6 @@ export default function AdminPanel() {
             total: orders.length,
             pending: orders.filter(o => o.status === 'pending').length,
             completed: orders.filter(o => o.status === 'completed').length,
-            gift_sent: orders.filter(o => o.status === 'gift_sent').length,
             expired: orders.filter(o => o.status === 'expired').length,
             failed: orders.filter(o => o.status === 'failed' || o.status === 'error').length
           };
@@ -1062,11 +1180,13 @@ export default function AdminPanel() {
       pending: "#f39c12",
       completed: "#27ae60",
       expired: "#e74c3c",
-      stars_sent: "#3498db",
-      premium_sent: "#3498db",
-      gift_sent: "#9b59b6",
       failed: "#c0392b",
-      error: "#8e44ad"
+      error: "#8e44ad",
+      // Backward compatibility
+      stars_sent: "#27ae60",
+      premium_sent: "#27ae60",
+      gift_sent: "#27ae60",
+      delivered: "#27ae60"
     };
     return colors[status] || "#95a5a6";
   };
@@ -1076,11 +1196,13 @@ export default function AdminPanel() {
       pending: "⏳",
       completed: "✅",
       expired: "❌",
-      stars_sent: "🌟",
-      premium_sent: "💎",
-      gift_sent: "🎁",
       failed: "⚠️",
-      error: "🔴"
+      error: "🔴",
+      // Backward compatibility
+      stars_sent: "✅",
+      premium_sent: "✅",
+      gift_sent: "✅",
+      delivered: "✅"
     };
     return icons[status] || "❓";
   };
@@ -1364,49 +1486,138 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* Sales Stats List */}
+          {/* ========== PERIOD PROFIT SUMMARY ========== */}
+          {!analyticsLoading && (
+            <div className="profit-summary-grid">
+              <div className="profit-card today">
+                <div className="profit-label">📅 Bugun</div>
+                <div className="profit-main">
+                  <span className="profit-value green">+{periodStats.today.profit.toLocaleString()}</span>
+                  <span className="profit-unit">so'm foyda</span>
+                </div>
+                <div className="profit-sub">
+                  <span>{periodStats.today.count} ta savdo</span>
+                  <span>·</span>
+                  <span>{periodStats.today.revenue.toLocaleString()} tushum</span>
+                </div>
+              </div>
+              <div className="profit-card week">
+                <div className="profit-label">📆 Hafta</div>
+                <div className="profit-main">
+                  <span className="profit-value green">+{periodStats.week.profit.toLocaleString()}</span>
+                  <span className="profit-unit">so'm foyda</span>
+                </div>
+                <div className="profit-sub">
+                  <span>{periodStats.week.count} ta savdo</span>
+                  <span>·</span>
+                  <span>{periodStats.week.revenue.toLocaleString()} tushum</span>
+                </div>
+              </div>
+              <div className="profit-card month">
+                <div className="profit-label">🗓️ Bu oy</div>
+                <div className="profit-main">
+                  <span className="profit-value green">+{periodStats.month.profit.toLocaleString()}</span>
+                  <span className="profit-unit">so'm foyda</span>
+                </div>
+                <div className="profit-sub">
+                  <span>{periodStats.month.count} ta savdo</span>
+                  <span>·</span>
+                  <span>{periodStats.month.revenue.toLocaleString()} tushum</span>
+                </div>
+              </div>
+              <div className="profit-card all">
+                <div className="profit-label">📊 Jami</div>
+                <div className="profit-main">
+                  <span className="profit-value gold">+{periodStats.all.profit.toLocaleString()}</span>
+                  <span className="profit-unit">so'm foyda</span>
+                </div>
+                <div className="profit-sub">
+                  <span>{periodStats.all.count} ta savdo</span>
+                  <span>·</span>
+                  <span>{periodStats.all.revenue.toLocaleString()} tushum</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sales Stats List with Profit */}
           {analyticsLoading ? (
             <div className="analytics-loading-v2">⏳ Yuklanmoqda...</div>
           ) : (
             <div className="info-list sales-list">
               <div className="info-row total-row">
-                <span className="info-label">📈 Jami savdo:</span>
+                <span className="info-label">📈 Jami ({analyticsPeriod === 'day' ? 'Bugun' : analyticsPeriod === 'week' ? 'Hafta' : analyticsPeriod === 'month' ? 'Oy' : 'Barchasi'}):</span>
                 <span className="info-value">
-                  <b>{analyticsData.total.count}</b> ta &nbsp;·&nbsp; <b>{analyticsData.total.totalAmount.toLocaleString()}</b> so'm
+                  <b>{analyticsData.total.count}</b> ta &nbsp;·&nbsp; <b className="green">+{analyticsData.total.totalProfit.toLocaleString()}</b> foyda
                 </span>
               </div>
               <div className="info-row">
                 <span className="info-label">⭐ Stars:</span>
                 <span className="info-value">
-                  {analyticsData.stars.count} ta &nbsp;·&nbsp; {analyticsData.stars.totalStars.toLocaleString()} stars &nbsp;·&nbsp; {analyticsData.stars.totalAmount.toLocaleString()} so'm
+                  {analyticsData.stars.count} ta &nbsp;·&nbsp; {analyticsData.stars.totalStars.toLocaleString()} ⭐ &nbsp;·&nbsp; <span className="green">+{analyticsData.stars.profit.toLocaleString()}</span>
                 </span>
               </div>
               <div className="info-row">
                 <span className="info-label">💎 Premium:</span>
                 <span className="info-value">
-                  {analyticsData.premium.count} ta &nbsp;·&nbsp; {analyticsData.premium.totalAmount.toLocaleString()} so'm
+                  {analyticsData.premium.count} ta &nbsp;·&nbsp; <span className="green">+{analyticsData.premium.profit.toLocaleString()}</span>
+                  {analyticsData.premium.byMonths && (
+                    <span className="sub-info"> ({analyticsData.premium.byMonths[3]}×3oy, {analyticsData.premium.byMonths[6]}×6oy, {analyticsData.premium.byMonths[12]}×12oy)</span>
+                  )}
                 </span>
               </div>
               <div className="info-row">
                 <span className="info-label">🎁 Gift:</span>
                 <span className="info-value">
-                  {analyticsData.gift.count} ta &nbsp;·&nbsp; {analyticsData.gift.totalStars.toLocaleString()} stars &nbsp;·&nbsp; {analyticsData.gift.totalAmount.toLocaleString()} so'm
+                  {analyticsData.gift.count} ta &nbsp;·&nbsp; {analyticsData.gift.totalStars.toLocaleString()} ⭐ &nbsp;·&nbsp; <span className="green">+{analyticsData.gift.profit.toLocaleString()}</span>
                 </span>
               </div>
             </div>
           )}
 
-          {/* Daily Stats */}
+          {/* Daily Stats with Profit */}
           <div className="info-list daily-list">
-            <div className="list-title">📅 Oxirgi 7 kun</div>
+            <div className="list-title">📅 Oxirgi 7 kun (foyda bo'yicha)</div>
             {dailyStats.map((day, i) => (
               <div key={i} className={`info-row ${day.count > 0 ? 'has-data' : 'no-data'}`}>
-                <span className="info-label">{new Date(day.date).toLocaleDateString('uz-UZ', {day: '2-digit', month: 'short'})}</span>
+                <span className="info-label">{new Date(day.date).toLocaleDateString('uz-UZ', {weekday: 'short', day: '2-digit', month: 'short'})}</span>
                 <span className="info-value">
-                  {day.count} ta &nbsp;·&nbsp; {day.stars.toLocaleString()} ⭐ &nbsp;·&nbsp; {day.amount.toLocaleString()}
+                  {day.count > 0 ? (
+                    <>
+                      <span className="green">+{day.profit.toLocaleString()}</span>
+                      <span className="sub-info"> ({day.starsCount}⭐ {day.premiumCount}💎 {day.giftCount}🎁)</span>
+                    </>
+                  ) : (
+                    <span className="muted">—</span>
+                  )}
                 </span>
               </div>
             ))}
+          </div>
+
+          {/* Profit Config Info */}
+          <div className="info-list config-list">
+            <div className="list-title">💰 Foyda formulasi</div>
+            <div className="info-row">
+              <span className="info-label">⭐ Stars:</span>
+              <span className="info-value muted">har 1 star = {PROFIT_CONFIG.STARS_PROFIT_PER_UNIT} so'm</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">💎 Premium 3oy:</span>
+              <span className="info-value muted">{PROFIT_CONFIG.PREMIUM_COST[3].toLocaleString()} → {PROFIT_CONFIG.PREMIUM_SELL[3].toLocaleString()} = +{PROFIT_CONFIG.PREMIUM_PROFIT[3].toLocaleString()}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">💎 Premium 6oy:</span>
+              <span className="info-value muted">{PROFIT_CONFIG.PREMIUM_COST[6].toLocaleString()} → {PROFIT_CONFIG.PREMIUM_SELL[6].toLocaleString()} = +{PROFIT_CONFIG.PREMIUM_PROFIT[6].toLocaleString()}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">💎 Premium 12oy:</span>
+              <span className="info-value muted">{PROFIT_CONFIG.PREMIUM_COST[12].toLocaleString()} → {PROFIT_CONFIG.PREMIUM_SELL[12].toLocaleString()} = +{PROFIT_CONFIG.PREMIUM_PROFIT[12].toLocaleString()}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">🎁 Gift:</span>
+              <span className="info-value muted">har 1 star = {PROFIT_CONFIG.GIFT_PROFIT_PER_STAR} so'm</span>
+            </div>
           </div>
         </div>
       )}
@@ -1418,8 +1629,7 @@ export default function AdminPanel() {
           <div className="stats-text">
             <span>Total: <b>{stats.totalStars}</b></span>
             <span>Pending: <b>{stats.pending}</b></span>
-            <span>Sent: <b>{stats.stars_sent}</b></span>
-            <span>Done: <b>{stats.completed}</b></span>
+            <span>Completed: <b>{stats.completed}</b></span>
             <span>Expired: <b>{stats.expired}</b></span>
             <span>Failed: <b>{stats.failed + stats.error}</b></span>
           </div>
@@ -1438,7 +1648,6 @@ export default function AdminPanel() {
               <option value="pending">⏳ Pending</option>
               <option value="completed">✅ Completed</option>
               <option value="expired">❌ Expired</option>
-              <option value="stars_sent">🌟 Sent</option>
               <option value="failed">⚠️ Failed</option>
               <option value="error">🔴 Error</option>
             </select>
@@ -1546,7 +1755,6 @@ export default function AdminPanel() {
             <span>Jami: <b>{giftStats.total}</b></span>
             <span>Pending: <b>{giftStats.pending}</b></span>
             <span>Completed: <b>{giftStats.completed}</b></span>
-            <span>Sent: <b>{giftStats.gift_sent}</b></span>
             <span>Expired: <b>{giftStats.expired}</b></span>
             <span>Failed: <b>{giftStats.failed}</b></span>
           </div>
@@ -1564,7 +1772,6 @@ export default function AdminPanel() {
               <option value="all">Hammasi</option>
               <option value="pending">⏳ Pending</option>
               <option value="completed">✅ Completed</option>
-              <option value="gift_sent">🎁 Sent</option>
               <option value="expired">❌ Expired</option>
               <option value="error">🔴 Error</option>
             </select>
@@ -1765,7 +1972,7 @@ export default function AdminPanel() {
           <div className="stats-text">
             <span>Jami: <b>{premiumStats.total}</b></span>
             <span>Pending: <b>{premiumStats.pending}</b></span>
-            <span>Sent: <b>{premiumStats.premium_sent}</b></span>
+            <span>Completed: <b>{premiumStats.completed}</b></span>
             <span>Expired: <b>{premiumStats.expired}</b></span>
             <span>Failed: <b>{premiumStats.failed}</b></span>
           </div>
@@ -1782,7 +1989,7 @@ export default function AdminPanel() {
             <select value={premiumFilter} onChange={(e) => setPremiumFilter(e.target.value)} className="filter-select">
               <option value="all">Hammasi</option>
               <option value="pending">⏳ Pending</option>
-              <option value="premium_sent">💎 Sent</option>
+              <option value="completed">💎 Completed</option>
               <option value="expired">❌ Expired</option>
               <option value="failed">⚠️ Failed</option>
               <option value="error">🔴 Error</option>
@@ -1821,9 +2028,9 @@ export default function AdminPanel() {
                       </div>
                       <div 
                         className="order-status"
-                        style={{ backgroundColor: getStatusColor(tx.status === 'premium_sent' ? 'stars_sent' : tx.status) }}
+                        style={{ backgroundColor: getStatusColor(tx.status) }}
                       >
-                        {tx.status === 'premium_sent' ? '💎' : getStatusIcon(tx.status)} {tx.status}
+                        {getStatusIcon(tx.status)} {tx.status}
                       </div>
                     </div>
 

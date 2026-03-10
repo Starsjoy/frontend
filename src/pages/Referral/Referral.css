@@ -805,6 +805,36 @@
   color: #ef4444;
 }
 
+.withdrawal-gift-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.withdrawal-stars {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.withdrawal-status {
+  font-size: 16px;
+}
+
+.withdrawal-status.completed {
+  color: #10b981;
+}
+
+.withdrawal-status.pending {
+  color: #f59e0b;
+}
+
+.withdrawal-status.failed {
+  color: #ef4444;
+}
+
 /* ===============================
    CLAIM MODAL UPDATES
 =============================== */
