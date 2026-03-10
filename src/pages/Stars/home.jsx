@@ -112,11 +112,38 @@ export default function Home() {
       .catch((err) => console.error("Discount packages error:", err));
   }, []);
 
-  // Stars price
+  // Stars price - backend dan slot-based narx olish
   useEffect(() => {
-    const total = stars ? parseInt(stars) * NARX : 0;
-    setPrice(total);
-  }, [stars]);
+    if (!stars || parseInt(stars) < 50) {
+      setPrice(0);
+      return;
+    }
+    
+    const starNum = parseInt(stars);
+    
+    // Chegirma paketi tekshirish
+    const discountPkg = discountPackages.find(pkg => pkg.stars === starNum);
+    if (discountPkg) {
+      setPrice(discountPkg.discounted_price);
+      return;
+    }
+    
+    // Slot-based narx - backend dan olish
+    apiFetch(`/api/stars/price/${starNum}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.available && data.price) {
+          setPrice(data.price);
+        } else {
+          // Agar slot yo'q bo'lsa, 0 ko'rsatamiz
+          setPrice(0);
+        }
+      })
+      .catch(() => {
+        // Xato bo'lsa fallback
+        setPrice(starNum * NARX);
+      });
+  }, [stars, discountPackages]);
 
   // Timer for stars_sent
   useEffect(() => {
