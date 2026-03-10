@@ -371,6 +371,12 @@ export default function Home() {
           return;
         }
         
+        // MAX_PENDING_ORDERS xatosi
+        if (errorData.code === "MAX_PENDING_ORDERS") {
+          alert(`⚠️ Sizda ${errorData.pendingCount} ta faol buyurtma mavjud.\n\nAvval ularni yakunlang yoki 5 daqiqa kutib turing.`);
+          return;
+        }
+        
         throw new Error(errorData.error || "Server xatosi");
       }
 
@@ -573,7 +579,6 @@ export default function Home() {
         <div className="modal-overlay">
           <div className="modal-content warning-modal">
             <div className="warning-modal-header">
-              <span className="warning-modal-icon">⚠️</span>
               <h3 className="warning-modal-title">Diqqat</h3>
             </div>
             

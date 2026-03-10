@@ -1334,3 +1334,83 @@
 .gift-modal-action-btn:active {
   transform: scale(0.95);
 }
+
+/* ================================
+   WARNING MODAL (Diqqat modal)
+================================ */
+.gift-warning-modal {
+  max-width: 340px;
+}
+
+.gift-warning-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.gift-warning-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.gift-warning-body {
+  padding: 0 8px;
+}
+
+.gift-warning-message {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.gift-warning-message-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin: 0 0 20px 0;
+}
+
+.gift-warning-amount-highlight {
+  background: linear-gradient(135deg, rgba(255, 200, 87, 0.15), rgba(255, 165, 0, 0.1));
+  border: 1px solid rgba(255, 200, 87, 0.3);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.gift-warning-label {
+  font-size: 11px;
+  color: rgba(255, 200, 87, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gift-warning-amount {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffc857;
+}
+
+.gift-warning-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gift-warning-btn:active {
+  transform: scale(0.98);
+}

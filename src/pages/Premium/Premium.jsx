@@ -31,6 +31,7 @@ export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState(plans[0]);
   const [order, setOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
   const [paymentStatus, setPaymentStatus] = useState("idle");
   const [cardLast4, setCardLast4] = useState("");
@@ -143,16 +144,26 @@ export default function Premium() {
       const data = await res.json();
 
       if (!res.ok) {
+        // SLOTS_FULL xatosi
+        if (data.code === "SLOTS_FULL") {
+          alert("⏳ Hozirda juda ko'p buyurtmalar mavjud.\n\nIltimos, 1-2 daqiqadan keyin qayta urinib ko'ring.");
+          return;
+        }
+        // MAX_PENDING_ORDERS xatosi
+        if (data.code === "MAX_PENDING_ORDERS") {
+          alert(`⚠️ Sizda ${data.pendingCount} ta faol buyurtma mavjud.\n\nAvval ularni yakunlang yoki 5 daqiqa kutib turing.`);
+          return;
+        }
         alert(data.error || "Order yaratishda xato");
         return;
       }
 
       setOrder(data.order);
-      setShowModal(true);
+      setShowWarningModal(true);
       setPaymentStatus("pending");
       setCardLast4("");
 
-      startCountdown(3600);
+      startCountdown(300); // 5 daqiqa
       startPolling(data.order.id);
 
     } catch {
@@ -235,6 +246,12 @@ export default function Premium() {
     navigator.clipboard.writeText(t);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  // "Tushundim" tugmasi - warning modaldan payment modalga o'tish
+  const handleWarningUnderstood = () => {
+    setShowWarningModal(false);
+    setShowModal(true);
   };
 
   const formatTime = (s) =>
@@ -321,6 +338,36 @@ export default function Premium() {
           {loadingBuy ? "Yuklanmoqda..." : "Premium olish"}
         </button>
       </div>
+
+      {/* WARNING MODAL */}
+      {showWarningModal && order && (
+        <div className="modal-overlay">
+          <div className="modal-content warning-modal">
+            <div className="warning-modal-header">
+              <h3 className="warning-modal-title">Diqqat</h3>
+            </div>
+            
+            <div className="warning-modal-body">
+              <p className="warning-message">
+                Kartaga bot ko'rsatgan summani aynan o'sha miqdorda yuboring.
+              </p>
+              
+              <p className="warning-message-sub">
+                Summadagi 1 so'mlik farq ham to'lovni aniqlashga xalaqit beradi.
+              </p>
+              
+              <div className="warning-amount-highlight">
+                <span className="warning-label">To'lov summasi</span>
+                <span className="warning-amount">{formatAmount(order?.amount)} so'm</span>
+              </div>
+            </div>
+            
+            <button className="warning-understand-btn" onClick={handleWarningUnderstood}>
+              ✅ Tushundim
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* MODAL */}
       {showModal && order && (

@@ -204,6 +204,7 @@
     "sending": "Sending...",
     "success": "Gift sent successfully!",
     "error": "Something went wrong",
+    "slotsFull": "All slots are currently busy. Please try again in a few seconds!",
     "me": "Me",
     "anonymous": "Send anonymously",
     "anonymousDesc": "Your name will be hidden",

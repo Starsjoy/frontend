@@ -67,6 +67,7 @@ export default function Gift() {
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("idle"); // idle | payment_info | pending | completed | gift_sent | expired | failed | error
   const [showModal, setShowModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
   const [countdown, setCountdown] = useState(300);
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
@@ -246,14 +247,20 @@ export default function Gift() {
       const newOrder = await res.json();
 
       if (!res.ok) {
-        alert(newOrder.error || t("gift.error"));
+        if (newOrder.code === "SLOTS_FULL") {
+          alert(t("gift.slotsFull") || "Hozirda barcha slotlar band. Iltimos, bir necha soniyadan so'ng qayta urinib ko'ring!");
+        } else if (newOrder.code === "MAX_PENDING_ORDERS") {
+          alert(`⚠️ Sizda ${newOrder.pendingCount} ta faol buyurtma mavjud.\n\nAvval ularni yakunlang yoki 5 daqiqa kutib turing.`);
+        } else {
+          alert(newOrder.error || t("gift.error"));
+        }
         setSending(false);
         return;
       }
 
       setOrder(newOrder);
       setStatus("payment_info");
-      setShowModal(true);
+      setShowWarningModal(true);
 
       localStorage.setItem(
         "pendingGiftOrder",
@@ -265,12 +272,18 @@ export default function Gift() {
       );
 
       startPolling(newOrder);
-      startCountdownTimer(1200);
+      startCountdownTimer(300); // 5 daqiqa
     } catch {
       alert(t("gift.error"));
     } finally {
       setSending(false);
     }
+  };
+
+  // === "Tushundim" tugmasi - warning modaldan payment modalga o'tish ===
+  const handleWarningUnderstood = () => {
+    setShowWarningModal(false);
+    setShowModal(true);
   };
 
   // === "To'lov qildim" tugmasi ===
@@ -465,6 +478,36 @@ export default function Gift() {
                   ? "Kimga yubormoqchisiz?"
                   : t("gift.send")}
           </button>
+        </div>
+      )}
+
+      {/* ============== WARNING MODAL ============== */}
+      {showWarningModal && (
+        <div className="gift-modal-overlay">
+          <div className="gift-modal-content gift-warning-modal">
+            <div className="gift-warning-header">
+              <h3 className="gift-warning-title">Diqqat</h3>
+            </div>
+            
+            <div className="gift-warning-body">
+              <p className="gift-warning-message">
+                Kartaga bot ko'rsatgan summani aynan o'sha miqdorda yuboring.
+              </p>
+              
+              <p className="gift-warning-message-sub">
+                Summadagi 1 so'mlik farq ham to'lovni aniqlashga xalaqit beradi.
+              </p>
+              
+              <div className="gift-warning-amount-highlight">
+                <span className="gift-warning-label">To'lov summasi</span>
+                <span className="gift-warning-amount">{formatAmount(order?.amount)} so'm</span>
+              </div>
+            </div>
+            
+            <button className="gift-warning-btn" onClick={handleWarningUnderstood}>
+              ✅ Tushundim
+            </button>
+          </div>
         </div>
       )}
 
