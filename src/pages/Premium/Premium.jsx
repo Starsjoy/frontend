@@ -370,7 +370,7 @@ export default function Premium() {
               </div>
             </div>
             
-            <button className="warning-understand-btn" onClick={handleWarningUnderstood}>
+            <button type="button" className="warning-understand-btn" onClick={handleWarningUnderstood}>
               ✅ Tushundim
             </button>
           </div>
@@ -388,7 +388,7 @@ export default function Premium() {
                 {/* Modal Header */}
                 <div className="modal-header-bar">
                   <span className="modal-header-title">💳 Premium xarid qilish</span>
-                  <button className="modal-close-x" onClick={() => {
+                  <button type="button" className="modal-close-x" onClick={() => {
                     stopPolling();
                     stopCountdown();
                     setShowModal(false);
@@ -416,7 +416,7 @@ export default function Premium() {
                     <div className="modal-pay-label">Karta raqami</div>
                     <div className="modal-pay-row">
                       <span className="modal-pay-value">{CARD_NUMBER}</span>
-                      <button className="modal-copy-btn" onClick={handleCopyCard}>
+                      <button type="button" className="modal-copy-btn" onClick={handleCopyCard}>
                         {copiedCard ? "✓" : "📋"}
                       </button>
                     </div>
@@ -433,7 +433,7 @@ export default function Premium() {
                     <div className="modal-pay-label">To'lov summasi</div>
                     <div className="modal-pay-row">
                       <span className="modal-pay-value bold">{formatAmount(order.amount)} so'm</span>
-                      <button className="modal-copy-btn" onClick={handleCopyAmount}>
+                      <button type="button" className="modal-copy-btn" onClick={handleCopyAmount}>
                         {copiedAmount ? "✓" : "📋"}
                       </button>
                     </div>
@@ -455,7 +455,7 @@ export default function Premium() {
                 </div>
 
                 {/* To'lov qildim button */}
-                <button className="btn-payment-done" onClick={handlePaymentDone}>
+                <button type="button" className="btn-payment-done" onClick={handlePaymentDone}>
                   ✅ To'lov qildim
                 </button>
                 <p className="modal-close-hint">To'lovni amalga oshiring va tugmani bosing</p>
@@ -468,7 +468,7 @@ export default function Premium() {
                 {/* Modal Header */}
                 <div className="modal-header-bar">
                   <span className="modal-header-title">⏳ To'lov kutilmoqda</span>
-                  <button className="modal-close-x" onClick={() => {
+                  <button type="button" className="modal-close-x" onClick={() => {
                     stopPolling();
                     stopCountdown();
                     setShowModal(false);
@@ -495,7 +495,7 @@ export default function Premium() {
                   <div className="waiting-info-row">
                     <span className="waiting-label">Karta:</span>
                     <span className="waiting-value">{CARD_NUMBER}</span>
-                    <button className="modal-copy-btn-sm" onClick={handleCopyCard}>
+                    <button type="button" className="modal-copy-btn-sm" onClick={handleCopyCard}>
                       {copiedCard ? "✓" : "📋"}
                     </button>
                   </div>
@@ -589,7 +589,7 @@ export default function Premium() {
                   </div>
                 </div>
 
-                <button className="modal-close-btn success-close" onClick={() => setShowModal(false)}>
+                <button type="button" className="modal-close-btn success-close" onClick={() => setShowModal(false)}>
                   Yopish
                 </button>
               </div>
@@ -604,7 +604,7 @@ export default function Premium() {
                 <h3 className="error-title">Xatolik yuz berdi</h3>
                 <p className="error-desc">Premium yuborishda muammo chiqdi. Iltimos, qaytadan urinib ko'ring.</p>
                 
-                <button className="modal-close-btn" onClick={() => {
+                <button type="button" className="modal-close-btn" onClick={() => {
                   setShowModal(false);
                   setPaymentStatus("idle");
                 }}>
@@ -622,7 +622,7 @@ export default function Premium() {
                 <h3 className="error-title">Vaqt tugadi</h3>
                 <p className="error-desc">To'lov muddati o'tib ketdi. Qaytadan urinib ko'ring.</p>
                 
-                <button className="modal-close-btn" onClick={() => {
+                <button type="button" className="modal-close-btn" onClick={() => {
                   setShowModal(false);
                   setPaymentStatus("idle");
                 }}>

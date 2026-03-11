@@ -503,7 +503,7 @@ export default function Gift() {
               </div>
             </div>
             
-            <button className="gift-warning-btn" onClick={handleWarningUnderstood}>
+            <button type="button" className="gift-warning-btn" onClick={handleWarningUnderstood}>
               ✅ Tushundim
             </button>
           </div>
@@ -520,7 +520,7 @@ export default function Gift() {
               <div className="gift-modal-pending">
                 <div className="gift-modal-header">
                   <span className="gift-modal-title">💳 {t("gift.paymentTitle")}</span>
-                  <button className="gift-modal-close" onClick={() => setShowModal(false)}>✕</button>
+                  <button type="button" className="gift-modal-close" onClick={() => setShowModal(false)}>✕</button>
                 </div>
 
                 {/* Gift preview */}
@@ -542,7 +542,7 @@ export default function Gift() {
                     <div className="gift-modal-pay-label">{t("stars.cardNumber")}</div>
                     <div className="gift-modal-pay-row">
                       <span className="gift-modal-pay-value">{CARD_NUMBER}</span>
-                      <button className="gift-modal-copy-btn" onClick={handleCopyCard}>
+                      <button type="button" className="gift-modal-copy-btn" onClick={handleCopyCard}>
                         {copiedCard ? "✓" : "📋"}
                       </button>
                     </div>
@@ -561,7 +561,7 @@ export default function Gift() {
                       <span className="gift-modal-pay-value bold">
                         {formatAmount(order?.amount)} so'm
                       </span>
-                      <button className="gift-modal-copy-btn" onClick={handleCopyAmount}>
+                      <button type="button" className="gift-modal-copy-btn" onClick={handleCopyAmount}>
                         {copiedAmount ? "✓" : "📋"}
                       </button>
                     </div>
@@ -582,7 +582,7 @@ export default function Gift() {
                 </div>
 
                 {/* To'lov qildim button */}
-                <button className="gift-modal-action-btn payment-done" onClick={handlePaymentDone}>
+                <button type="button" className="gift-modal-action-btn payment-done" onClick={handlePaymentDone}>
                   ✅ {t("gift.iConfirmPayment")}
                 </button>
                 <p className="gift-modal-hint">{t("gift.paymentHint")}</p>
@@ -594,7 +594,7 @@ export default function Gift() {
               <div className="gift-modal-pending">
                 <div className="gift-modal-header">
                   <span className="gift-modal-title">⏳ {t("gift.paymentSearching")}</span>
-                  <button className="gift-modal-close" onClick={() => setShowModal(false)}>✕</button>
+                  <button type="button" className="gift-modal-close" onClick={() => setShowModal(false)}>✕</button>
                 </div>
 
                 {/* Gift preview */}
@@ -616,7 +616,7 @@ export default function Gift() {
                     <div className="gift-modal-pay-label">{t("stars.cardNumber")}</div>
                     <div className="gift-modal-pay-row">
                       <span className="gift-modal-pay-value">{CARD_NUMBER}</span>
-                      <button className="gift-modal-copy-btn" onClick={handleCopyCard}>
+                      <button type="button" className="gift-modal-copy-btn" onClick={handleCopyCard}>
                         {copiedCard ? "✓" : "📋"}
                       </button>
                     </div>
@@ -628,7 +628,7 @@ export default function Gift() {
                       <span className="gift-modal-pay-value bold">
                         {formatAmount(order?.amount)} so'm
                       </span>
-                      <button className="gift-modal-copy-btn" onClick={handleCopyAmount}>
+                      <button type="button" className="gift-modal-copy-btn" onClick={handleCopyAmount}>
                         {copiedAmount ? "✓" : "📋"}
                       </button>
                     </div>
@@ -649,7 +649,7 @@ export default function Gift() {
                   </div>
                 </div>
 
-                <button className="gift-modal-close-btn" onClick={() => setShowModal(false)}>
+                <button type="button" className="gift-modal-close-btn" onClick={() => setShowModal(false)}>
                   {t("common.close")}
                 </button>
                 <p className="gift-modal-hint">{t("gift.modalHint")}</p>
@@ -684,7 +684,7 @@ export default function Gift() {
                 <p className="gift-success-detail">
                   → @{order?.recipient_username}
                 </p>
-                <button className="gift-modal-action-btn" onClick={resetAll}>
+                <button type="button" className="gift-modal-action-btn" onClick={resetAll}>
                   {t("gift.sendAnother")}
                 </button>
               </div>
@@ -697,7 +697,7 @@ export default function Gift() {
                 <h3>
                   {status === "expired" ? t("stars.expired") : t("gift.error")}
                 </h3>
-                <button className="gift-modal-action-btn" onClick={resetAll}>
+                <button type="button" className="gift-modal-action-btn" onClick={resetAll}>
                   {t("gift.tryAgain")}
                 </button>
               </div>

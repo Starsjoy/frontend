@@ -269,11 +269,11 @@ export default function Dashboard() {
   /* ================= SPLASH AUTO-HIDE ================= */
   useEffect(() => {
     if (!splashVisible) return;
-    const fadeTimer = setTimeout(() => setSplashFading(true), 2500);
+    const fadeTimer = setTimeout(() => setSplashFading(true), 1250);
     const hideTimer = setTimeout(() => {
       setSplashVisible(false);
       sessionStorage.setItem("splashShown", "1");
-    }, 3000);
+    }, 1500);
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(hideTimer);
