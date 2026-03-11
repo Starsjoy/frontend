@@ -4,6 +4,7 @@ import { useTranslation } from "../../context/LanguageContext";
 import apiFetch from "../../utils/apiFetch";
 import { TGSSticker } from "../../components/TGSSticker";
 import WebApp from "@twa-dev/sdk";
+import starsjoyLogo from "../../assets/starsjoy.jpg";
 import "./gift.css";
 
 const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
@@ -57,10 +58,10 @@ export default function Gift() {
   // Step 2: Gift selection
   const [selectedGift, setSelectedGift] = useState(null);
   const [hoveredGift, setHoveredGift] = useState(null);
+  const [showGiftModal, setShowGiftModal] = useState(false); // Bottom sheet modal
 
   // Step 3: Options
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [withComment, setWithComment] = useState(false);
   const [comment, setComment] = useState("");
 
   // Step 4: Payment
@@ -128,10 +129,16 @@ export default function Gift() {
     return () => clearTimeout(timeout);
   }, [username]);
 
-  // Comment switch o'chganda textni tozalash
-  useEffect(() => {
-    if (!withComment) setComment("");
-  }, [withComment]);
+  // Gift tanlanganda modal ochish
+  const handleGiftSelect = (gift) => {
+    setSelectedGift(gift);
+    setShowGiftModal(true);
+  };
+
+  // Modal yopilganda
+  const handleCloseGiftModal = () => {
+    setShowGiftModal(false);
+  };
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -242,7 +249,7 @@ export default function Gift() {
           giftId: selectedGift.id,
           stars: selectedGift.stars,
           anonymous: isAnonymous,
-          comment: withComment && comment.trim() ? comment.trim() : undefined,
+          comment: comment.trim() || undefined,
         }),
       });
       const newOrder = await res.json();
@@ -259,6 +266,7 @@ export default function Gift() {
 
       setOrder(newOrder);
       setStatus("payment_info");
+      setShowGiftModal(false); // Bottom sheet yopish
       setShowWarningModal(true);
 
       localStorage.setItem(
@@ -314,9 +322,10 @@ export default function Gift() {
     setOrder(null);
     setStatus("idle");
     setShowModal(false);
+    setShowGiftModal(false);
     setSelectedGift(null);
     setComment("");
-    setWithComment(false);
+    setIsAnonymous(false);
     stopPolling();
     stopCountdown();
   };
@@ -366,72 +375,6 @@ export default function Gift() {
         )}
       </div>
 
-      {/* Options: Anonymous + Comment — right below recipient */}
-      {!showModal && (
-        <div className="gift-options-section">
-          {/* Anonymous Toggle */}
-          <div className="gift-option-row">
-            <div className="gift-option-left">
-              <span className="gift-option-icon">🕶️</span>
-              <div className="gift-option-text">
-                <span className="gift-option-title">{t("gift.anonymous")}</span>
-                <span className="gift-option-desc">{t("gift.anonymousDesc")}</span>
-              </div>
-            </div>
-            <label className="gift-switch">
-              <input
-                type="checkbox"
-                checked={isAnonymous}
-                onChange={(e) => setIsAnonymous(e.target.checked)}
-              />
-              <span className="gift-switch-slider"></span>
-            </label>
-          </div>
-
-          {/* Comment Toggle */}
-          <div className="gift-option-row">
-            <div className="gift-option-left">
-              <span className="gift-option-icon">💬</span>
-              <div className="gift-option-text">
-                <span className="gift-option-title">{t("gift.addComment")}</span>
-                <span className="gift-option-desc">{t("gift.addCommentDesc")}</span>
-              </div>
-            </div>
-            <label className="gift-switch">
-              <input
-                type="checkbox"
-                checked={withComment}
-                onChange={(e) => setWithComment(e.target.checked)}
-              />
-              <span className="gift-switch-slider"></span>
-            </label>
-          </div>
-
-          {/* Comment Input */}
-          {withComment && (
-            <div className="gift-comment-section">
-              <div className="gift-comment-wrap">
-                <textarea
-                  className="gift-comment-input"
-                  value={comment}
-                  onChange={(e) => {
-                    if (e.target.value.length <= MAX_COMMENT_LENGTH) {
-                      setComment(e.target.value);
-                    }
-                  }}
-                  placeholder={t("gift.commentPlaceholder")}
-                  rows={3}
-                  autoFocus
-                />
-                <span className="gift-comment-counter">
-                  {comment.length}/{MAX_COMMENT_LENGTH}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* All Gifts Grid */}
       <div className="gift-catalog">
         <label className="gift-label">
@@ -443,7 +386,7 @@ export default function Gift() {
             <div
               key={gift.id}
               className={`gift-card ${selectedGift?.id === gift.id ? "selected" : ""}`}
-              onClick={() => setSelectedGift(gift)}
+              onClick={() => handleGiftSelect(gift)}
               onMouseEnter={() => setHoveredGift(gift.id)}
               onMouseLeave={() => setHoveredGift(null)}
               onTouchStart={() => setHoveredGift(gift.id)}
@@ -461,22 +404,120 @@ export default function Gift() {
         </div>
       </div>
 
-      {/* Send Button — below gift grid */}
-      {!showModal && selectedGift && (
-        <div className="gift-actions">
-          <button
-            className="gift-send-btn"
-            onClick={handleSend}
-            disabled={sending || !profile || !selectedGift}
-          >
-            {sending
-              ? t("gift.sending")
-              : profile && selectedGift
-                ? `${t("gift.send")} — ${formatAmount(giftPrice)} so'm`
-                : !profile
-                  ? "Kimga yubormoqchisiz?"
-                  : t("gift.send")}
-          </button>
+      {/* ============== GIFT SELECTION BOTTOM SHEET MODAL ============== */}
+      {showGiftModal && selectedGift && (
+        <div className="gift-bottom-sheet-overlay" onClick={handleCloseGiftModal}>
+          <div className="gift-bottom-sheet" onClick={(e) => e.stopPropagation()}>
+            {/* Drag Handle */}
+            <div className="gift-bottom-sheet-handle"></div>
+            
+            {/* Header: Recipient */}
+            <div className="gift-bs-header">
+              <div className="gift-bs-recipient">
+                {profile ? (
+                  <>
+                    <img src={profile.imageUrl || ""} alt="" className="gift-bs-avatar" />
+                    <div className="gift-bs-user-info">
+                      <span className="gift-bs-name">{profile.fullName}</span>
+                      <span className="gift-bs-username">@{profile.username}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="gift-bs-avatar-placeholder">?</div>
+                    <div className="gift-bs-user-info">
+                      <span className="gift-bs-name">{username || "Foydalanuvchi"}</span>
+                      <span className="gift-bs-username">{username ? `@${username.replace('@', '')}` : "Tanlang"}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <button className="gift-bs-close" onClick={handleCloseGiftModal}>✕</button>
+            </div>
+
+            {/* Title */}
+            <h2 className="gift-bs-title">Hadya yuborish</h2>
+
+            {/* Gift Preview Card */}
+            <div className="gift-bs-preview-card">
+              <p className="gift-bs-preview-text">
+                Starsjoy Official sizga {selectedGift.stars} yulduz miqdorida hadya yubordi
+              </p>
+              
+              <div className="gift-bs-sticker-wrap">
+                <TGSSticker
+                  stickerPath={getGiftStickerPath(selectedGift.id)}
+                  className="gift-bs-sticker"
+                  autoplay={true}
+                  loop={true}
+                />
+              </div>
+              
+              <div className="gift-bs-sender-row">
+                <span className="gift-bs-sender-label">Hadya yuboruvchi:</span>
+                <img src={starsjoyLogo} alt="" className="gift-bs-sender-avatar" />
+                <span className="gift-bs-sender-name">
+                  {isAnonymous ? "Anonim" : "Starsjoy Official"}
+                </span>
+              </div>
+              <p className="gift-bs-hint">Bu hadyani profilingizga qo'shishingiz mumkin.</p>
+              
+              <button type="button" className="gift-bs-view-btn">Ko'rish</button>
+            </div>
+
+            {/* Message Input */}
+            <div className="gift-bs-input-section">
+              <input
+                type="text"
+                className="gift-bs-message-input"
+                placeholder="Xabar kiriting"
+                value={comment}
+                onChange={(e) => {
+                  if (e.target.value.length <= MAX_COMMENT_LENGTH) {
+                    setComment(e.target.value);
+                  }
+                }}
+              />
+              <span className="gift-bs-emoji-btn">😊</span>
+            </div>
+
+            {/* Anonymous Toggle */}
+            <div className="gift-bs-toggle-row">
+              <div className="gift-bs-toggle-info">
+                <span className="gift-bs-toggle-title">Ismimni berkitish</span>
+              </div>
+              <label className="gift-bs-switch">
+                <input
+                  type="checkbox"
+                  checked={isAnonymous}
+                  onChange={(e) => setIsAnonymous(e.target.checked)}
+                />
+                <span className="gift-bs-switch-slider"></span>
+              </label>
+            </div>
+
+            {/* Sender Account Note */}
+            <p className="gift-bs-account-note">
+              Hadiya <span>@StarsjoySupport</span> akkauntidan yuboriladi!
+            </p>
+
+            {/* Send Button */}
+            <button
+              className="gift-bs-send-btn"
+              onClick={handleSend}
+              disabled={sending || !profile}
+            >
+              {sending ? (
+                "Yuborilmoqda..."
+              ) : (
+                <>{formatAmount(PRICE_MAP[selectedGift.stars])} so'm evaziga hadya yuborish</>
+              )}
+            </button>
+            
+            {!profile && (
+              <p className="gift-bs-warning">⚠️ Avval qabul qiluvchini tanlang</p>
+            )}
+          </div>
         </div>
       )}
 
