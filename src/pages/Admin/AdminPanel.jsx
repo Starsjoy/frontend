@@ -262,15 +262,24 @@ export default function AdminPanel() {
       const premiumData = premiumJson.orders || [];
       const giftData = giftJson.orders || [];
 
-      // Filter by date and sent status only
+      // Filter by date and completed status (stars_sent, premium_sent, gift_sent, completed)
       const filterByDate = (items, dateField = "created_at") => {
         if (!startDate) return items;
         return items.filter(item => new Date(item[dateField]) >= startDate);
       };
 
-      const filteredStars = filterByDate(starsData).filter(tx => tx.status === "stars_sent");
-      const filteredPremium = filterByDate(premiumData).filter(tx => tx.status === "premium_sent");
-      const filteredGift = filterByDate(giftData).filter(tx => tx.status === "gift_sent");
+      // Stars: stars_sent yoki completed
+      const filteredStars = filterByDate(starsData).filter(tx => 
+        tx.status === "stars_sent" || tx.status === "completed"
+      );
+      // Premium: premium_sent yoki completed
+      const filteredPremium = filterByDate(premiumData).filter(tx => 
+        tx.status === "premium_sent" || tx.status === "completed"
+      );
+      // Gift: gift_sent yoki completed
+      const filteredGift = filterByDate(giftData).filter(tx => 
+        tx.status === "gift_sent" || tx.status === "completed"
+      );
 
       // Calculate analytics
       const starsStats = {
@@ -300,10 +309,10 @@ export default function AdminPanel() {
         }
       });
 
-      // Calculate daily breakdown from all sent transactions (last 7 days)
-      const completedStars = starsData.filter(tx => tx.status === "stars_sent");
-      const completedPremium = premiumData.filter(tx => tx.status === "premium_sent");
-      const completedGift = giftData.filter(tx => tx.status === "gift_sent");
+      // Calculate daily breakdown from all completed transactions (last 7 days)
+      const completedStars = starsData.filter(tx => tx.status === "stars_sent" || tx.status === "completed");
+      const completedPremium = premiumData.filter(tx => tx.status === "premium_sent" || tx.status === "completed");
+      const completedGift = giftData.filter(tx => tx.status === "gift_sent" || tx.status === "completed");
       
       const dailyMap = {};
       
