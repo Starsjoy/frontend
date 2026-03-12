@@ -43,6 +43,9 @@ export default function Home() {
   // Stars options
   const STARS_OPTIONS = [50, 100, 200, 350, 500, 750, 1000, 2000, 5000, 10000];
 
+  // Discount packages
+  const [discountPackages, setDiscountPackages] = useState([]);
+
   const [backendStatus, setBackendStatus] = useState("");
   const [username, setUsername] = useState("");
   const [stars, setStars] = useState("");
@@ -101,6 +104,29 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => setBackendStatus(data.message))
       .catch(() => setBackendStatus("Backend offline ❌"));
+  }, []);
+
+  // Fetch discount packages
+  useEffect(() => {
+    const fetchDiscounts = async () => {
+      try {
+        const res = await apiFetch("/api/discount-packages");
+        const data = await res.json();
+        // Map to expected format
+        const packages = data.map(pkg => ({
+          id: pkg.id,
+          stars: pkg.stars,
+          basePrice: pkg.base_price || pkg.discounted_price,
+          discountedPrice: pkg.current_price,
+          discount: pkg.discount_percent,
+          slotAvailable: pkg.slot_available !== false
+        }));
+        setDiscountPackages(packages.filter(p => p.slotAvailable));
+      } catch (err) {
+        console.error("Discount paketlarni yuklashda xato:", err);
+      }
+    };
+    fetchDiscounts();
   }, []);
 
   // Stars price - backend dan slot-based narx olish
@@ -490,6 +516,72 @@ export default function Home() {
       {/* Stars Options */}
       <div className="preset-options-section">
         <h3 style={{color: '#fff', margin: '24px 0 12px 0', fontSize: '16px', fontWeight: '600'}}>Yoki to'plamni tanlang:</h3>
+        
+        {/* Discount Packages - chegirma bo'lsa ko'rinadi */}
+        {discountPackages.length > 0 && (
+          <div style={{marginBottom: '16px'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px'}}>
+              <span style={{fontSize: '13px', color: '#f9a825', fontWeight: '600'}}>🎉 Chegirma paketlar</span>
+            </div>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
+              {discountPackages.map((pkg, idx) => (
+                <div
+                  key={`discount-${idx}`}
+                  onClick={() => navigate('/discount')}
+                  style={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '12px 14px',
+                    background: 'linear-gradient(135deg, rgba(249, 168, 37, 0.15) 0%, rgba(255, 204, 2, 0.08) 100%)',
+                    border: '2px solid rgba(249, 168, 37, 0.4)',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.25s ease',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {/* Discount badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    background: 'linear-gradient(135deg, #f9a825, #ffcc02)',
+                    color: '#1a1a2e',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    padding: '3px 10px',
+                    borderRadius: '0 10px 0 10px'
+                  }}>
+                    -{pkg.discount}%
+                  </div>
+                  
+                  <div style={{flex: 1, display: 'flex', alignItems: 'center', gap: '6px'}}>
+                    <span style={{fontSize: '22px'}}>⭐</span>
+                    <span style={{fontSize: '16px', fontWeight: '700', color: '#fff'}}>
+                      {formatAmount(pkg.stars)} Stars
+                    </span>
+                  </div>
+                  
+                  <div style={{textAlign: 'right'}}>
+                    <div style={{fontSize: '14px', fontWeight: '700', color: '#4ee0ff'}}>
+                      {formatAmount(pkg.discountedPrice)} so'm
+                    </div>
+                    <div style={{
+                      fontSize: '10px',
+                      color: 'rgba(255,255,255,0.5)',
+                      textDecoration: 'line-through'
+                    }}>
+                      {formatAmount(pkg.basePrice)} so'm
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Regular Stars Options */}
         <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px'}}>
           {(showMorePlans ? STARS_OPTIONS : STARS_OPTIONS.slice(0, 3)).map((starAmount, idx) => {
             // Narx: stars * NARX (240 so'm)
