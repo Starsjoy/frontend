@@ -407,11 +407,18 @@ export default function Gift() {
       {/* ============== GIFT SELECTION BOTTOM SHEET MODAL ============== */}
       {showGiftModal && selectedGift && (
         <div className="gift-bottom-sheet-overlay" onClick={handleCloseGiftModal}>
+          {/* 10% top area - Close button */}
+          <div className="gift-bs-top-close-area" onClick={handleCloseGiftModal}>
+            <button className="gift-bs-top-close-btn" onClick={handleCloseGiftModal}>✕</button>
+          </div>
+          
+          {/* 90% modal area */}
           <div className="gift-bottom-sheet" onClick={(e) => e.stopPropagation()}>
             {/* Drag Handle */}
             <div className="gift-bottom-sheet-handle"></div>
             
-            {/* Header: Recipient Input */}
+            {/* Recipient Label + Input */}
+            <label className="gift-bs-recipient-label">Kimga yuboramiz</label>
             <div className="gift-bs-header">
               {profile ? (
                 <div className="gift-bs-recipient-found">
@@ -449,7 +456,6 @@ export default function Gift() {
                   )}
                 </div>
               )}
-              <button className="gift-bs-close" onClick={handleCloseGiftModal}>✕</button>
             </div>
 
             {/* Title */}
@@ -516,27 +522,22 @@ export default function Gift() {
               </label>
             </div>
 
-            {/* Sender Account Note */}
-            <p className="gift-bs-account-note">
-              Hadiya <span>@StarsjoySupport</span> akkauntidan yuboriladi!
-            </p>
-
-            {/* Send Button */}
-            <button
-              className="gift-bs-send-btn"
-              onClick={handleSend}
-              disabled={sending || !profile}
-            >
-              {sending ? (
-                "Yuborilmoqda..."
-              ) : (
-                <>{formatAmount(PRICE_MAP[selectedGift.stars])} so'm evaziga hadya yuborish</>
-              )}
-            </button>
-            
-            {!profile && (
-              <p className="gift-bs-warning">⚠️ Avval qabul qiluvchini tanlang</p>
-            )}
+            {/* Send Button - at bottom */}
+            <div className="gift-bs-bottom-area">
+              <button
+                className={`gift-bs-send-btn ${!profile ? 'no-recipient' : ''}`}
+                onClick={handleSend}
+                disabled={sending || !profile}
+              >
+                {sending ? (
+                  "Yuborilmoqda..."
+                ) : !profile ? (
+                  "Kimga yuboramiz?"
+                ) : (
+                  <>{formatAmount(PRICE_MAP[selectedGift.stars])} so'm · Hadya yuborish</>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

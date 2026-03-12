@@ -2166,10 +2166,18 @@
   animation: fadeIn 0.2s ease-out;
 }
 
-.nav-loading-sticker {
-  width: 100px;
-  height: 100px;
-  margin-bottom: 20px;
+.nav-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border-color, rgba(255,255,255,0.1));
+  border-top-color: var(--accent-primary, #8b5cf6);
+  border-radius: 50%;
+  animation: navSpinner 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes navSpinner {
+  to { transform: rotate(360deg); }
 }
 
 .nav-loading-text {

@@ -6,15 +6,10 @@ import WebApp from "@twa-dev/sdk";
 import { useTranslation } from "../../context/LanguageContext";
 import { TGSSticker } from "../../components/TGSSticker";
 import referralSticker from "../../assets/AnimatedSticker_referal.tgs";
-import loadingSticker from "../../assets/Animated_loading.tgs";
 import apiFetch from "../../utils/apiFetch";
 
-// Gift IDlar - referral yechish uchun
+// Gift IDlar - referral yechish uchun (minimum 50 stars)
 const GIFTS = [
-  { id: "5170145012310081615", stars: 15 },
-  { id: "5170233102089322756", stars: 15 },
-  { id: "5170250947678437525", stars: 25 },
-  { id: "5168103777563050263", stars: 25 },
   { id: "5170144170496491616", stars: 50 },
   { id: "5170314324215857265", stars: 50 },
   { id: "5170564780938756245", stars: 50 },
@@ -283,9 +278,7 @@ export default function Referral() {
       {/* Loading Overlay */}
       {loading && (
         <div className="referral-loading-overlay">
-          <div className="referral-loading-sticker">
-            <TGSSticker stickerPath={loadingSticker} />
-          </div>
+          <div className="referral-loading-spinner"></div>
           <p className="referral-loading-text">{t("common.loading") || "Yuklanmoqda..."}</p>
         </div>
       )}

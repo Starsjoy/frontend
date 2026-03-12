@@ -10,7 +10,6 @@ import starsGif from "../../assets/stars.gif";
 import premiumGif from "../../assets/premium_gif.gif";
 import ayiqImg from "../../assets/ayiqyurakchali.jpg";
 import tilSticker from "../../assets/AnimatedSticker_til.tgs";
-import loadingSticker from "../../assets/Animated_loading.tgs";
 import referalSticker from "../../assets/AnimatedSticker_ref.tgs";
 import ordersIcon from "../../assets/orders_icon.png";
 import profileIcon from "../../assets/profile_icon.png";
@@ -43,7 +42,7 @@ export default function Dashboard() {
   const [history, setHistory] = useState([]);
 
   /* ================= UI ================= */
-  const [tab, setTab] = useState("home"); // home | referral | profile | history | challenges
+  const [tab, setTab] = useState("home"); // home | referral | profile | history
   const [statsTab, setStatsTab] = useState("sales");
   const [loading, setLoading] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
@@ -132,94 +131,60 @@ export default function Dashboard() {
     }
   }, []);
 
-  /* ================= LOAD LEADERBOARD (GLOBAL) ================= */
+  /* ================= 🚀 COMBINED DASHBOARD INIT — Bitta so'rovda barcha ma'lumot ================= */
   useEffect(() => {
-    const loadLeaderboard = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await apiFetch(
-          `/api/stats/leaderboard${username ? `?username=${username}` : ""}`
-        );
-        const json = await res.json();
-
-        setLeaderboard(json.top10 || []);
-        setMyRank(json.me || null);
-
-      } catch {
-        setError("Statistikani yuklashda xatolik");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadLeaderboard();
-  }, [username]);
-
-  /* ================= LOAD REFERRAL LEADERBOARD ================= */
-  useEffect(() => {
-    const loadReferralBoard = async () => {
-      // Har doim yuklayveramiz, username bo'lmasa umumiy ro'yxatni
-      try {
-        const res = await apiFetch(
-          `/api/referral/leaderboard${username ? `?username=${username}` : ""}`
-        );
-        const json = await res.json();
-        setReferralBoard(json.top10 || []);
-        setMyRefRank(json.me || null);
-      } catch (e) {
-        console.error("Ref stats error:", e);
-      }
-    };
-    loadReferralBoard();
-  }, [username]);
-
-  /* ================= LOAD USER CHALLENGE ================= */
-  useEffect(() => {
-    if (!isTelegram || !username) return;
-
-    const loadHistory = async () => {
+    const loadDashboard = async () => {
       try {
         setLoading(true);
         setError(null);
 
         const uid = localStorage.getItem("userId");
-        if (!uid) return;
-        const res = await apiFetch(`/api/user/history/${uid}`);
+        const params = new URLSearchParams();
+        if (username) params.append("username", username);
+        if (uid) params.append("user_id", uid);
+
+        const res = await apiFetch(`/api/dashboard/init?${params.toString()}`);
         const json = await res.json();
 
-        const orders = json || [];
+        // Leaderboard
+        setLeaderboard(json.leaderboard?.top10 || []);
+        setMyRank(json.leaderboard?.me || null);
+
+        // Referral leaderboard
+        setReferralBoard(json.referralLeaderboard?.top10 || []);
+        setMyRefRank(json.referralLeaderboard?.me || null);
+
+        // History
+        const orders = json.history || [];
         setHistory(orders);
 
-        // 🔥 CHALLENGE FAQAT USER TARIXIDAN
+        // Challenge total
         const total = orders
-          .filter(o =>
-            ["stars_sent", "premium_sent"].includes(o.status)
-          )
+          .filter(o => ["stars_sent", "premium_sent"].includes(o.status))
           .reduce((s, o) => s + Number(o.amount || 0), 0);
-
         setMyTotal(total);
 
-        // 🔥 REFERRAL BALANCE
-        const refRes = await apiFetch(`/api/referral/stats/${username}`);
-        if(refRes.ok) {
-           const refJson = await refRes.json();
-           setReferralBalance(refJson.referral_balance || 0);
-           setReferralCount(refJson.total_referrals || 0);
-        }
+        // Referral stats
+        setReferralBalance(json.referralStats?.referral_balance || 0);
+        setReferralCount(json.referralStats?.total_referrals || 0);
 
-      } catch {
-        setError("Tarixni yuklashda xatolik");
+        // Unread notifications
+        setUnreadCount(json.unreadCount || 0);
+
+        console.log(`🚀 Dashboard yuklandi: ${json.loadTime}ms`);
+
+      } catch (err) {
+        console.error("Dashboard init error:", err);
+        setError("Ma'lumotlarni yuklashda xatolik");
       } finally {
         setLoading(false);
       }
     };
 
-    loadHistory();
-  }, [isTelegram, username]);
+    loadDashboard();
+  }, [username]);
 
-  /* ================= LOAD UNREAD NOTIFICATIONS ================= */
+  /* ================= REFRESH UNREAD NOTIFICATIONS (30s interval) ================= */
   useEffect(() => {
     const fetchUnreadCount = async () => {
       try {
@@ -465,24 +430,12 @@ export default function Dashboard() {
       {/* NAV LOADING OVERLAY */}
       {navLoading && (
         <div className="nav-loading-overlay">
-          <div className="nav-loading-sticker">
-             <TGSSticker stickerPath={loadingSticker} />
-          </div>
+          <div className="nav-loading-spinner"></div>
           <p className="nav-loading-text">{t("common.loading") || "Yuklanmoqda..."}</p>
         </div>
       )}
 
       {/* DYNAMIC CONTENT - Only show when not home tab */}
-      {tab === "challenges" && (
-        <div className="overlay-modal_dashboard">
-          <iframe
-            src="/challenges"
-            className="iframe-modal_dashboard"
-            title="Challenges"
-          ></iframe>
-        </div>
-      )}
-
       {tab === "history" && (
         <div className="overlay-modal_dashboard">
           <iframe
