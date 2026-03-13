@@ -1724,15 +1724,3 @@ p {
 .warning-understand-btn:active {
   transform: translateY(0);
 }
-
-/* ===============================
-   REFRESH BUTTON ANIMATION
-=============================== */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
