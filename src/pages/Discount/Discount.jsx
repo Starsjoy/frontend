@@ -10,6 +10,7 @@ const POLLING_DURATION = 5 * 60 * 1000;
 export default function Discount() {
   const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
   const CARD_NAME = import.meta.env.VITE_CARD_NAME;
+  const NARX = parseInt(import.meta.env.VITE_NARX); // 240 so'm per star
 
   // Discount packages from API
   const [discountPackages, setDiscountPackages] = useState([]);
@@ -42,8 +43,8 @@ export default function Discount() {
         const packages = data.map(pkg => ({
           id: pkg.id,
           stars: pkg.stars,
-          basePrice: pkg.base_price || pkg.discounted_price,
-          discountedPrice: pkg.current_price, // Slot-based narx
+          basePrice: pkg.stars * NARX, // To'g'ri asl narx (slot pricing oldingi)
+          discountedPrice: pkg.current_price, // Slot-based chegirma narxi
           discount: pkg.discount_percent,
           slotAvailable: pkg.slot_available !== false,
           availableSlots: pkg.available_slots || 20

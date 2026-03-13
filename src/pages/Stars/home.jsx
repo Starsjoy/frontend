@@ -118,13 +118,16 @@ export default function Home() {
               id: pkg.id,
               discount: pkg.discount_percent,
               discountedPrice: pkg.current_price,
-              basePrice: pkg.base_price || pkg.discounted_price,
+              basePrice: pkg.stars * NARX, // To'g'ri asl narx
             };
           }
         });
         setDiscountMap(map);
+        console.log("✅ Discount map:", map); // Debug
       })
-      .catch(() => {});
+      .catch(err => {
+        console.error("❌ Discount paketlarni yuklashda xato:", err);
+      });
   }, []);
 
   // Stars price - backend dan slot-based narx olish
