@@ -143,6 +143,13 @@ export default function AdminPanel() {
   const [editingPackage, setEditingPackage] = useState(null);
   const BASE_PRICE = parseInt(import.meta.env.VITE_NARX) || 240;
 
+  // Referral requests state
+  const [referralRequests, setReferralRequests] = useState([]);
+  const [referralFilter, setReferralFilter] = useState("pending");
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectingId, setRejectingId] = useState(null);
+
   // ========== MAINTENANCE MODE ==========
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -150,6 +157,9 @@ export default function AdminPanel() {
       .then(r => r.json())
       .then(d => setMaintenanceMode(d.maintenance))
       .catch(() => {});
+    
+    // Load referrals in background so badge shows immediately
+    fetchReferralRequests("all");
   }, [isAuthenticated]);
 
   const toggleMaintenance = async () => {
@@ -590,6 +600,68 @@ export default function AdminPanel() {
     }
   };
 
+  // Fetch referral requests
+  const fetchReferralRequests = async (filter = "pending") => {
+    setReferralLoading(true);
+    try {
+      const res = await apiFetch(`/api/admin/referral-requests?filter=${filter}`);
+      const data = await res.json();
+      setReferralRequests(data);
+    } catch (err) {
+      console.error("❌ Fetch referral requests error:", err);
+    } finally {
+      setReferralLoading(false);
+    }
+  };
+
+  // Approve referral request
+  const approveReferral = async (id) => {
+    try {
+      const res = await apiFetch(`/api/admin/referral-requests/${id}/approve`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (res.ok) {
+        alert("✅ Referral tasdiqlandi!");
+        fetchReferralRequests(referralFilter);
+      } else {
+        alert("❌ Xato yuz berdi!");
+      }
+    } catch (err) {
+      console.error("❌ Approve error:", err);
+      alert("❌ Xato yuz berdi!");
+    }
+  };
+
+  // Reject referral request
+  const rejectReferral = async (id) => {
+    if (!rejectReason.trim()) {
+      alert("Rad qilish sababini kiriting!");
+      return;
+    }
+
+    try {
+      const res = await apiFetch(`/api/admin/referral-requests/${id}/reject`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: rejectReason })
+      });
+
+      if (res.ok) {
+        alert("✅ Referral rad etildi!");
+        setRejectingId(null);
+        setRejectReason("");
+        fetchReferralRequests(referralFilter);
+      } else {
+        alert("❌ Xato yuz berdi!");
+      }
+    } catch (err) {
+      console.error("❌ Reject error:", err);
+      alert("❌ Xato yuz berdi!");
+    }
+  };
+
   const handlePasswordSubmit = null; // deprecated - Telegram auth ishlatiladi
 
   // 🔔 Fetch notification history
@@ -673,10 +745,12 @@ export default function AdminPanel() {
       fetchGiftOrders();
     } else if (activeTab === "settings") {
       fetchDiscountPackages();
+    } else if (activeTab === "referrals") {
+      fetchReferralRequests("pending");
     } else if (activeTab === "notifications") {
       fetchNotifications();
     }
-  }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter]);
+  }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter, referralFilter]);
 
   // Auto refresh - disabled
   useEffect(() => {
@@ -1118,9 +1192,40 @@ export default function AdminPanel() {
               else if (activeTab === "premium") fetchPremiumOrders();
               else if (activeTab === "gift") fetchGiftOrders();
               else if (activeTab === "settings") fetchDiscountPackages();
+              else if (activeTab === "referrals") fetchReferralRequests(referralFilter);
               else if (activeTab === "analytics") { fetchAnalytics(); fetchWalletAndPrices(); }
             }}>
               🔄
+            </button>
+            
+            {/* Referral Bell Icon */}
+            <button 
+              className="hdr-btn referral-bell"
+              onClick={() => setActiveTab("referrals")}
+              style={{position: 'relative'}}
+              title="Referral requests"
+            >
+              🔔
+              {referralRequests.filter(r => !r.is_accepted && !r.rejected_at).length > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  background: '#ff4444',
+                  color: '#fff',
+                  width: '18px',
+                  height: '18px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  border: '2px solid #1a1a2e'
+                }}>
+                  {referralRequests.filter(r => !r.is_accepted && !r.rejected_at).length}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -2014,6 +2119,198 @@ export default function AdminPanel() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ==================== REFERRALS TAB ==================== */}
+      {activeTab === "referrals" && (
+        <div className="tab-content referrals-tab">
+          <h3 className="settings-section-title">👥 Referral Requests</h3>
+          <p className="settings-section-desc">Foydalanuvchilarning referral so'rovlarini tasdiqlang yoki rad qiling</p>
+
+          {/* Filter Buttons */}
+          <div className="referrals-filter" style={{display: 'flex', gap: '8px', marginBottom: '16px'}}>
+            {['pending', 'accepted', 'rejected', 'all'].map(f => (
+              <button
+                key={f}
+                onClick={() => {
+                  setReferralFilter(f);
+                  fetchReferralRequests(f);
+                }}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: referralFilter === f ? '#667eea' : 'rgba(255,255,255,0.1)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: referralFilter === f ? '600' : '500',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {f === 'pending' ? `⏳ Kutilmoqda (${referralRequests.filter(r => !r.is_accepted && !r.rejected_at).length})` : 
+                 f === 'accepted' ? `✅ Tasdiqlandi (${referralRequests.filter(r => r.is_accepted).length})` :
+                 f === 'rejected' ? `❌ Rad etildi (${referralRequests.filter(r => r.rejected_at).length})` :
+                 'Barchasi'}
+              </button>
+            ))}
+          </div>
+
+          {/* Requests List */}
+          <div className="referrals-list" style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+            {referralLoading ? (
+              <div style={{textAlign: 'center', padding: '20px', color: '#999'}}>⏳ Yuklanmoqda...</div>
+            ) : referralRequests.length === 0 ? (
+              <div style={{textAlign: 'center', padding: '20px', color: '#999'}}>Hech qanday so'rov topilmadi</div>
+            ) : (
+              referralRequests.map(req => (
+                <div
+                  key={req.id}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '10px',
+                    padding: '14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}
+                >
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                    <div style={{fontSize: '14px', fontWeight: '600'}}>
+                      <span style={{color: '#4ee0ff'}}>@{req.owner_username}</span>
+                      <span style={{color: '#999', margin: '0 8px'}}>{req.subscribe_referrer ? '✅' : '❌'}</span>
+                      <span style={{color: '#f9a825'}}>@{req.referrer_username}</span>
+                    </div>
+                    <span style={{
+                      fontSize: '11px',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      background: req.is_accepted ? 'rgba(52,199,89,0.2)' : req.rejected_at ? 'rgba(255,69,58,0.2)' : 'rgba(255,204,0,0.2)',
+                      color: req.is_accepted ? '#34c759' : req.rejected_at ? '#ff453a' : '#ffcc00'
+                    }}>
+                      {req.is_accepted ? '✅ Tasdiqlandi' : req.rejected_at ? '❌ Rad etildi' : '⏳ Kutilmoqda'}
+                    </span>
+                  </div>
+
+                  <div style={{fontSize: '12px', color: '#999'}}>
+                    📅 {new Date(req.created_at).toLocaleDateString('uz-UZ')} {new Date(req.created_at).toLocaleTimeString('uz-UZ', {hour: '2-digit', minute: '2-digit'})}
+                  </div>
+
+                  <div style={{
+                    fontSize: '12px',
+                    padding: '8px 10px',
+                    background: req.subscribe_referrer ? 'rgba(52,199,89,0.15)' : 'rgba(255,69,58,0.15)',
+                    borderRadius: '6px',
+                    color: req.subscribe_referrer ? '#34c759' : '#ff453a',
+                    fontWeight: '500'
+                  }}>
+                    {req.subscribe_referrer ? '✅ Kanalga obuna: HA' : '❌ Kanalga obuna: YO\'Q'}
+                  </div>
+
+                  {/* Action Buttons */}
+                  {!req.is_accepted && !req.rejected_at && (
+                    <div style={{display: 'flex', gap: '8px', marginTop: '8px'}}>
+                      <button
+                        onClick={() => approveReferral(req.id)}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                          color: '#fff',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        ✅ Tasdiqlash
+                      </button>
+                      <button
+                        onClick={() => setRejectingId(req.id)}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: 'linear-gradient(135deg, #ff4444, #cc0000)',
+                          color: '#fff',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        ❌ Rad qilish
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Reject Modal */}
+                  {rejectingId === req.id && (
+                    <div style={{
+                      background: 'rgba(0,0,0,0.3)',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      marginTop: '8px'
+                    }}>
+                      <input
+                        type="text"
+                        placeholder="Rad qilish sababini kiriting..."
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          background: 'rgba(255,255,255,0.1)',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          borderRadius: '6px',
+                          color: '#fff',
+                          marginBottom: '8px',
+                          fontSize: '13px'
+                        }}
+                      />
+                      <div style={{display: 'flex', gap: '8px'}}>
+                        <button
+                          onClick={() => rejectReferral(req.id)}
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: '#ff4444',
+                            color: '#fff',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Tasdiqlash
+                        </button>
+                        <button
+                          onClick={() => {
+                            setRejectingId(null);
+                            setRejectReason("");
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            background: 'transparent',
+                            color: '#fff',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Bekor qilish
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
             )}
           </div>
         </div>
