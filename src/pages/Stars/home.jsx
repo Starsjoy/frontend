@@ -527,7 +527,7 @@ export default function Home() {
               return (
                 <div
                   key={idx}
-                  onClick={() => navigate('/discount')}
+                  onClick={() => navigate('/discount', { state: { selectedPackageId: discountPkg.id } })}
                   style={{
                     position: 'relative',
                     display: 'flex',

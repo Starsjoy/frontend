@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import starsSticker from "../../assets/AnimatedSticker_stars.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
 import "./Discount.css";
 
@@ -32,6 +32,7 @@ export default function Discount() {
   const countdownRef = useRef(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Fetch discount packages from API
   useEffect(() => {
@@ -50,6 +51,14 @@ export default function Discount() {
           availableSlots: pkg.available_slots || 20
         }));
         setDiscountPackages(packages);
+
+        // Agar home.jsx dan tanlangan paket bo'lsa - avtomatik select qil
+        if (location.state?.selectedPackageId) {
+          const selectedPkg = packages.find(p => p.id === location.state.selectedPackageId);
+          if (selectedPkg) {
+            setSelectedOption(selectedPkg);
+          }
+        }
       } catch (err) {
         console.error("❌ Paketlarni yuklashda xato:", err);
       } finally {
@@ -57,7 +66,7 @@ export default function Discount() {
       }
     };
     fetchPackages();
-  }, []);
+  }, [location.state?.selectedPackageId]);
 
   const goToHome = () => {
     setShowModal(false);
