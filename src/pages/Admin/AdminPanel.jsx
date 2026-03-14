@@ -78,6 +78,10 @@ export default function AdminPanel() {
   
   // User details modal state
   const [userModal, setUserModal] = useState(null); // full user object
+  const [referrerInfo, setReferrerInfo] = useState(null); // referrer user info
+  const [userReferrals, setUserReferrals] = useState([]); // list of users referred by this user
+  const [referralsLoading, setReferralsLoading] = useState(false);
+  const [showAllReferrals, setShowAllReferrals] = useState(false);
 
   // 🔧 Maintenance mode
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -1067,6 +1071,75 @@ export default function AdminPanel() {
     }
   };
 
+  // Load referrer info and referrals when opening user modal
+  const loadUserReferralsData = async (userId) => {
+    setReferralsLoading(true);
+    try {
+      // Fetch referrer info if exists
+      if (userModal?.referrer_user_id) {
+        const referrerRes = await apiFetch(`/api/admin/user/${userModal.referrer_user_id}`);
+        const referrerData = await referrerRes.json();
+        if (referrerData) {
+          setReferrerInfo(referrerData);
+        }
+      }
+      
+      // Fetch all referrals by this user
+      const referralsRes = await apiFetch(`/api/admin/user/${userId}/referrals`);
+      const referralsData = await referralsRes.json();
+      if (Array.isArray(referralsData)) {
+        setUserReferrals(referralsData);
+      }
+    } catch (err) {
+      console.error("❌ Load referrals error:", err);
+    } finally {
+      setReferralsLoading(false);
+    }
+  };
+
+  // Remove a referral relationship
+  const removeReferral = async (referralUserId) => {
+    if (!userModal) return;
+    
+    // Find the referral user to show username
+    const referralUser = userReferrals?.find(r => r.id === referralUserId);
+    const username = referralUser?.username || "Unknown";
+    
+    console.log(`\n🔍 REFERRAL O'CHIRISH JARAYONI BOSHLANDI`);
+    console.log(`📋 Referralni o'chirayotgan user: @${userModal.username} (ID: ${userModal.user_id})`);
+    console.log(`🗑️ O'chiriladigan referral: @${username} (ID: ${referralUserId})`);
+    console.log(`📝 Amalga oshiriladigan: user.referrer_user_id = NULL`);
+    
+    if (!window.confirm(`@${username} foydalanuvchining referral munosabatini o'chirmoqchimisiz?\n\nBu amal referrer_user_id ni NULL qib qo'yadi.`)) {
+      console.log(`⚠️ Foydalanuvchi bekor qildi`);
+      return;
+    }
+    
+    try {
+      console.log(`⏳ Backend ga POST so'rov yuborilmoqda: /api/admin/user/${referralUserId}/remove-referrer`);
+      const res = await apiFetch(`/api/admin/user/${referralUserId}/remove-referrer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      
+      const response = await res.json();
+      
+      if (res.ok) {
+        console.log(`✅ O'CHIRISH MUVAFFAQIYATLI!`);
+        console.log(`📊 Backend javobi:`, response);
+        console.log(`🔄 Referrallar ro'yxati yangilanimoqda...`);
+        alert(`✅ @${username} ning referral munosabati o'chirildi!\nReferrer_user_id = NULL`);
+        loadUserReferralsData(userModal.user_id);
+      } else {
+        console.error(`❌ O'CHIRISH MUVAFFAQ BO'LMADI:`, response);
+        alert(`❌ Xato yuz berdi: ${response.error || "Noma'lum xato"}`);
+      }
+    } catch (err) {
+      console.error(`❌ Network yoki server xato:`, err);
+      alert("Server xato!");
+    }
+  };
+
   // Admin: Adjust user som balance
   const openSomBalanceModal = (user) => {
     setSomBalanceModal({
@@ -1840,7 +1913,10 @@ export default function AdminPanel() {
                   <div 
                     key={u.id} 
                     className="user-card"
-                    onClick={() => setUserModal(u)}
+                    onClick={() => {
+                      setUserModal(u);
+                      setTimeout(() => loadUserReferralsData(u.user_id), 0);
+                    }}
                     style={{ cursor: 'pointer' }}
                   >
                     <div className="user-main">
@@ -2351,6 +2427,12 @@ export default function AdminPanel() {
                   <span className="detail-label">Referrer ID:</span>
                   <span className="detail-value">{userModal.referrer_user_id || "-"}</span>
                 </div>
+                {referrerInfo && (
+                  <div className="user-detail-row" style={{background: 'rgba(102, 126, 234, 0.1)', padding: '8px', borderRadius: '6px', margin: '4px 0'}}>
+                    <span className="detail-label">Oldin'dan:</span>
+                    <span className="detail-value" style={{color: '#667eea'}}>@{referrerInfo.username}</span>
+                  </div>
+                )}
                 <div className="user-detail-row">
                   <span className="detail-label">Ref Balance:</span>
                   <span className="detail-value highlight">💰 {userModal.referral_balance || 0} ⭐</span>
@@ -2388,6 +2470,61 @@ export default function AdminPanel() {
                   ➕➖ Referral balansni o'zgartirish
                 </button>
               </div>
+
+              {/* ==================== REFERRALS SECTION ==================== */}
+              {referralsLoading ? (
+                <div style={{textAlign: 'center', padding: '20px'}}>
+                  <div className="loading-spinner"></div>
+                  <p>Referrallar yuklanmoqda...</p>
+                </div>
+              ) : (
+                <>
+                  {userReferrals && userReferrals.length > 0 && (
+                    <div className="referrals-section" style={{marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)'}}>
+                      <h4 style={{marginBottom: '12px', color: '#667eea'}}>👥 Referrals ({userReferrals.length})</h4>
+                      <div className="referrals-list" style={{maxHeight: '200px', overflowY: 'auto'}}>
+                        {userReferrals.map((ref) => (
+                          <div 
+                            key={ref.id} 
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '8px',
+                              marginBottom: '6px',
+                              background: 'rgba(255,255,255,0.05)',
+                              borderRadius: '6px',
+                              fontSize: '12px'
+                            }}
+                          >
+                            <div style={{flex: 1}}>
+                              <span style={{color: '#667eea', fontWeight: 'bold'}}>@{ref.username}</span>
+                              <span style={{marginLeft: '8px', color: 'rgba(255,255,255,0.6)'}}>
+                                Sub: {ref.subscribe_user ? "✅" : "❌"}
+                              </span>
+                            </div>
+                            <button
+                              className="delete-btn"
+                              onClick={() => removeReferral(ref.id)}
+                              style={{
+                                background: '#ff4757',
+                                border: 'none',
+                                color: 'white',
+                                padding: '4px 8px',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                fontSize: '11px'
+                              }}
+                            >
+                              🗑️ O'chirish
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
