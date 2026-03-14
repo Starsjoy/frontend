@@ -83,6 +83,10 @@ export default function AdminPanel() {
   const [referralsLoading, setReferralsLoading] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
 
+  // User card selection & modal type
+  const [selectedUserCard, setSelectedUserCard] = useState(null); // selected user for buttons
+  const [userDetailsModalType, setUserDetailsModalType] = useState(null); // "info" or "referrals"
+
   // 🔧 Maintenance mode
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
@@ -1319,7 +1323,7 @@ export default function AdminPanel() {
             className={`hdr-nav-btn ${activeTab === "settings" ? "active" : ""}`}
             onClick={() => setActiveTab("settings")}
           >
-            ⚙️ Sozlamalar
+             ➕ Chegirma
           </button>
         </div>
       </header>
@@ -1913,21 +1917,96 @@ export default function AdminPanel() {
                   <div 
                     key={u.id} 
                     className="user-card"
-                    onClick={() => {
-                      setUserModal(u);
-                      setTimeout(() => loadUserReferralsData(u.user_id), 0);
-                    }}
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className="user-main">
-                      <span className="user-id">#{u.id}</span>
-                      <span className="user-name">@{u.username}</span>
+                    <div 
+                      onClick={() => {
+                        setSelectedUserCard(u);
+                        setUserDetailsModalType(null);
+                      }}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '12px',
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <div className="user-main">
+                        <span className="user-id">#{u.id}</span>
+                        <span className="user-name">@{u.username}</span>
+                      </div>
+                      <div className="user-stats">
+                        <span className="user-stat">💰 {u.referral_balance} ⭐</span>
+                        <span className="user-stat">👥 {u.total_referrals}</span>
+                        {u.som_balance > 0 && <span className="user-stat">💵 {(u.som_balance || 0).toLocaleString()}</span>}
+                      </div>
                     </div>
-                    <div className="user-stats">
-                      <span className="user-stat">💰 {u.referral_balance} ⭐</span>
-                      <span className="user-stat">👥 {u.total_referrals}</span>
-                      {u.som_balance > 0 && <span className="user-stat">💵 {(u.som_balance || 0).toLocaleString()}</span>}
-                    </div>
+
+                    {/* Show buttons when user is selected */}
+                    {selectedUserCard?.id === u.id && (
+                      <div style={{
+                        display: 'flex',
+                        gap: '8px',
+                        padding: '8px 12px',
+                        borderTop: '1px solid rgba(255,255,255,0.1)',
+                        marginTop: '8px'
+                      }}>
+                        <button
+                          onClick={() => {
+                            setUserModal(u);
+                            setUserDetailsModalType("info");
+                            loadUserReferralsData(u.user_id);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: '#667eea',
+                            color: '#fff',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            fontSize: '13px'
+                          }}
+                        >
+                          ℹ️ Ma'lumot
+                        </button>
+                        <button
+                          onClick={() => {
+                            setUserModal(u);
+                            setUserDetailsModalType("referrals");
+                            loadUserReferralsData(u.user_id);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: '#f9a825',
+                            color: '#fff',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            fontSize: '13px'
+                          }}
+                        >
+                          👥 Referallar
+                        </button>
+                        <button
+                          onClick={() => setSelectedUserCard(null)}
+                          style={{
+                            padding: '10px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: 'rgba(255,255,255,0.1)',
+                            color: '#fff',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -2393,12 +2472,20 @@ export default function AdminPanel() {
       )}
 
       {/* ==================== USER DETAILS MODAL ==================== */}
-      {userModal && (
-        <div className="balance-modal-overlay" onClick={() => setUserModal(null)}>
+      {userModal && userDetailsModalType === "info" && (
+        <div className="balance-modal-overlay" onClick={() => { 
+          setUserModal(null); 
+          setUserDetailsModalType(null);
+          setSelectedUserCard(null);
+        }}>
           <div className="balance-modal user-detail-modal" onClick={(e) => e.stopPropagation()}>
             <div className="balance-modal-header">
               <h3>👤 Foydalanuvchi ma'lumotlari</h3>
-              <button className="modal-close" onClick={() => setUserModal(null)}>✕</button>
+              <button className="modal-close" onClick={() => { 
+                setUserModal(null); 
+                setUserDetailsModalType(null);
+                setSelectedUserCard(null);
+              }}>✕</button>
             </div>
             
             <div className="balance-modal-body">
@@ -2464,66 +2551,95 @@ export default function AdminPanel() {
                   className="balance-btn add"
                   onClick={() => {
                     setUserModal(null);
+                    setUserDetailsModalType(null);
                     openBalanceModal(userModal);
                   }}
                 >
                   ➕➖ Referral balansni o'zgartirish
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-              {/* ==================== REFERRALS SECTION ==================== */}
+      {userModal && userDetailsModalType === "referrals" && (
+        <div className="balance-modal-overlay" onClick={() => { 
+          setUserModal(null); 
+          setUserDetailsModalType(null);
+          setSelectedUserCard(null);
+        }}>
+          <div className="balance-modal user-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="balance-modal-header">
+              <h3>👥 @{userModal.username} ning referallari</h3>
+              <button className="modal-close" onClick={() => { 
+                setUserModal(null); 
+                setUserDetailsModalType(null);
+                setSelectedUserCard(null);
+              }}>✕</button>
+            </div>
+            
+            <div className="balance-modal-body">
               {referralsLoading ? (
                 <div style={{textAlign: 'center', padding: '20px'}}>
                   <div className="loading-spinner"></div>
                   <p>Referrallar yuklanmoqda...</p>
                 </div>
-              ) : (
-                <>
-                  {userReferrals && userReferrals.length > 0 && (
-                    <div className="referrals-section" style={{marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)'}}>
-                      <h4 style={{marginBottom: '12px', color: '#667eea'}}>👥 Referrals ({userReferrals.length})</h4>
-                      <div className="referrals-list" style={{maxHeight: '200px', overflowY: 'auto'}}>
-                        {userReferrals.map((ref) => (
-                          <div 
-                            key={ref.id} 
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              padding: '8px',
-                              marginBottom: '6px',
-                              background: 'rgba(255,255,255,0.05)',
-                              borderRadius: '6px',
-                              fontSize: '12px'
-                            }}
-                          >
-                            <div style={{flex: 1}}>
-                              <span style={{color: '#667eea', fontWeight: 'bold'}}>@{ref.username}</span>
-                              <span style={{marginLeft: '8px', color: 'rgba(255,255,255,0.6)'}}>
-                                Sub: {ref.subscribe_user ? "✅" : "❌"}
-                              </span>
-                            </div>
-                            <button
-                              className="delete-btn"
-                              onClick={() => removeReferral(ref.id)}
-                              style={{
-                                background: '#ff4757',
-                                border: 'none',
-                                color: 'white',
-                                padding: '4px 8px',
-                                borderRadius: '3px',
-                                cursor: 'pointer',
-                                fontSize: '11px'
-                              }}
-                            >
-                              🗑️ O'chirish
-                            </button>
+              ) : userReferrals && userReferrals.length > 0 ? (
+                <div className="referrals-section">
+                  <h4 style={{marginBottom: '12px', color: '#667eea'}}>👥 Jami: {userReferrals.length} ta</h4>
+                  <div className="referrals-list" style={{maxHeight: '400px', overflowY: 'auto'}}>
+                    {userReferrals.map((ref) => (
+                      <div 
+                        key={ref.id} 
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '10px',
+                          marginBottom: '8px',
+                          background: 'rgba(255,255,255,0.05)',
+                          borderRadius: '6px',
+                          fontSize: '12px'
+                        }}
+                      >
+                        <div style={{flex: 1}}>
+                          <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                            <span style={{color: '#667eea', fontWeight: 'bold'}}>@{ref.username}</span>
+                            <span style={{color: 'rgba(255,255,255,0.6)'}}>
+                              Sub: {ref.subscribe_user ? "✅" : "❌"}
+                            </span>
                           </div>
-                        ))}
+                          <div style={{color: '#999', fontSize: '11px', marginTop: '4px'}}>
+                            📅 {new Date(ref.created_at).toLocaleDateString('uz-UZ')}
+                          </div>
+                        </div>
+                        <button
+                          className="delete-btn"
+                          onClick={() => removeReferral(ref.id)}
+                          style={{
+                            background: '#ff4757',
+                            border: 'none',
+                            color: 'white',
+                            padding: '6px 10px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            marginLeft: '8px',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          🗑️ O'chirish
+                        </button>
                       </div>
-                    </div>
-                  )}
-                </>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={{textAlign: 'center', padding: '40px 20px', color: '#999'}}>
+                  <div style={{fontSize: '24px', marginBottom: '8px'}}>👥</div>
+                  <p>Hech qanday referral yo'q</p>
+                </div>
               )}
             </div>
           </div>
