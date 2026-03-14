@@ -1960,7 +1960,7 @@ export default function AdminPanel() {
                         fontWeight: 'bold',
                         color: '#fff'
                       }}>
-                        {index + 1}
+                        {filteredUsers.length - index}
                       </div>
                       
                       <div className="user-main" style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden' }}>
@@ -2370,11 +2370,11 @@ export default function AdminPanel() {
           </div>
 
           {/* Requests List */}
-          <div className="referrals-list" style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+          <div className="referrals-list" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px'}}>
             {referralLoading ? (
-              <div style={{textAlign: 'center', padding: '20px', color: '#999'}}>⏳ Yuklanmoqda...</div>
+              <div style={{textAlign: 'center', padding: '20px', color: '#999', gridColumn: '1 / -1'}}>⏳ Yuklanmoqda...</div>
             ) : referralRequests.length === 0 ? (
-              <div style={{textAlign: 'center', padding: '20px', color: '#999'}}>Hech qanday so'rov topilmadi</div>
+              <div style={{textAlign: 'center', padding: '20px', color: '#999', gridColumn: '1 / -1'}}>Hech qanday so'rov topilmadi</div>
             ) : (
               referralRequests.map(req => (
                 <div
@@ -2386,66 +2386,58 @@ export default function AdminPanel() {
                     padding: '14px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '10px'
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
                   }}
                 >
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px'}}>
                     <div style={{
-                      fontSize: '15px',
-                      fontWeight: '600',
                       display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      flex: 1,
-                      minWidth: '200px'
+                      flexDirection: 'column',
+                      gap: '4px'
                     }}>
-                      <span style={{color: '#f9a825', fontWeight: '700'}}>@{req.referrer_username}</span>
-                      <span style={{color: '#999', fontSize: '15px'}}>{'->'}</span>
-                      <span style={{color: '#4ee0ff', fontWeight: '700'}}>@{req.owner_username}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '15px', flexWrap: 'wrap' }}>
+                        <span style={{color: '#f9a825', fontWeight: 'bold'}}>@{req.referrer_username || 'user'}</span>
+                        <span style={{color: 'rgba(255,255,255,0.4)'}}>{'->'}</span>
+                        <span style={{color: '#4ee0ff', fontWeight: 'bold'}}>@{req.owner_username || 'new_user'}</span>
+                      </div>
                       
-                      <span style={{
-                        marginLeft: '8px',
-                        fontSize: '11px',
-                        padding: '3px 8px',
-                        borderRadius: '5px',
-                        background: req.subscribe_referrer ? 'rgba(52,199,89,0.3)' : 'rgba(255,69,58,0.3)',
-                        color: req.subscribe_referrer ? '#34c759' : '#ff453a',
-                        fontWeight: '600',
-                        textTransform: 'uppercase'
-                      }}>
-                        {req.subscribe_referrer ? '✅ Sub' : '❌ No Sub'}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                        <span style={{
+                          fontSize: '11px',
+                          padding: '3px 6px',
+                          borderRadius: '4px',
+                          backgroundColor: req.subscribe_referrer ? 'rgba(52,199,89,0.15)' : 'rgba(255,69,58,0.15)',
+                          color: req.subscribe_referrer ? '#34c759' : '#ff453a',
+                          fontWeight: '600',
+                          border: `1px solid ${req.subscribe_referrer ? 'rgba(52,199,89,0.3)' : 'rgba(255,69,58,0.3)'}`
+                        }}>
+                          {req.subscribe_referrer ? '✅ Sub' : '❌ No sub'}
+                        </span>
+                        
+                        <span style={{
+                          fontSize: '11px',
+                          padding: '3px 6px',
+                          borderRadius: '4px',
+                          backgroundColor: req.is_accepted ? 'rgba(52,199,89,0.15)' : req.rejected_at ? 'rgba(255,69,58,0.15)' : 'rgba(255,204,0,0.15)',
+                          color: req.is_accepted ? '#34c759' : req.rejected_at ? '#ff453a' : '#ffcc00',
+                          fontWeight: '600',
+                          border: `1px solid ${req.is_accepted ? 'rgba(52,199,89,0.3)' : req.rejected_at ? 'rgba(255,69,58,0.3)' : 'rgba(255,204,0,0.3)'}`
+                        }}>
+                          {req.is_accepted ? 'Tasdiqlangan' : req.rejected_at ? 'Rad etilgan' : 'Kutilmoqda'}
+                        </span>
+                      </div>
                     </div>
-                    <span style={{
-                      fontSize: '11px',
-                      padding: '4px 8px',
-                      borderRadius: '6px',
-                      background: req.is_accepted ? 'rgba(52,199,89,0.2)' : req.rejected_at ? 'rgba(255,69,58,0.2)' : 'rgba(255,204,0,0.2)',
-                      color: req.is_accepted ? '#34c759' : req.rejected_at ? '#ff453a' : '#ffcc00',
-                      fontWeight: '600'
-                    }}>
-                      {req.is_accepted ? '✅ Tasdiqlandi' : req.rejected_at ? '❌ Rad etildi' : '⏳ Kutilmoqda'}
-                    </span>
                   </div>
 
-                  <div style={{fontSize: '12px', color: '#999'}}>
+                  <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.5)'}}>
                     📅 {new Date(req.created_at).toLocaleDateString('uz-UZ')} {new Date(req.created_at).toLocaleTimeString('uz-UZ', {hour: '2-digit', minute: '2-digit'})}
-                  </div>
-
-                  <div style={{
-                    fontSize: '12px',
-                    padding: '8px 10px',
-                    background: req.subscribe_referrer ? 'rgba(52,199,89,0.15)' : 'rgba(255,69,58,0.15)',
-                    borderRadius: '6px',
-                    color: req.subscribe_referrer ? '#34c759' : '#ff453a',
-                    fontWeight: '500'
-                  }}>
-                    {req.subscribe_referrer ? '✅ Kanalga obuna: HA' : '❌ Kanalga obuna: YO\'Q'}
                   </div>
 
                   {/* Action Buttons */}
                   {!req.is_accepted && !req.rejected_at && (
-                    <div style={{display: 'flex', gap: '8px', marginTop: '8px'}}>
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)'}}>
                       <button
                         onClick={() => approveReferral(req.id)}
                         style={{
