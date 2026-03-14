@@ -1917,40 +1917,57 @@ export default function AdminPanel() {
                   <div 
                     key={u.id} 
                     className="user-card"
-                    style={{ cursor: 'pointer' }}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      background: 'rgba(255,255,255,0.05)',
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      border: selectedUserCard?.id === u.id ? '2px solid #667eea' : '1px solid rgba(255,255,255,0.1)',
+                      transition: 'all 0.2s'
+                    }}
                   >
+                    {/* User Info Section */}
                     <div 
                       onClick={() => {
-                        setSelectedUserCard(u);
-                        setUserDetailsModalType(null);
+                        setSelectedUserCard(selectedUserCard?.id === u.id ? null : u);
                       }}
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '12px',
-                        borderRadius: '8px'
+                        padding: '14px 12px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s'
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = ''}
                     >
                       <div className="user-main">
-                        <span className="user-id">#{u.id}</span>
-                        <span className="user-name">@{u.username}</span>
+                        <span className="user-id" style={{fontSize: '12px', color: 'rgba(255,255,255,0.6)'}}>ID: #{u.id}</span>
+                        <span className="user-name" style={{fontSize: '14px', fontWeight: '600', marginTop: '4px'}}>@{u.username}</span>
                       </div>
-                      <div className="user-stats">
-                        <span className="user-stat">💰 {u.referral_balance} ⭐</span>
-                        <span className="user-stat">👥 {u.total_referrals}</span>
-                        {u.som_balance > 0 && <span className="user-stat">💵 {(u.som_balance || 0).toLocaleString()}</span>}
+                      <div className="user-stats" style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: '4px'
+                      }}>
+                        <span className="user-stat" style={{fontSize: '13px', fontWeight: '600'}}>💰 {u.referral_balance}</span>
+                        <span className="user-stat" style={{fontSize: '13px', color: 'rgba(255,255,255,0.8)'}}>👥 {u.total_referrals}</span>
+                        {u.som_balance > 0 && <span className="user-stat" style={{fontSize: '12px', color: '#f9a825'}}>💵 {(u.som_balance || 0).toLocaleString()}</span>}
                       </div>
                     </div>
 
-                    {/* Show buttons when user is selected */}
+                    {/* Action Buttons - Show below user info */}
                     {selectedUserCard?.id === u.id && (
                       <div style={{
-                        display: 'flex',
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
                         gap: '8px',
-                        padding: '8px 12px',
+                        padding: '10px 12px',
                         borderTop: '1px solid rgba(255,255,255,0.1)',
-                        marginTop: '8px'
+                        backgroundColor: 'rgba(0,0,0,0.3)'
                       }}>
                         <button
                           onClick={() => {
@@ -1959,16 +1976,18 @@ export default function AdminPanel() {
                             loadUserReferralsData(u.user_id);
                           }}
                           style={{
-                            flex: 1,
-                            padding: '10px',
+                            padding: '12px 10px',
                             borderRadius: '6px',
                             border: 'none',
-                            background: '#667eea',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                             color: '#fff',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            fontSize: '13px'
+                            fontSize: '13px',
+                            transition: 'transform 0.1s',
                           }}
+                          onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
+                          onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
                         >
                           ℹ️ Ma'lumot
                         </button>
@@ -1979,31 +1998,20 @@ export default function AdminPanel() {
                             loadUserReferralsData(u.user_id);
                           }}
                           style={{
-                            flex: 1,
-                            padding: '10px',
+                            padding: '12px 10px',
                             borderRadius: '6px',
                             border: 'none',
-                            background: '#f9a825',
+                            background: 'linear-gradient(135deg, #f9a825 0%, #f08a5d 100%)',
                             color: '#fff',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            fontSize: '13px'
+                            fontSize: '13px',
+                            transition: 'transform 0.1s'
                           }}
+                          onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
+                          onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
                         >
                           👥 Referallar
-                        </button>
-                        <button
-                          onClick={() => setSelectedUserCard(null)}
-                          style={{
-                            padding: '10px 12px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            background: 'rgba(255,255,255,0.1)',
-                            color: '#fff',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          ✕
                         </button>
                       </div>
                     )}
@@ -2286,7 +2294,7 @@ export default function AdminPanel() {
           <p className="settings-section-desc">Foydalanuvchilarning referral so'rovlarini tasdiqlang yoki rad qiling</p>
 
           {/* Filter Buttons */}
-          <div className="referrals-filter" style={{display: 'flex', gap: '8px', marginBottom: '16px'}}>
+          <div className="referrals-filter" style={{display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap'}}>
             {['pending', 'accepted', 'rejected', 'all'].map(f => (
               <button
                 key={f}
@@ -2295,20 +2303,22 @@ export default function AdminPanel() {
                   fetchReferralRequests(f);
                 }}
                 style={{
-                  padding: '8px 14px',
+                  padding: '10px 14px',
                   borderRadius: '8px',
                   border: 'none',
                   background: referralFilter === f ? '#667eea' : 'rgba(255,255,255,0.1)',
                   color: '#fff',
                   cursor: 'pointer',
                   fontWeight: referralFilter === f ? '600' : '500',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  fontSize: '13px',
+                  fontFamily: 'monospace'
                 }}
               >
-                {f === 'pending' ? `Kutilmoqda (${referralRequests.filter(r => !r.is_accepted && !r.rejected_at).length})` : 
-                 f === 'accepted' ? `Tasdiqlandi (${referralRequests.filter(r => r.is_accepted).length})` :
-                 f === 'rejected' ? `Rad etildi (${referralRequests.filter(r => r.rejected_at).length})` :
-                 'Barchasi'}
+                {f === 'pending' ? `pending: ${referralRequests.filter(r => !r.is_accepted && !r.rejected_at).length}` : 
+                 f === 'accepted' ? `accept: ${referralRequests.filter(r => r.is_accepted).length}` :
+                 f === 'rejected' ? `refuse: ${referralRequests.filter(r => r.rejected_at).length}` :
+                 `all: ${referralRequests.length}`}
               </button>
             ))}
           </div>
@@ -2333,18 +2343,56 @@ export default function AdminPanel() {
                     gap: '10px'
                   }}
                 >
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <div style={{fontSize: '14px', fontWeight: '600'}}>
-                      <span style={{color: '#4ee0ff'}}>@{req.owner_username}</span>
-                      <span style={{color: '#999', margin: '0 8px'}}>{req.subscribe_referrer ? '✅' : '❌'}</span>
-                      <span style={{color: '#f9a825'}}>@{req.referrer_username}</span>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap'}}>
+                    <div style={{
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      flex: 1,
+                      minWidth: '200px'
+                    }}>
+                      <span style={{
+                        padding: '4px 8px',
+                        background: 'rgba(255, 179, 71, 0.2)',
+                        borderRadius: '6px',
+                        color: '#ffb347',
+                        fontWeight: '700'
+                      }}>
+                        DO'ST
+                      </span>
+                      <span style={{color: '#f9a825', fontSize: '14px', fontWeight: '700'}}>@{req.referrer_username}</span>
+                      <span style={{color: '#999', fontSize: '16px'}}>➜</span>
+                      <span style={{
+                        padding: '4px 8px',
+                        background: 'rgba(78, 224, 255, 0.2)',
+                        borderRadius: '6px',
+                        color: '#4ee0ff',
+                        fontWeight: '700'
+                      }}>
+                        YANGI
+                      </span>
+                      <span style={{color: '#4ee0ff', fontSize: '14px', fontWeight: '700'}}>@{req.owner_username}</span>
+                      <span style={{
+                        marginLeft: '12px',
+                        fontSize: '12px',
+                        padding: '3px 8px',
+                        borderRadius: '5px',
+                        background: req.subscribe_referrer ? 'rgba(52,199,89,0.3)' : 'rgba(255,69,58,0.3)',
+                        color: req.subscribe_referrer ? '#34c759' : '#ff453a',
+                        fontWeight: '600'
+                      }}>
+                        {req.subscribe_referrer ? '✅ Sub' : '❌ No Sub'}
+                      </span>
                     </div>
                     <span style={{
                       fontSize: '11px',
                       padding: '4px 8px',
                       borderRadius: '6px',
                       background: req.is_accepted ? 'rgba(52,199,89,0.2)' : req.rejected_at ? 'rgba(255,69,58,0.2)' : 'rgba(255,204,0,0.2)',
-                      color: req.is_accepted ? '#34c759' : req.rejected_at ? '#ff453a' : '#ffcc00'
+                      color: req.is_accepted ? '#34c759' : req.rejected_at ? '#ff453a' : '#ffcc00',
+                      fontWeight: '600'
                     }}>
                       {req.is_accepted ? '✅ Tasdiqlandi' : req.rejected_at ? '❌ Rad etildi' : '⏳ Kutilmoqda'}
                     </span>
