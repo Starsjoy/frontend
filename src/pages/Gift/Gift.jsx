@@ -576,7 +576,7 @@ export default function Gift() {
                   value={pramacod}
                   onChange={(e) => setPramacod(e.target.value)}
                   style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '14px' }}
-                  placeholder="Pramacod (Agar bo'lsa)" 
+                  placeholder="Promokod (Agar bo'lsa)" 
                 />
                 <button 
                   type="button" 

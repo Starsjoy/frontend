@@ -386,7 +386,7 @@ export default function Premium() {
       <div className="promo-input-group" style={{ marginBottom: "15px" }}>
         <input 
           type="text" 
-          placeholder="Promo-kod" 
+          placeholder="Promokod kiriting (Agar bo'lsa)" 
           value={pramacod} 
           onChange={(e) => setPramacod(e.target.value)} 
           style={{ width: "calc(100% - 100px)", padding: "12px", borderRadius: "14px", border: "1px solid #ccc", outline: "none", fontSize: "16px", marginRight: "10px" }}
