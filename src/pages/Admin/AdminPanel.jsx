@@ -1389,13 +1389,13 @@ export default function AdminPanel() {
             className={`hdr-nav-btn ${activeTab === "settings" ? "active" : ""}`}
             onClick={() => setActiveTab("settings")}
           >
-             ➕ Chegirma
+             % Chegirma
           </button>
           <button 
             className={`hdr-nav-btn ${activeTab === "promocodes" ? "active" : ""}`}
             onClick={() => setActiveTab("promocodes")}
           >
-            ➕ Pramakod
+            ➕ Promokod
           </button>
           
         </div>
