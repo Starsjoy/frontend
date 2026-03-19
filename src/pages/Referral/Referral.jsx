@@ -333,7 +333,7 @@ export default function Referral() {
                 <div className="step-number">2</div>
                 <div className="step-content">
                   <span className="step-title">{t("referral.step2Title") || "Stars bonus"}</span>
-                  <span className="step-desc">{t("referral.step2Desc") || "Referalingiz har 50 stars olganida"}</span>
+                  <span className="step-desc">{t("referral.step2Desc") || "Istalgan miqdorda stars xarid qilganda"}</span>
                 </div>
                 <div className="step-bonus small">+5 ⭐</div>
               </div>
@@ -341,7 +341,7 @@ export default function Referral() {
                 <div className="step-number">3</div>
                 <div className="step-content">
                   <span className="step-title">{t("referral.step3Title") || "Premium bonus"}</span>
-                  <span className="step-desc">{t("referral.step3Desc") || "Referalingiz Premium obuna olsa"}</span>
+                  <span className="step-desc">{t("referral.step3Desc") || "Referalingiz Premium obuna olsa (1 marta)"}</span>
                 </div>
                 <div className="step-bonus big">+15 ⭐</div>
               </div>
