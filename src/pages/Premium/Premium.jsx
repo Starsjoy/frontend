@@ -140,7 +140,12 @@ export default function Premium() {
       const res = await apiFetch("/api/promocode/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: pramacod, targetType: "premium", amount: selectedPlan.months }),
+        body: JSON.stringify({ 
+          code: pramacod, 
+          type: "premium", 
+          amount: selectedPlan.months,
+          price: selectedPlan.price
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -148,11 +153,12 @@ export default function Premium() {
         setPromoError(true);
         setAppliedPromo(null);
       } else {
-        setPromoMessage(`Muvaffaqiyatli! Chegirma: ${data.discountPercent}%`);
+        setPromoMessage(`Muvaffaqiyatli! Chegirma: ${data.discount_percent}%`);
         setPromoError(false);
         setAppliedPromo({
-          code: data.code,
-          discount_percent: data.discountPercent
+          code: pramacod,
+          discount_percent: data.discount_percent,
+          new_price: data.new_price
         });
       }
     } catch (err) {
