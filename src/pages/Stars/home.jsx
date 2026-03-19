@@ -65,6 +65,12 @@ export default function Home() {
   const [countdown, setCountdown] = useState(300); // 5 daqiqa
   const [showMorePlans, setShowMorePlans] = useState(false);
 
+  // Promocode state
+  const [pramacod, setPramacod] = useState("");
+  const [promoMessage, setPromoMessage] = useState("");
+  const [promoError, setPromoError] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState(null);
+
   // Refs for polling (modal yopilsa ham davom etadi)
   const pollingRef = useRef(null);
   const countdownRef = useRef(null);
@@ -136,6 +142,10 @@ export default function Home() {
 
   // Stars price - backend dan slot-based narx olish
   useEffect(() => {
+    // Reset promo when stars change
+    setAppliedPromo(null);
+    setPromoMessage("");
+    
     if (!stars || parseInt(stars) < 50 || parseInt(stars) > 10000) {
       setPrice(0);
       return;
@@ -225,6 +235,43 @@ export default function Home() {
     navigator.clipboard.writeText(order?.amount);
     setCopiedAmount(true);
     setTimeout(() => setCopiedAmount(false), 2000);
+  };
+
+  // Check promocode
+  const handleCheckPromo = async () => {
+    if (!pramacod) return;
+    setPromoMessage("");
+    if (!stars) {
+      setPromoError(true);
+      setPromoMessage("Avval stars miqdorini tanlang");
+      return;
+    }
+    try {
+      const res = await apiFetch("/api/promocode/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: pramacod,
+          type: "stars",
+          amount: stars,
+          price: price, // oyna uchun ko'rsatish
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPromoError(false);
+        setPromoMessage(data.message);
+        setAppliedPromo({ code: pramacod, newPrice: data.new_price });
+      } else {
+        setPromoError(true);
+        setPromoMessage(data.error);
+        setAppliedPromo(null);
+      }
+    } catch (err) {
+      setPromoError(true);
+      setPromoMessage("Xatolik yuz berdi");
+      setAppliedPromo(null);
+    }
   };
 
   // ============================================
@@ -394,15 +441,21 @@ export default function Home() {
     }
 
     try {
+      const payload = {
+        username: profile.username,
+        recipient: profile.recipient,
+        stars: parseInt(stars),
+        amount: price, // actually unused on backend, slots take over, but for safety
+      };
+      
+      if (appliedPromo) {
+        payload.applied_promocode = appliedPromo.code;
+      }
+
       const res = await apiFetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: profile.username,
-          recipient: profile.recipient,
-          stars: parseInt(stars),
-          amount: price,
-        }),
+        body: JSON.stringify(payload),
       });
 
       // Error tekshirish
@@ -623,9 +676,32 @@ export default function Home() {
         )}
       </div>
 
+      <div className="pramacod" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input 
+            value={pramacod}
+            onChange={(e) => setPramacod(e.target.value)}
+            style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
+            placeholder="Pramacod kiriting (Agar bo'lsa)" 
+          />
+          <button 
+            type="button" 
+            onClick={handleCheckPromo}
+            style={{ padding: '0 16px', borderRadius: '10px', background: '#e58f0d', color: '#fff', border: 'none', fontWeight: 'bold' }}
+          >
+            Tekshirish
+          </button>
+        </div>
+        {promoMessage && (
+          <div style={{ fontSize: '13px', color: promoError ? '#ff4d4d' : '#00e676', textAlign: 'left', paddingLeft: '5px' }}>
+            {promoMessage}
+          </div>
+        )}
+      </div>
+
       <div className="actions">
         <button type="button" className="tg-button" onClick={handlePayment}>
-          Stars olish {price > 0 && `- ${formatAmount(price)} so'm`}
+          Stars olish {price > 0 && `- ${formatAmount(appliedPromo ? appliedPromo.newPrice : price)} so'm`}
         </button>
       </div>
 

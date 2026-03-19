@@ -148,6 +148,11 @@ export default function AdminPanel() {
   const [discountPackages, setDiscountPackages] = useState([]);
   const [newPackage, setNewPackage] = useState({ stars: "", discount_percent: "" });
   const [packageLoading, setPackageLoading] = useState(false);
+
+  // Promocodes state
+  const [promocodes, setPromocodes] = useState([]);
+  const [promoForm, setPromoForm] = useState({ code: '', target_type: 'stars', target_amount: '', discount_percent: 10, usage_limit: 10 });
+  const [promoLoading, setPromoLoading] = useState(false);
   const [editingPackage, setEditingPackage] = useState(null);
   const BASE_PRICE = parseInt(import.meta.env.VITE_NARX) || 240;
 
@@ -734,6 +739,72 @@ export default function AdminPanel() {
     }
   };
 
+  // 🎟 Fetch Promocodes
+  const fetchPromocodes = async () => {
+    setPromoLoading(true);
+    try {
+      const res = await apiFetch("/api/admin/promocodes");
+      const data = await res.json();
+      if (res.ok) setPromocodes(data);
+    } catch (err) {
+      console.error("Fetch promocodes error:", err);
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  // 🎟 Create Promocode
+  const handleCreatePromo = async (e) => {
+    e.preventDefault();
+    if (!promoForm.code || !promoForm.discount_percent || !promoForm.usage_limit) {
+      alert("Iltimos, barcha maydonlarni to'ldiring!");
+      return;
+    }
+    try {
+      const res = await apiFetch("/api/admin/promocodes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(promoForm)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Pramakod yaratildi!");
+        setPromoForm({ code: '', target_type: 'stars', target_amount: '', discount_percent: 10, usage_limit: 10 });
+        fetchPromocodes();
+      } else {
+        alert("Xato: " + (data.error || "Noma'lum xato"));
+      }
+    } catch (err) {
+      console.error("Create promo error", err);
+      alert("Server xatosi");
+    }
+  };
+
+  // 🎟 Toggle Promocode Status
+  const handleTogglePromo = async (code, isActive) => {
+    try {
+      await apiFetch(`/api/admin/promocodes/${code}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: !isActive })
+      });
+      fetchPromocodes();
+    } catch (err) {
+      console.error("Toggle promo error", err);
+    }
+  };
+
+  // 🎟 Delete Promocode
+  const handleDeletePromo = async (code) => {
+    if (!window.confirm("Bu pramakodni o'chirasizmi?")) return;
+    try {
+      await apiFetch(`/api/admin/promocodes/${code}`, { method: "DELETE" });
+      fetchPromocodes();
+    } catch (err) {
+      console.error("Delete promo error", err);
+    }
+  };
+
   // ========== ALL useEffect HOOKS ==========
   // Fetch data based on active tab
   useEffect(() => {
@@ -752,6 +823,8 @@ export default function AdminPanel() {
       fetchReferralRequests("pending");
     } else if (activeTab === "notifications") {
       fetchNotifications();
+    } else if (activeTab === "promocodes") {
+      fetchPromocodes();
     }
   }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter, referralFilter]);
 
@@ -1313,6 +1386,12 @@ export default function AdminPanel() {
             onClick={() => setActiveTab("notifications")}
           >
             🔔 Xabar
+          </button>
+          <button 
+            className={`hdr-nav-btn ${activeTab === "promocodes" ? "active" : ""}`}
+            onClick={() => setActiveTab("promocodes")}
+          >
+            🎟 Pramakodlar
           </button>
           <button 
             className={`hdr-nav-btn ${activeTab === "settings" ? "active" : ""}`}
@@ -2222,6 +2301,108 @@ export default function AdminPanel() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ==================== PROMOCODES TAB ==================== */}
+      {activeTab === "promocodes" && (
+        <div className="tab-content settings-tab">
+          <h3 className="settings-section-title">🎟️ Pramakodlar Boshqaruvi</h3>
+          <p className="settings-section-desc">Foydalanuvchilar uchun maxsus chegirma kodlarini yarating</p>
+
+          <div className="settings-add-package">
+            <form className="package-form" onSubmit={handleCreatePromo}>
+              <div className="form-row" style={{display: 'flex', flexWrap: 'wrap', gap: '15px'}}>
+                <div className="form-group" style={{flex: '1 1 200px'}}>
+                  <label>Pramakod KODI</label>
+                  <input
+                    type="text"
+                    required
+                    value={promoForm.code}
+                    onChange={e => setPromoForm({...promoForm, code: e.target.value.toUpperCase()})}
+                    placeholder="Masalan: MEGA50"
+                  />
+                </div>
+                <div className="form-group" style={{flex: '1 1 200px'}}>
+                  <label>Chegirma Foizi (%)</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max="100"
+                    value={promoForm.discount_percent}
+                    onChange={e => setPromoForm({...promoForm, discount_percent: parseInt(e.target.value) || 0})}
+                  />
+                </div>
+                <div className="form-group" style={{flex: '1 1 200px'}}>
+                  <label>Maksimal Foydalanish</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={promoForm.usage_limit}
+                    onChange={e => setPromoForm({...promoForm, usage_limit: parseInt(e.target.value) || 0})}
+                  />
+                </div>
+              </div>
+              <div className="form-row" style={{display: 'flex', flexWrap: 'wrap', gap: '15px', marginTop: '15px'}}>
+                <div className="form-group" style={{flex: '1 1 200px'}}>
+                  <label>Qaysi bo'lim uchun?</label>
+                  <select
+                    value={promoForm.target_type}
+                    onChange={e => setPromoForm({...promoForm, target_type: e.target.value, target_amount: ''})}
+                    style={{width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', outline: 'none'}}
+                  >
+                    <option value="stars" style={{color: 'black'}}>⭐️ Stars</option>
+                    <option value="gift" style={{color: 'black'}}>🎁 Gifts</option>
+                    <option value="premium" style={{color: 'black'}}>💎 Premium</option>
+                    <option value="all" style={{color: 'black'}}>🌐 Barchasi uchun</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{flex: '1 1 200px'}}>
+                  <label>Aniq miqdor (ixtiyoriy)</label>
+                  <input
+                    type="text"
+                    value={promoForm.target_amount}
+                    onChange={e => setPromoForm({...promoForm, target_amount: e.target.value})}
+                    placeholder="Masalan: 50 (Faqat 50 Stars uchun)"
+                  />
+                </div>
+              </div>
+              <button className="settings-submit-btn" style={{marginTop: '15px'}} type="submit">
+                🎟️ Yaratish
+              </button>
+            </form>
+          </div>
+
+          <div className="packages-grid">
+            {promoLoading ? <div className="loading-state">Yuklanmoqda...</div> : 
+             promocodes.map(promo => (
+              <div key={promo.code} className="package-card" style={{opacity: promo.is_active ? 1 : 0.6}}>
+                <div className="package-info" style={{marginBottom: '10px'}}>
+                  <span className="package-stars" style={{fontSize: '20px'}}>{promo.code}</span>
+                  <span className="package-discount">{promo.discount_percent}% chegirma</span>
+                </div>
+                <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '5px'}}>
+                  Maqsad: <b>{promo.target_type === 'all' ? 'Barchasi' : promo.target_type}</b> {promo.target_amount ? `(${promo.target_amount})` : ''}
+                </div>
+                <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '15px'}}>
+                  Foydalanildi: {promo.used_count} / {promo.usage_limit}
+                </div>
+                <div className="package-actions" style={{display: 'flex', gap: '10px'}}>
+                  <button className="delete-btn" style={{flex: 1, padding: '8px', background: promo.is_active ? 'rgba(255,193,7,0.1)' : 'rgba(76,175,80,0.1)', color: promo.is_active ? '#ffc107' : '#4caf50', borderRadius: '8px', border: 'none', cursor: 'pointer'}} onClick={() => handleTogglePromo(promo.code, promo.is_active)}>
+                    {promo.is_active ? 'O\'chirish (Pause)' : 'Yoqish (Active)'}
+                  </button>
+                  <button className="delete-btn" style={{flex: 1, padding: '8px', background: 'rgba(244,67,54,0.1)', color: '#f44336', borderRadius: '8px', border: 'none', cursor: 'pointer'}} onClick={() => handleDeletePromo(promo.code)}>
+                    🗑️ O'chirish
+                  </button>
+                </div>
+              </div>
+            ))}
+            {promocodes.length === 0 && !promoLoading && (
+              <div className="empty-state">Pramakodlar yo'q</div>
+            )}
+          </div>
         </div>
       )}
 

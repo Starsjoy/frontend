@@ -44,6 +44,12 @@ export default function Premium() {
   const [copiedCard, setCopiedCard] = useState(false);
   const [copiedAmount, setCopiedAmount] = useState(false);
 
+  // Promocode states
+  const [pramacod, setPramacod] = useState("");
+  const [promoMessage, setPromoMessage] = useState("");
+  const [promoError, setPromoError] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState(null);
+
   // Format
   const formatAmount = (num) =>
     num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -121,6 +127,41 @@ export default function Premium() {
   // ================================
   // 🧾 ORDER YARATISH
   // ================================
+  const handleCheckPromo = async () => {
+    if (!pramacod) {
+      setPromoMessage("Pramacod kiriting");
+      setPromoError(true);
+      return;
+    }
+    try {
+      setPromoMessage("Tekshirilmoqda...");
+      setPromoError(false);
+
+      const res = await apiFetch("/api/promocode/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: pramacod, targetType: "premium", amount: selectedPlan.months }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPromoMessage(data.error || "Pramacod xato");
+        setPromoError(true);
+        setAppliedPromo(null);
+      } else {
+        setPromoMessage(`Muvaffaqiyatli! Chegirma: ${data.discountPercent}%`);
+        setPromoError(false);
+        setAppliedPromo({
+          code: data.code,
+          discount_percent: data.discountPercent
+        });
+      }
+    } catch (err) {
+      setPromoMessage("Xatolik yuz berdi");
+      setPromoError(true);
+      setAppliedPromo(null);
+    }
+  };
+
   const handleCreateOrder = async () => {
 
     if (!profile?.username || !profile?.recipient) {
@@ -139,6 +180,7 @@ export default function Premium() {
           username: profile.username,
           recipient: profile.recipient, // ✔ ID
           months: selectedPlan.months,
+          applied_promocode: appliedPromo?.code || null,
         }),
       });
 
@@ -340,6 +382,22 @@ export default function Premium() {
           </label>
         ))}
       </div>
+
+      <div className="promo-input-group" style={{ marginBottom: "15px" }}>
+        <input 
+          type="text" 
+          placeholder="Promo-kod" 
+          value={pramacod} 
+          onChange={(e) => setPramacod(e.target.value)} 
+          style={{ width: "calc(100% - 100px)", padding: "12px", borderRadius: "14px", border: "1px solid #ccc", outline: "none", fontSize: "16px", marginRight: "10px" }}
+        />
+        <button className="btn-my" onClick={handleCheckPromo} style={{ width: "90px", padding: "12px", borderRadius: "14px", border: "none", cursor: "pointer", background: "var(--tg-theme-button-color, #2481cc)", color: "white", fontSize: "14px" }}>Qo'llash</button>
+      </div>
+      {promoMessage && (
+        <div style={{ color: promoError ? 'red' : 'green', fontSize: '14px', marginBottom: '15px', textAlign: 'center' }}>
+          {promoMessage}
+        </div>
+      )}
 
       <div className="actions">
         <button disabled={loadingBuy} onClick={handleCreateOrder}>

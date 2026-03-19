@@ -25,6 +25,7 @@ const GIFTS = [
   { id: "5800655655995968830", stars: 50 },
   { id: "5866352046986232958", stars: 50 },
   { id: "5956217000635139069", stars: 50 },
+  { id: "5893356958802511476", stars: 50 },
   { id: "5168043875654172773", stars: 100 },
   { id: "5170690322832818290", stars: 100 },
   { id: "5170521118301225164", stars: 100 },
@@ -73,6 +74,12 @@ export default function Gift() {
   const [copiedCard, setCopiedCard] = useState(false);
   const [copiedAmount, setCopiedAmount] = useState(false);
   const [sending, setSending] = useState(false);
+
+  // Promocode
+  const [pramacod, setPramacod] = useState("");
+  const [promoMessage, setPromoMessage] = useState("");
+  const [promoError, setPromoError] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState(null);
 
   const pollingRef = useRef(null);
   const countdownRef = useRef(null);
@@ -132,6 +139,9 @@ export default function Gift() {
   // Gift tanlanganda modal ochish
   const handleGiftSelect = (gift) => {
     setSelectedGift(gift);
+    // Modal yopilganda yoki yangi tanlanganda promoni tozalash
+    setAppliedPromo(null);
+    setPromoMessage("");
     setShowGiftModal(true);
   };
 
@@ -236,21 +246,60 @@ export default function Gift() {
     }
   };
 
+  // Check Promo
+  const handleCheckPromo = async () => {
+    if (!pramacod) return;
+    setPromoMessage("");
+    if (!selectedGift) return;
+
+    try {
+      const res = await apiFetch("/api/promocode/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: pramacod,
+          type: "gift",
+          amount: selectedGift.stars,
+          price: PRICE_MAP[selectedGift.stars],
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPromoError(false);
+        setPromoMessage(data.message);
+        setAppliedPromo({ code: pramacod, newPrice: data.new_price });
+      } else {
+        setPromoError(true);
+        setPromoMessage(data.error);
+        setAppliedPromo(null);
+      }
+    } catch (err) {
+      setPromoError(true);
+      setPromoMessage("Xatolik yuz berdi");
+      setAppliedPromo(null);
+    }
+  };
+
   // === Create Order ===
   const handleSend = async () => {
     if (!profile || !selectedGift) return;
     setSending(true);
     try {
+      const payload = {
+        recipientUsername: profile.username,
+        giftId: selectedGift.id,
+        stars: selectedGift.stars,
+        anonymous: isAnonymous,
+        comment: comment.trim() || undefined,
+      };
+      if (appliedPromo) {
+        payload.applied_promocode = appliedPromo.code;
+      }
+
       const res = await apiFetch("/api/gift/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recipientUsername: profile.username,
-          giftId: selectedGift.id,
-          stars: selectedGift.stars,
-          anonymous: isAnonymous,
-          comment: comment.trim() || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
       const newOrder = await res.json();
 
@@ -522,10 +571,33 @@ export default function Gift() {
               </label>
             </div>
 
+            <div className="pramacod" style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '15px 0' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input 
+                  value={pramacod}
+                  onChange={(e) => setPramacod(e.target.value)}
+                  style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '14px' }}
+                  placeholder="Pramacod (Agar bo'lsa)" 
+                />
+                <button 
+                  type="button" 
+                  onClick={handleCheckPromo}
+                  style={{ padding: '0 16px', borderRadius: '10px', background: '#e58f0d', color: '#fff', border: 'none', fontWeight: 'bold' }}
+                >
+                  Tekshirish
+                </button>
+              </div>
+              {promoMessage && (
+                <div style={{ fontSize: '13px', color: promoError ? '#ff4d4d' : '#00e676', textAlign: 'left', paddingLeft: '5px' }}>
+                  {promoMessage}
+                </div>
+              )}
+            </div>
+
             {/* Send Button - at bottom */}
             <div className="gift-bs-bottom-area">
               <button
-                className={`gift-bs-send-btn ${!profile ? 'no-recipient' : ''}`}
+                className={\`gift-bs-send-btn \${!profile ? 'no-recipient' : ''}\`}
                 onClick={handleSend}
                 disabled={sending || !profile}
               >
@@ -534,7 +606,7 @@ export default function Gift() {
                 ) : !profile ? (
                   "Kimga yuboramiz?"
                 ) : (
-                  <>{formatAmount(PRICE_MAP[selectedGift.stars])} so'm · Hadya yuborish</>
+                  <>{formatAmount(appliedPromo ? appliedPromo.newPrice : PRICE_MAP[selectedGift.stars])} so'm · Hadya yuborish</>
                 )}
               </button>
             </div>
