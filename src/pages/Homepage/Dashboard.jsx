@@ -9,6 +9,7 @@ import "./Dashboard.css";
 import starsGif from "../../assets/stars.gif";
 import premiumGif from "../../assets/premium_gif.gif";
 import ayiqImg from "../../assets/ayiqyurakchali.jpg";
+import actionCardSticker from "../../assets/5800655655995968830.tgs";
 import tilSticker from "../../assets/AnimatedSticker_til.tgs";
 import referalSticker from "../../assets/AnimatedSticker_ref.tgs";
 import ordersIcon from "../../assets/orders_icon.png";
@@ -366,7 +367,7 @@ export default function Dashboard() {
           {/* Gift & Premium - Side by Side */}
           <div className="action-cards-row">
             <div className="action-card-half" onClick={() => navigate("/gift")}>
-              <img src={ayiqImg} className="action-card-half__img" alt="gift" />
+              <TGSSticker stickerPath={actionCardSticker} className="action-card-half__img" />
               <span className="action-card-half__title">{t("dashboard.buyGift") || "Gift olish"}</span>
             </div>
             <div className="action-card-half" onClick={() => navigate("/premium")}>

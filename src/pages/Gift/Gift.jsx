@@ -618,26 +618,28 @@ export default function Gift() {
         <div className="gift-modal-overlay">
           <div className="gift-modal-content gift-warning-modal">
             <div className="gift-warning-header">
-              <h3 className="gift-warning-title">Diqqat</h3>
+              <h3 className="gift-warning-title">⚠️ MUHIM DIQQAT ⚠️</h3>
             </div>
             
-            <div className="gift-warning-body">
-              <p className="gift-warning-message">
-                Kartaga bot ko'rsatgan summani aynan o'sha miqdorda yuboring.
-              </p>
+            <div className="gift-warning-body" style={{ textAlign: "left" }}>
+              <div style={{ marginBottom: "15px" }}>
+                <strong>1️⃣ To'lov miqdori:</strong><br />
+                Kartaga pastda ko'rsatilgan summani <b>aynan o'sha miqdorda</b> yuboring. 1 so'mlik farq ham to'lovni aniqlashga xalaqit beradi.
+              </div>
               
-              <p className="gift-warning-message-sub">
-                Summadagi 1 so'mlik farq ham to'lovni aniqlashga xalaqit beradi.
-              </p>
+              <div style={{ marginBottom: "15px" }}>
+                <strong>2️⃣ Profil maxfiyligi:</strong><br />
+                Qabul qiluvchining profiliga yozish, shuningdek stars to'lovi evaziga xabar yozish <b>cheklanmaganiga</b> ishonch hosil qiling! Agar profilda maxfiylik cheklovlari bo'lsa, gift yuborishda xatolik yuz beradi.
+              </div>
               
-              <div className="gift-warning-amount-highlight">
-                <span className="gift-warning-label">To'lov summasi</span>
+              <div className="gift-warning-amount-highlight" style={{ marginTop: "20px" }}>
+                <span className="gift-warning-label">💡 Yuboriladigan to'liq summa</span>
                 <span className="gift-warning-amount">{formatAmount(order?.amount)} so'm</span>
               </div>
             </div>
             
-            <button type="button" className="gift-warning-btn" onClick={handleWarningUnderstood}>
-              ✅ Tushundim
+            <button type="button" className="gift-warning-btn" onClick={handleWarningUnderstood} style={{ marginTop: "15px", backgroundColor: "#ff9800", color: "#fff", fontWeight: "bold" }}>
+              ✅ Shartlarni tushundim
             </button>
           </div>
         </div>
@@ -830,6 +832,21 @@ export default function Gift() {
                 <h3>
                   {status === "expired" ? t("stars.expired") : t("gift.error")}
                 </h3>
+                {status === "error" && (
+                  <div style={{ marginTop: '10px', marginBottom: '20px' }}>
+                    <p style={{ color: '#fff', marginBottom: '10px', fontSize: '14px' }}>
+                      Gift yuborishda xatolik yuz berdi. Bu ehtimol qabul qiluvchining profil maxfiyligi yopiqligi tufaylidir.
+                    </p>
+                    <button 
+                      type="button" 
+                      className="gift-modal-action-btn"
+                      style={{ backgroundColor: '#2b2d31', color: '#fff', border: '1px solid #444' }}
+                      onClick={() => window.open("https://t.me/StarsjoySupport", "_blank")}
+                    >
+                      👨🏻‍💻 Admin bilan bog'lanish
+                    </button>
+                  </div>
+                )}
                 <button type="button" className="gift-modal-action-btn" onClick={resetAll}>
                   {t("gift.tryAgain")}
                 </button>
