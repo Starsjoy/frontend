@@ -23,7 +23,11 @@ export default function Profile() {
 
   useEffect(() => {
     const handleBack = () => {
-      navigate("/");
+      if (showLanguageModal) {
+        setShowLanguageModal(false);
+      } else {
+        navigate("/");
+      }
     };
 
     try {
@@ -77,11 +81,13 @@ export default function Profile() {
 
     return () => {
       try {
-        WebApp.BackButton.offClick(handleBack);
-        WebApp.BackButton.hide();
+        if (!showLanguageModal) {
+          WebApp.BackButton.offClick(handleBack);
+          WebApp.BackButton.hide();
+        }
       } catch (e) {}
     };
-  }, [navigate]);
+  }, [showLanguageModal, navigate]);
 
   const handleLanguageConfirm = () => {
     setLanguage(selectedLanguage);
