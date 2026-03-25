@@ -22,22 +22,6 @@ export default function Profile() {
   const langLabels = { uz: "O'zbekcha", en: "English", ru: "Русский" };
 
   useEffect(() => {
-    const handleBack = () => {
-      if (showLanguageModal) {
-        setShowLanguageModal(false);
-      } else {
-        navigate("/");
-      }
-    };
-
-    try {
-      WebApp.ready();
-      WebApp.BackButton.show();
-      WebApp.BackButton.onClick(handleBack);
-    } catch (e) {
-      console.warn("Telegram WebApp not ready", e);
-    }
-
     let username = "User";
     let photoUrl = null;
 
@@ -78,16 +62,7 @@ export default function Profile() {
     };
 
     fetchStats();
-
-    return () => {
-      try {
-        if (!showLanguageModal) {
-          WebApp.BackButton.offClick(handleBack);
-          WebApp.BackButton.hide();
-        }
-      } catch (e) {}
-    };
-  }, [showLanguageModal, navigate]);
+  }, []);
 
   const handleLanguageConfirm = () => {
     setLanguage(selectedLanguage);

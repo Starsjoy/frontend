@@ -232,6 +232,36 @@ export default function Dashboard() {
     }
   };
 
+  // Back Button Logic
+  useEffect(() => {
+    const handleBack = () => {
+      // Modallar bo'lsa, ularni yopish afzal, lekin bu yerda tabni qaytarish ustuvor
+      if (showLanguageModal) {
+        setShowLanguageModal(false);
+      } else if (tab !== "home") {
+        setTab("home");
+      }
+    };
+
+    try {
+      if (tab !== "home" || showLanguageModal) {
+        WebApp.BackButton.show();
+        WebApp.BackButton.onClick(handleBack);
+      } else {
+        WebApp.BackButton.hide();
+        WebApp.BackButton.offClick(handleBack);
+      }
+    } catch (e) {
+      console.log("WebApp BackButton error:", e);
+    }
+
+    return () => {
+      try {
+        WebApp.BackButton.offClick(handleBack);
+      } catch (e) {}
+    };
+  }, [tab, showLanguageModal]);
+
   /* ================= SPLASH AUTO-HIDE ================= */
   useEffect(() => {
     if (!splashVisible) return;
