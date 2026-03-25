@@ -9,7 +9,7 @@
 // Development: http://localhost:5001 — local backend
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
-export default function apiFetch(url, options = {}) {
+export default async function apiFetch(url, options = {}) {
   const initData = window?.Telegram?.WebApp?.initData || '';
   
   // Full URL yoki relative URL'ni VITE_API_URL bilan birlashtir
