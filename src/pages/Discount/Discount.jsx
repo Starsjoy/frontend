@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import starsSticker from "../../assets/AnimatedSticker_stars.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
 import { useNavigate, useLocation } from "react-router-dom";
+import WebApp from "@twa-dev/sdk";
 import apiFetch from "../../utils/apiFetch";
 import "./Discount.css";
 
@@ -36,6 +37,22 @@ export default function Discount() {
 
   // Fetch discount packages from API
   useEffect(() => {
+    const handleBack = () => {
+      if (showModal) {
+        setShowModal(false);
+      } else {
+        navigate("/");
+      }
+    };
+
+    try {
+      WebApp.ready();
+      WebApp.BackButton.show();
+      WebApp.BackButton.onClick(handleBack);
+    } catch (e) {
+      console.warn("Telegram WebApp not ready", e);
+    }
+
     const fetchPackages = async () => {
       try {
         const res = await apiFetch("/api/discount-packages");
@@ -66,7 +83,16 @@ export default function Discount() {
       }
     };
     fetchPackages();
-  }, [location.state?.selectedPackageId]);
+
+    return () => {
+      try {
+        if (!showModal) {
+          WebApp.BackButton.offClick(handleBack);
+          WebApp.BackButton.hide();
+        }
+      } catch (e) {}
+    };
+  }, [location.state?.selectedPackageId, showModal, navigate]);
 
   const goToHome = () => {
     setShowModal(false);
@@ -370,11 +396,6 @@ export default function Discount() {
 
   return (
     <div className="discount-container">
-      <button className="btn-back-top" onClick={goToHome}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        Orqaga
-      </button>
-
       <div className="discount-header-container">
         <TGSSticker stickerPath={starsSticker} className="discount-header-sticker" />
       </div>

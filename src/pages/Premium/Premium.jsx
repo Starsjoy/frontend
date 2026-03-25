@@ -2,6 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import "./Premium.css";
 import diamondGif from "../../assets/diamond.gif";
+import WebApp from "@twa-dev/sdk";
 import premiumGif from "../../assets/premium_gif.gif";
 import premiumSticker from "../../assets/AnimatedSticker_premium.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
@@ -53,6 +54,36 @@ export default function Premium() {
   // Format
   const formatAmount = (num) =>
     num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+
+  // Back button functionality
+  useEffect(() => {
+    const handleBack = () => {
+      if (showModal) {
+        setShowModal(false);
+      } else if (showWarningModal) {
+        setShowWarningModal(false);
+      } else {
+        navigate("/");
+      }
+    };
+
+    try {
+      WebApp.ready();
+      WebApp.BackButton.show();
+      WebApp.BackButton.onClick(handleBack);
+    } catch (e) {
+      console.warn("Telegram WebApp not ready", e);
+    }
+
+    return () => {
+      try {
+        if (!showModal && !showWarningModal) {
+          WebApp.BackButton.offClick(handleBack);
+          WebApp.BackButton.hide();
+        }
+      } catch (e) {}
+    };
+  }, [showModal, showWarningModal, navigate]);
 
   // ================================
   // 🔍 PREMIUM SEARCH
@@ -318,11 +349,6 @@ export default function Premium() {
   // ================================
   return (
     <div className="premium-container">
-      <button className="btn-back-top" onClick={() => navigate("/")}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        Orqaga
-      </button>
-
       <div className="premium-header-container">
         <TGSSticker stickerPath={premiumSticker} className="premium-header-sticker" />
       </div>

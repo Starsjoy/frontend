@@ -3,7 +3,9 @@ import starsSticker from "../../assets/AnimatedSticker_stars.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
-import "./home.css";
+import "./Stars.css";
+
+import WebApp from "@twa-dev/sdk";
 
 // Star Icon Component
 const StarIcon = () => (
@@ -129,11 +131,38 @@ export default function Home() {
 
   // Backend status
   useEffect(() => {
+    const handleBack = () => {
+      if (showModal) {
+        setShowModal(false);
+      } else if (showWarningModal) {
+        setShowWarningModal(false);
+      } else {
+        navigate("/");
+      }
+    };
+
+    try {
+      WebApp.ready();
+      WebApp.BackButton.show();
+      WebApp.BackButton.onClick(handleBack);
+    } catch (e) {
+      console.warn("Telegram WebApp not ready", e);
+    }
+
     apiFetch("/api/status")
       .then((res) => res.json())
       .then((data) => setBackendStatus(data.message))
       .catch(() => setBackendStatus("Backend offline ❌"));
-  }, []);
+
+    return () => {
+      try {
+        if (!showModal && !showWarningModal) {
+          WebApp.BackButton.offClick(handleBack);
+          WebApp.BackButton.hide();
+        }
+      } catch (e) {}
+    };
+  }, [showModal, showWarningModal, navigate]);
 
   // Discount paketlarni yuklash (initial load)
   useEffect(() => {
@@ -503,12 +532,7 @@ export default function Home() {
   };
 
   return (
-    <div className="home-container">
-      <button className="btn-back-top" onClick={goToHome}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        Orqaga
-      </button>
-
+    <div className="stars-container">
       <div className="stars-header-container">
         <TGSSticker stickerPath={starsSticker} className="stars-header-sticker" />
       </div>

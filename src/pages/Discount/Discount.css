@@ -11,29 +11,6 @@
   padding-bottom: 90px;
 }
 
-.btn-back-top {
-  background: none;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--color-primary);
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-  font-weight: 600;
-}
-
-.btn-back-top svg {
-  width: 18px;
-  height: 18px;
-}
-
-.btn-back-top:hover {
-  opacity: 0.8;
-}
-
 .discount-header-container {
   display: flex;
   justify-content: center;

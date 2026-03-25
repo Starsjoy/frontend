@@ -1,10 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Home from "./pages/Stars/home";
+import Home from "./pages/Stars/Stars";
 import AdminPanel from "./pages/Admin/AdminPanel";
 import Premium from "./pages/Premium/Premium";
-import PremiumSuccess from "./pages/Premium/log/PremiumSuccess";
-import PremiumError from "./pages/Premium/log/PremiumError";
 import Dashboard from "./pages/Homepage/Dashboard";
 import Referral from "./pages/Referral/Referral";
 import Profile from "./pages/Profile/Profile";
@@ -75,8 +73,6 @@ function App() {
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/starsadmin" element={<AdminPanel/>} />
-              <Route path="/premium/success" element={<PremiumSuccess />} />
-              <Route path="/premium/error" element={<PremiumError />} />
             </Routes>
           </BrowserRouter>
         </LanguageProvider>

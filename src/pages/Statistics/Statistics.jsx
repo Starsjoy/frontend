@@ -34,8 +34,9 @@ export default function Statistics() {
       WebApp.setBackgroundColor("#1a1a2e");
 
       // Back button
+      const handleBack = () => navigate("/");
       WebApp.BackButton.show();
-      WebApp.BackButton.onClick(() => navigate("/"));
+      WebApp.BackButton.onClick(handleBack);
 
       const tgUser =
         WebApp?.initDataUnsafe?.user?.username ||
@@ -46,14 +47,17 @@ export default function Statistics() {
         setUsername(clean);
         setIsTelegram(true);
       }
+
+      return () => {
+        try { 
+          WebApp.BackButton.offClick(handleBack);
+          WebApp.BackButton.hide(); 
+        } catch {}
+      };
     } catch {
       setIsTelegram(false);
     }
-
-    return () => {
-      try { WebApp.BackButton.hide(); } catch {}
-    };
-  }, []);
+  }, [navigate]);
 
   // Load sales leaderboard
   useEffect(() => {
@@ -107,15 +111,9 @@ export default function Statistics() {
     <div className="statistics-root">
       {/* Header */}
       <header className="statistics-header">
-        <button className="statistics-back" onClick={() => navigate("/")}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
         <h1 className="statistics-title">
           🏆 {t("statistics.title") || "Statistika"}
         </h1>
-        <div style={{width: 36}}></div>
       </header>
 
       {/* Tab Switcher */}
