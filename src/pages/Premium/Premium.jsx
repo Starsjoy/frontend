@@ -399,8 +399,8 @@ export default function Premium() {
         </div>
       )}
 
-      {/* PLANS */}
-      <h3>Muddatni tanlang:</h3>
+      {/* avto fragment orqali */}
+      <h3>Avto:</h3>
 
       <div className="plans">
         {plans.map((p) => (
@@ -418,11 +418,33 @@ export default function Premium() {
               <span>{p.label}</span>
               <span>{formatAmount(p.price)} so'm</span>
             </div>
+            <span style={{ marginLeft: "auto", fontSize: "13px", color: "#0088cc", fontWeight: "600" }}>(Avto)</span>
           </label>
         ))}
       </div>
 
-      <div className="promo-input-group" style={{ marginBottom: "15px" }}>
+      {/* 1 oylik va 1 yillik */}
+      <h3>Akkauntga kirish orqali:</h3>
+      <div className="plans"> 
+        <a href="https://t.me/StarsjoySupport?text=Assalomu%20aleykum%2C%201%20oylik%20premium%20olmoqchi%20edim." target="_blank" rel="noopener noreferrer" className="plan" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <img src={premiumGif} className="plan-gif" alt="Premium" />
+          <div className="narx">
+            <span>1 oy</span>
+            <span>57 000 UZS</span>
+          </div>
+          <span style={{ marginLeft: "auto", fontSize: "13px", color: "#ffb300", fontWeight: "600" }}>(Akkauntga kirib)</span>
+        </a>
+        <a href="https://t.me/StarsjoySupport?text=Assalomu%20aleykum%2C%201%20yillik%20premium%20olmoqchi%20edim." target="_blank" rel="noopener noreferrer" className="plan" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <img src={premiumGif} className="plan-gif" alt="Premium" />
+          <div className="narx">
+            <span>1 yil</span>
+            <span>320 000 UZS</span>
+          </div>
+          <span style={{ marginLeft: "auto", fontSize: "13px", color: "#ffb300", fontWeight: "600" }}>(Akkauntga kirib)</span>
+        </a>
+      </div>
+
+      <div className="promo-input-group" style={{ marginTop: "25px", marginBottom: "15px" }}>
         <input 
           type="text" 
           placeholder="Promokod kiriting (Agar bo'lsa)" 
@@ -443,6 +465,8 @@ export default function Premium() {
           {loadingBuy ? "Yuklanmoqda..." : "Premium olish"}
         </button>
       </div>
+
+
 
       {/* WARNING MODAL */}
       {showWarningModal && order && (

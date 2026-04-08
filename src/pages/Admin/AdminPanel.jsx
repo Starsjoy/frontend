@@ -3,6 +3,15 @@ import "./AdminPanel.css";
 import { TGSSticker } from "../../components/TGSSticker";
 import adminSticker from "../../assets/AnimatedSticker_admin.tgs";
 import apiFetch from "../../utils/apiFetch";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
 
 export default function AdminPanel() {
   // ========== TELEGRAM AUTH PROTECTION ==========
@@ -129,6 +138,7 @@ export default function AdminPanel() {
 
   // Analytics state
   const [analyticsPeriod, setAnalyticsPeriod] = useState("all"); // day, week, month, all
+  const [analyticsType, setAnalyticsType] = useState("all"); // all, stars, premium, gift
   const [analyticsData, setAnalyticsData] = useState({
     stars: { count: 0, totalStars: 0, totalAmount: 0 },
     premium: { count: 0, totalAmount: 0 },
@@ -332,37 +342,72 @@ export default function AdminPanel() {
         }
       });
 
-      // Calculate daily breakdown from all completed transactions (last 7 days)
-      const completedStars = starsData.filter(tx => tx.status === "stars_sent" || tx.status === "completed");
-      const completedPremium = premiumData.filter(tx => tx.status === "premium_sent" || tx.status === "completed" || tx.status === "delivered");
-      const completedGift = giftData.filter(tx => tx.status === "gift_sent" || tx.status === "completed");
+      // Calculate daily breakdown from all completed transactions
+      const successStatuses = ["stars_sent", "premium_sent", "gift_sent", "completed", "delivered", "accepted"];
+      const completedStars = starsData.filter(tx => successStatuses.includes(tx.status));
+      const completedPremium = premiumData.filter(tx => successStatuses.includes(tx.status));
+      const completedGift = giftData.filter(tx => successStatuses.includes(tx.status));
+      
+      const allCompleted = [...completedStars, ...completedPremium, ...completedGift];
       
       const dailyMap = {};
-      
-      // Get last 7 days
       const today = new Date();
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const key = d.toISOString().split('T')[0];
-        dailyMap[key] = { date: key, stars: 0, amount: 0, count: 0 };
+      today.setHours(23,59,59,999);
+      
+      let oldestDate = new Date();
+      if (allCompleted.length > 0) {
+        oldestDate = new Date(Math.min(...allCompleted.map(tx => new Date(tx.created_at).getTime())));
+      } else {
+        // Default to a month ago if no data
+        oldestDate.setMonth(oldestDate.getMonth() - 1);
+      }
+      oldestDate.setHours(0,0,0,0);
+
+      // Generate daily keys from oldestDate to today
+      const curr = new Date(oldestDate);
+      while (curr <= today) {
+        const key = curr.toISOString().split('T')[0];
+        dailyMap[key] = { 
+          date: key, 
+          amount: 0, 
+          count: 0,
+          stars: 0, 
+          stars_amount: 0,
+          stars_count: 0,
+          premium_amount: 0,
+          premium_count: 0,
+          gift_amount: 0,
+          gift_count: 0
+        };
+        curr.setDate(curr.getDate() + 1);
       }
 
       // Aggregate all transactions by day
-      const aggregateToDaily = (transactions) => {
+      const aggregateToDaily = (transactions, category) => {
         transactions.forEach(tx => {
           const txDate = new Date(tx.created_at).toISOString().split('T')[0];
           if (dailyMap[txDate]) {
-            dailyMap[txDate].stars += tx.stars || 0;
             dailyMap[txDate].amount += tx.amount || 0;
             dailyMap[txDate].count += 1;
+            
+            if (category === "stars") {
+              dailyMap[txDate].stars += tx.stars || 0;
+              dailyMap[txDate].stars_amount += tx.amount || 0;
+              dailyMap[txDate].stars_count += 1;
+            } else if (category === "premium") {
+              dailyMap[txDate].premium_amount += tx.amount || 0;
+              dailyMap[txDate].premium_count += 1;
+            } else if (category === "gift") {
+              dailyMap[txDate].gift_amount += tx.amount || 0;
+              dailyMap[txDate].gift_count += 1;
+            }
           }
         });
       };
 
-      aggregateToDaily(completedStars);
-      aggregateToDaily(completedPremium);
-      aggregateToDaily(completedGift);
+      aggregateToDaily(completedStars, "stars");
+      aggregateToDaily(completedPremium, "premium");
+      aggregateToDaily(completedGift, "gift");
 
       setDailyStats(Object.values(dailyMap));
     } catch (err) {
@@ -1595,6 +1640,67 @@ export default function AdminPanel() {
       {activeTab === "analytics" && (
         <div className="tab-content analytics-list">
           
+          {/* O'sib/kamayib boruvchi chart */}
+          <div className="analytics-chart-container" style={{ width: "100%", height: 300, background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "14px", marginBottom: "15px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+              <h3 style={{ fontSize: "16px", color: "#fff", margin: 0 }}>Loyiha daromadi grafigi</h3>
+              <select 
+                value={analyticsType}
+                onChange={(e) => setAnalyticsType(e.target.value)}
+                style={{ background: "#2b2d31", color: "#fff", border: "1px solid #444", borderRadius: "8px", padding: "5px 10px", fontSize: "14px", outline: "none", cursor: "pointer" }}
+              >
+                <option value="all">Umumiy</option>
+                <option value="stars">Stars</option>
+                <option value="premium">Premium</option>
+                <option value="gift">Gift</option>
+              </select>
+            </div>
+            {analyticsLoading ? (
+              <div style={{ textAlign: "center", paddingTop: "50px" }}>Yuklanmoqda...</div>
+            ) : dailyStats.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={dailyStats}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="#888" 
+                    fontSize={12} 
+                    tickFormatter={(val) => new Date(val).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'short' })}
+                  />
+                  <YAxis 
+                    stroke="#888" 
+                    fontSize={12}
+                    tickFormatter={(val) => (val / 1000).toFixed(0) + 'k'} 
+                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#222', borderRadius: '10px', border: 'none' }}
+                    labelStyle={{ color: '#fff' }}
+                    formatter={(value) => [Number(value).toLocaleString() + " so'm", "Summa"]}
+                    labelFormatter={(label) => new Date(label).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey={analyticsType === "all" ? "amount" : `${analyticsType}_amount`} 
+                    stroke="#8884d8" 
+                    fillOpacity={1} 
+                    fill="url(#colorAmount)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ textAlign: "center", paddingTop: "50px", color: "#888" }}>Ma'lumot yo'q</div>
+            )}
+          </div>
+
           {/* Period Filter */}
           <div className="period-row">
             {["day", "week", "month", "all"].map(p => (
@@ -1662,15 +1768,20 @@ export default function AdminPanel() {
 
           {/* Daily Stats */}
           <div className="info-list daily-list">
-            <div className="list-title">📅 Oxirgi 7 kun</div>
-            {dailyStats.map((day, i) => (
-              <div key={i} className={`info-row ${day.count > 0 ? 'has-data' : 'no-data'}`}>
-                <span className="info-label">{new Date(day.date).toLocaleDateString('uz-UZ', {day: '2-digit', month: 'short'})}</span>
-                <span className="info-value">
-                  {day.count} ta &nbsp;·&nbsp; {day.stars.toLocaleString()} ⭐ &nbsp;·&nbsp; {day.amount.toLocaleString()}
-                </span>
-              </div>
-            ))}
+            <div className="list-title">📅 Kunlik statistika</div>
+            {[...dailyStats].reverse().map((day, i) => {
+              const currentAmount = analyticsType === "all" ? day.amount : day[`${analyticsType}_amount`];
+              const currentCount = analyticsType === "all" ? day.count : day[`${analyticsType}_count`];
+              
+              return (
+                <div key={i} className={`info-row ${currentCount > 0 ? 'has-data' : 'no-data'}`}>
+                  <span className="info-label">{new Date(day.date).toLocaleDateString('uz-UZ', {day: '2-digit', month: 'short'})}</span>
+                  <span className="info-value">
+                    {currentCount} ta &nbsp;·&nbsp; {currentAmount.toLocaleString()} so'm
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
