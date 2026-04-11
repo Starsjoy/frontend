@@ -245,7 +245,7 @@ export default function Premium() {
       setPaymentStatus("payment_info");
       setCardLast4("");
 
-      startCountdown(300); // 5 daqiqa
+      startCountdown(480); // 8 daqiqa
       startPolling(data.order.id);
 
     } catch {

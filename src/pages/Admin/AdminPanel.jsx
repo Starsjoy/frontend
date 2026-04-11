@@ -1875,17 +1875,24 @@ export default function AdminPanel() {
                     <div 
                       className="order-header"
                       onClick={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
+                      style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}
                     >
-                      <div className="order-main">
-                        <span className="order-id">#{tx.id}</span>
-                        <span className="order-user">@{tx.sender_username || '?'} → @{tx.username}</span>
-                        <span className="order-stars">{tx.stars} ⭐</span>
+                      <div className="order-main" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <span className="order-user" style={{ fontWeight: "bold" }}>@{tx.sender_username || tx.owner_user_id || '?'} → @{tx.username || tx.recipient || '?'}</span>
+                        </div>
+                        <div style={{ fontSize: "12px", color: "var(--tg-theme-hint-color, #999)" }}>
+                          {new Date(tx.created_at).toLocaleString()} • {tx.amount?.toLocaleString()} so'm
+                        </div>
                       </div>
-                      <div 
-                        className="order-status"
-                        style={{ backgroundColor: getStatusColor(tx.status) }}
-                      >
-                        {getStatusIcon(tx.status)} {tx.status}
+                      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                        <span className="order-stars">{tx.stars} ⭐</span>
+                        <div 
+                          className="order-status"
+                          style={{ backgroundColor: getStatusColor(tx.status) }}
+                        >
+                          {getStatusIcon(tx.status)} {tx.status}
+                        </div>
                       </div>
                     </div>
 
@@ -2011,17 +2018,24 @@ export default function AdminPanel() {
                     <div 
                       className="order-header"
                       onClick={() => setGiftExpandedId(giftExpandedId === tx.id ? null : tx.id)}
+                      style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}
                     >
-                      <div className="order-main">
-                        <span className="order-id">#{tx.id}</span>
-                        <span className="order-user">@{tx.sender_username || '?'} → @{tx.username}</span>
-                        <span className="order-stars">{tx.stars} ⭐ 🎁</span>
+                      <div className="order-main" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <span className="order-user" style={{ fontWeight: "bold" }}>@{tx.sender_username || tx.owner_user_id || '?'} → @{tx.recipient_username || tx.username || '?'}</span>
+                        </div>
+                        <div style={{ fontSize: "12px", color: "var(--tg-theme-hint-color, #999)" }}>
+                          {new Date(tx.created_at).toLocaleString()} • {tx.amount?.toLocaleString()} so'm
+                        </div>
                       </div>
-                      <div 
-                        className="order-status"
-                        style={{ backgroundColor: getStatusColor(tx.status) }}
-                      >
-                        {getStatusIcon(tx.status)} {tx.status}
+                      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                        <span className="order-stars">{tx.stars} ⭐ 🎁</span>
+                        <div 
+                          className="order-status"
+                          style={{ backgroundColor: getStatusColor(tx.status) }}
+                        >
+                          {getStatusIcon(tx.status)} {tx.status}
+                        </div>
                       </div>
                     </div>
 
@@ -2412,17 +2426,24 @@ export default function AdminPanel() {
                     <div 
                       className="order-header"
                       onClick={() => setPremiumExpandedId(premiumExpandedId === tx.id ? null : tx.id)}
+                      style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}
                     >
-                      <div className="order-main">
-                        <span className="order-id">#{tx.id}</span>
-                        <span className="order-user">@{tx.sender_username || '?'} → @{tx.username}</span>
-                        <span className="order-stars">{tx.months || 1} oy 💎</span>
+                      <div className="order-main" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <span className="order-user" style={{ fontWeight: "bold" }}>@{tx.sender_username || tx.owner_user_id || '?'} → @{tx.username || tx.recipient || '?'}</span>
+                        </div>
+                        <div style={{ fontSize: "12px", color: "var(--tg-theme-hint-color, #999)" }}>
+                          {new Date(tx.created_at).toLocaleString()} • {tx.amount?.toLocaleString()} so'm
+                        </div>
                       </div>
-                      <div 
-                        className="order-status"
-                        style={{ backgroundColor: getStatusColor(tx.status === 'delivered' || tx.status === 'premium_sent' ? 'stars_sent' : tx.status) }}
-                      >
-                        {tx.status === 'delivered' || tx.status === 'premium_sent' ? '💎' : getStatusIcon(tx.status)} {tx.status === 'premium_sent' ? 'delivered' : tx.status}
+                      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                        <span className="order-stars">{tx.months || 1} oy 💎</span>
+                        <div 
+                          className="order-status"
+                          style={{ backgroundColor: getStatusColor(tx.status === 'delivered' || tx.status === 'premium_sent' ? 'stars_sent' : tx.status) }}
+                        >
+                          {tx.status === 'delivered' || tx.status === 'premium_sent' ? '💎' : getStatusIcon(tx.status)} {tx.status === 'premium_sent' ? 'delivered' : tx.status}
+                        </div>
                       </div>
                     </div>
 

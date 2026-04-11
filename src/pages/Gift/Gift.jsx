@@ -70,7 +70,7 @@ export default function Gift() {
   const [errorMessage, setErrorMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
-  const [countdown, setCountdown] = useState(300);
+  const [countdown, setCountdown] = useState(480);
   const [copiedCard, setCopiedCard] = useState(false);
   const [copiedAmount, setCopiedAmount] = useState(false);
   const [sending, setSending] = useState(false);
@@ -174,10 +174,10 @@ export default function Gift() {
       if (!saved) return;
       const parsed = JSON.parse(saved);
       const elapsed = Date.now() - new Date(parsed.createdAt).getTime();
-      if (elapsed < 5 * 60 * 1000) {
+      if (elapsed < 8 * 60 * 1000) {
         setOrder(parsed.order);
         setStatus(parsed.status || "payment_info");
-        const remaining = Math.max(0, 300 - Math.floor(elapsed / 1000));
+        const remaining = Math.max(0, 480 - Math.floor(elapsed / 1000));
         setCountdown(remaining);
         startPolling(parsed.order);
         startCountdownTimer(remaining);
@@ -340,7 +340,7 @@ export default function Gift() {
       );
 
       startPolling(newOrder);
-      startCountdownTimer(300); // 5 daqiqa
+      startCountdownTimer(480); // 8 daqiqa
     } catch {
       alert(t("gift.error"));
     } finally {

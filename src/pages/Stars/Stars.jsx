@@ -34,8 +34,8 @@ const StarIcon = () => (
   </svg>
 );
 
-// 5 daqiqa = 300 sekund
-const POLLING_DURATION = 5 * 60 * 1000; // 5 daqiqa millisekondda
+// 8 daqiqa = 480 sekund
+const POLLING_DURATION = 8 * 60 * 1000; // 8 daqiqa millisekondda
 
 export default function Home() {
   const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
@@ -65,7 +65,7 @@ export default function Home() {
   const [timer, setTimer] = useState(20);
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
-  const [countdown, setCountdown] = useState(300); // 5 daqiqa
+  const [countdown, setCountdown] = useState(480); // 8 daqiqa
   const [showMorePlans, setShowMorePlans] = useState(false);
 
   // Promocode state
@@ -318,7 +318,7 @@ export default function Home() {
         const now = Date.now();
         const elapsed = now - createdAt;
 
-        // 5 daqiqa o'tmagan bo'lsa, polling davom etadi
+        // 8 daqiqa o'tmagan bo'lsa, polling davom etadi
         if (elapsed < POLLING_DURATION) {
           setOrder(parsed.order);
           setStatus(parsed.status || "pending");
@@ -339,7 +339,7 @@ export default function Home() {
 
           console.log("📦 Avvalgi buyurtma topildi, polling davom etmoqda...");
         } else {
-          // 5 daqiqa o'tgan, buyurtmani o'chiramiz
+          // 8 daqiqa o'tgan, buyurtmani o'chiramiz
           localStorage.removeItem("pendingStarsOrder");
         }
       } catch (e) {
@@ -406,8 +406,8 @@ export default function Home() {
     }
   };
 
-  // Countdown timer (5 daqiqa)
-  const startCountdownTimer = (initialSeconds = 300) => {
+  // Countdown timer (8 daqiqa)
+  const startCountdownTimer = (initialSeconds = 480) => {
     stopCountdown();
     setCountdown(initialSeconds);
 
@@ -516,7 +516,7 @@ export default function Home() {
 
       // Polling va countdown boshlash
       startPolling(newOrder);
-      startCountdownTimer(300); // 5 daqiqa
+      startCountdownTimer(480); // 8 daqiqa
     } catch (err) {
       console.error("❌ Order yaratishda xato:", err);
       alert(err.message || "Order yaratishda xato");

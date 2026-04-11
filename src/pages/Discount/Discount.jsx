@@ -6,7 +6,7 @@ import WebApp from "@twa-dev/sdk";
 import apiFetch from "../../utils/apiFetch";
 import "./Discount.css";
 
-const POLLING_DURATION = 5 * 60 * 1000;
+const POLLING_DURATION = 8 * 60 * 1000;
 
 export default function Discount() {
   const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
@@ -27,7 +27,7 @@ export default function Discount() {
   const [timer, setTimer] = useState(20);
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
-  const [countdown, setCountdown] = useState(300);
+  const [countdown, setCountdown] = useState(480);
 
   const pollingRef = useRef(null);
   const countdownRef = useRef(null);
@@ -278,7 +278,7 @@ export default function Discount() {
     }
   };
 
-  const startCountdownTimer = (initialSeconds = 300) => {
+  const startCountdownTimer = (initialSeconds = 480) => {
     stopCountdown();
     setCountdown(initialSeconds);
 
@@ -365,7 +365,7 @@ export default function Discount() {
       setShowModal(true);
 
       saveOrderToStorage(newOrder, "payment_info");
-      startCountdownTimer(300);
+      startCountdownTimer(480);
     } catch (err) {
       console.error("❌ Order yaratishda xato:", err);
       alert("Order yaratishda xato");

@@ -505,6 +505,31 @@ html, body {
 }
 
 /* Show All Button */
+.order-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: wrap;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.order-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-user {
+  font-weight: 600;
+  color: var(--tg-theme-text-color, #ffffff);
+}
+
+.order-stars {
+  font-weight: bold;
+  color: #ffb703;
+}
+
 .show-all-btn {
   width: 100%;
   padding: 16px;
