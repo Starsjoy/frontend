@@ -318,6 +318,10 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
             username: cleanUsername,
             months: selectedPlan.months,
             applied_promocode: appliedPromo?.code || null,
+            ...(isPaymee && fragmentPlanPrice ? { slot_price: fragmentPlanPrice } : {}),
+            ...(isPaymee && appliedPromo?.new_price != null
+              ? { final_amount: appliedPromo.new_price }
+              : {}),
           }
         : {
             username: profile.username,

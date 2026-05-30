@@ -548,12 +548,18 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
 
     try {
       const payload = isCardFlow
-        ? { username: cleanUsername, stars: parseInt(stars, 10) }
+        ? {
+            username: cleanUsername,
+            stars: parseInt(stars, 10),
+            ...(isPaymee && price > 0 ? { slot_price: price } : {}),
+            ...(isPaymee && appliedPromo?.newPrice != null
+              ? { final_amount: appliedPromo.newPrice }
+              : {}),
+          }
         : {
             username: profile.username,
             recipient: profile.recipient,
             stars: parseInt(stars, 10),
-            amount: price,
           };
 
       if (appliedPromo) {
