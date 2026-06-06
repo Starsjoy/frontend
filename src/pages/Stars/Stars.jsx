@@ -15,6 +15,7 @@ import {
 } from "../../utils/paymeeErrors";
 import { PaymeeStockBanner } from "../../components/PaymeeStockBanner";
 import { PaymeeStockAlert } from "../../components/PaymeeStockAlert";
+import { useTranslation } from "../../context/LanguageContext";
 import "./Stars.css";
 
 import WebApp from "@twa-dev/sdk";
@@ -50,6 +51,7 @@ const StarIcon = () => (
 const POLLING_DURATION = 8 * 60 * 1000; // 8 daqiqa millisekondda
 
 export function StarsPurchasePage({ variant = "robynhood" }) {
+  const { t } = useTranslation();
   const isFragment = variant === "fragment";
   const isPaymee = variant === "paymee";
   const isCardFlow = isCardDeliveryVariant(variant);
@@ -630,7 +632,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
       <div className="stars-page-title">
         <h1>Telegram Stars</h1>
         <p>
-          xarid qilish
+          {t("stars.purchase")}
           {isCardFlow && fragmentPayLabel
             ? isPaymee
               ? ` · ${fragmentPayLabel}`
@@ -670,31 +672,30 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Foydalanuvchi nomi @username"
+            placeholder={t("stars.usernamePlaceholder")}
           />
-          {/* 🔹 Faqat Telegram Mini App'da */}
           {window?.Telegram?.WebApp && (
             <button type="button" className="btn-my" onClick={fillMyUsername}>
-              O'zim
+              {t("common.me")}
             </button>
           )}
         </div>
       </div>
 
-      <h3>Stars miqdorini kiriting:</h3>
+      <h3>{t("stars.enterAmountLabel")}</h3>
       <div className="input-group">
         <input
           className="tg-input"
           type="number"
           value={stars}
           onChange={(e) => setStars(e.target.value)}
-          placeholder="50 dan 100,000 tagacha"
+          placeholder={t("stars.amountPlaceholder")}
         />
       </div>
 
       {/* Stars Options */}
       <div className="preset-options-section">
-        <h3 style={{color: '#fff', margin: '24px 0 12px 0', fontSize: '16px', fontWeight: '600'}}>Yoki to'plamni tanlang:</h3>
+        <h3 style={{color: '#fff', margin: '24px 0 12px 0', fontSize: '16px', fontWeight: '600'}}>{t("stars.orSelectPack")}</h3>
         <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px'}}>
           {(showMorePlans ? STARS_OPTIONS : STARS_OPTIONS.slice(0, 3)).map((starAmount, idx) => {
             const maxPrice = starAmount * NARX;
@@ -791,7 +792,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
               textDecoration: 'none',
               transition: 'all 0.2s ease'
             }}>
-              {showMorePlans ? 'Kamroq variantlarni yashiring ▲' : "Ko'proq variantlarni ko'rsatish ▼"}
+              {showMorePlans ? `${t("stars.hidePlans")} ▲` : `${t("stars.showMorePlans")} ▼`}
             </button>
           </div>
         )}
@@ -816,7 +817,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
           onClick={handlePayment}
           disabled={Boolean(stockUnavailableMessage)}
         >
-          Stars olish {price > 0 && `- ${formatAmount(appliedPromo ? appliedPromo.newPrice : price)} so'm`}
+          {t("stars.buyBtn")} {price > 0 && `- ${formatAmount(appliedPromo ? appliedPromo.newPrice : price)} ${t("common.currency")}`}
         </button>
       </div>
 
@@ -826,14 +827,14 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
             value={pramacod}
             onChange={(e) => setPramacod(e.target.value)}
             style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
-            placeholder="Promokod kiriting (Agar bo'lsa)" 
+            placeholder={t("stars.promoPlaceholder")}
           />
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={handleCheckPromo}
             style={{ padding: '0 16px', borderRadius: '10px', background: '#e58f0d', color: '#fff', border: 'none', fontWeight: 'bold' }}
           >
-            Tekshirish
+            {t("common.check")}
           </button>
         </div>
         {promoMessage && (
@@ -848,24 +849,24 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
         <div className="stars-warn-overlay">
           <div className="stars-warn-panel">
             <div className="stars-warn-header">
-              <h3 className="stars-warn-title">⚠️ MUHIM DIQQAT ⚠️</h3>
+              <h3 className="stars-warn-title">{t("payment.importantWarning")}</h3>
             </div>
 
             <div className="stars-warn-body">
               <div className="stars-warn-block">
-                <strong>1️⃣ To&apos;lov miqdori:</strong>
+                <strong>{t("payment.amountNote")}</strong>
                 <br />
-                Faqat ko&apos;rsatilgan summani aniq yuboring. Ozgina farq ham to&apos;lovni topishga xalaqit beradi.
+                {t("payment.exactNoteDesc")}
               </div>
 
               <div className="stars-warn-amount-highlight">
-                <span className="stars-warn-label">To&apos;lov summasi</span>
-                <span className="stars-warn-amount">{formatAmount(order?.amount)} so&apos;m</span>
+                <span className="stars-warn-label">{t("payment.amountLabel")}</span>
+                <span className="stars-warn-amount">{formatAmount(order?.amount)} {t("common.currency")}</span>
               </div>
             </div>
 
             <button type="button" className="stars-warn-btn" onClick={handleWarningUnderstood}>
-              ✅ Shartlarni tushundim
+              {t("payment.understoodBtn")}
             </button>
           </div>
         </div>
@@ -881,7 +882,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
               <div className="payment-info-section">
                 {/* Modal Header */}
                 <div className="modal-header-bar">
-                  <span className="modal-header-title">To'lov ma'lumotlari</span>
+                  <span className="modal-header-title">{t("payment.modalTitle")}</span>
                   <button type="button" className="modal-close-x" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
                 </div>
 
@@ -903,7 +904,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                 {/* Payment Info Cards */}
                 <div className="modal-payment-grid">
                   <div className="modal-pay-item">
-                    <div className="modal-pay-label">Karta raqami</div>
+                    <div className="modal-pay-label">{t("payment.cardNumber")}</div>
                     <div className="modal-pay-row">
                       <span className="modal-pay-value">{CARD_NUMBER}</span>
                       <button type="button" className="modal-copy-btn" onClick={handleCopy}>
@@ -913,16 +914,16 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                   </div>
 
                   <div className="modal-pay-item">
-                    <div className="modal-pay-label">Karta egasi</div>
+                    <div className="modal-pay-label">{t("payment.cardOwner")}</div>
                     <div className="modal-pay-row">
                       <span className="modal-pay-value">{CARD_NAME}</span>
                     </div>
                   </div>
 
                   <div className="modal-pay-item highlight-amount">
-                    <div className="modal-pay-label">To'lov summasi</div>
+                    <div className="modal-pay-label">{t("payment.amountLabel")}</div>
                     <div className="modal-pay-row">
-                      <span className="modal-pay-value bold">{formatAmount(order?.amount)} so'm</span>
+                      <span className="modal-pay-value bold">{formatAmount(order?.amount)} {t("common.currency")}</span>
                       <button type="button" className="modal-copy-btn" onClick={handleCopyamount}>
                         {copiedAmount ? "✓" : "📋"}
                       </button>
@@ -935,9 +936,9 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                   <div className="warning-pulse"></div>
                   <span className="warning-icon-big">⚠️</span>
                   <div className="warning-text">
-                    <strong>DIQQAT!</strong>
-                    <p>Aynan <span className="amount-highlight">{formatAmount(order?.amount)} so'm</span> yuboring!</p>
-                    <p className="warning-sub">Boshqa summa yuborilsa to'lov ko'rinmaydi</p>
+                    <strong>{t("payment.attentionTitle")}</strong>
+                    <p>{t("payment.sendExactPre")} <span className="amount-highlight">{formatAmount(order?.amount)} {t("common.currency")}</span> {t("payment.sendExactPost")}</p>
+                    <p className="warning-sub">{t("payment.wrongAmountHint")}</p>
                   </div>
                 </div>
 
@@ -951,9 +952,9 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
 
                 {/* Pay Button */}
                 <button type="button" className="btn-payment-done" onClick={handlePaymentDone}>
-                  ✅ To'lov qildim
+                  {t("payment.paidBtn")}
                 </button>
-                <p className="modal-close-hint">To'lovni amalga oshiring va tugmani bosing</p>
+                <p className="modal-close-hint">{t("payment.hint")}</p>
               </div>
             )}
 
@@ -961,7 +962,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
             {status === "pending" && (
               <div className="pending-waiting-section">
                 <div className="modal-header-bar">
-                  <span className="modal-header-title">⏳ To'lov kutilmoqda</span>
+                  <span className="modal-header-title">{t("payment.pendingTitle")}</span>
                   <button type="button" className="modal-close-x" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
                 </div>
 
@@ -976,20 +977,20 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                   </div>
                 </div>
 
-                <h3 className="waiting-title">To'lov qidirilmoqda...</h3>
-                <p className="waiting-subtitle">To'lovingiz avtomatik aniqlanadi</p>
+                <h3 className="waiting-title">{t("payment.searching")}</h3>
+                <p className="waiting-subtitle">{t("payment.autoDetect")}</p>
 
                 <div className="waiting-payment-info">
                   <div className="waiting-info-row">
-                    <span className="waiting-label">Karta:</span>
+                    <span className="waiting-label">{t("payment.cardLabel")}</span>
                     <span className="waiting-value">{CARD_NUMBER}</span>
                     <button type="button" className="modal-copy-btn-sm" onClick={handleCopy}>
                       {copiedCard ? "✓" : "📋"}
                     </button>
                   </div>
                   <div className="waiting-info-row highlight">
-                    <span className="waiting-label">Summa:</span>
-                    <span className="waiting-value bold">{formatAmount(order?.amount)} so'm</span>
+                    <span className="waiting-label">{t("payment.amountShortLabel")}</span>
+                    <span className="waiting-value bold">{formatAmount(order?.amount)} {t("common.currency")}</span>
                   </div>
                 </div>
 
@@ -998,7 +999,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                   <span>{formatTime(countdown)}</span>
                 </div>
 
-                <p className="modal-close-hint">Oyna yopilsa ham to'lov kuzatiladi</p>
+                <p className="modal-close-hint">{t("payment.tracked")}</p>
               </div>
             )}
 
@@ -1010,8 +1011,8 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                   <div className="sending-pulse-ring delay"></div>
                   <div className="sending-center-icon">💫</div>
                 </div>
-                <h3 className="sending-title">To'lov qabul qilindi!</h3>
-                <p className="sending-subtitle">Stars yuborilmoqda...</p>
+                <h3 className="sending-title">{t("payment.received")}</h3>
+                <p className="sending-subtitle">{t("payment.sendingStars")}</p>
 
                 {profile && (
                   <div className="sending-recipient">
@@ -1027,7 +1028,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                 <div className="sending-progress-bar">
                   <div className="sending-progress-fill"></div>
                 </div>
-                <p className="sending-hint">Biroz kuting, jarayon avtomatik...</p>
+                <p className="sending-hint">{t("payment.waitAuto")}</p>
               </div>
             )}
 
@@ -1045,8 +1046,8 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                   </svg>
                 </div>
 
-                <h3 className="success-title">Muvaffaqiyatli! 🎉</h3>
-                <p className="success-amount">{order?.stars} ⭐ yuborildi</p>
+                <h3 className="success-title">{t("payment.successTitle")}</h3>
+                <p className="success-amount">{t("stars.starsSent").replace("{count}", order?.stars)}</p>
 
                 {profile && (
                   <div className="success-recipient-card">
@@ -1055,7 +1056,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                       <span className="success-user-name">{profile.fullName}</span>
                       <span className="success-user-handle">@{profile.username}</span>
                     </div>
-                    <div className="success-delivered-badge">✓ Yetkazildi</div>
+                    <div className="success-delivered-badge">{t("payment.deliveredBadge")}</div>
                   </div>
                 )}
 
@@ -1065,14 +1066,14 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                     <span className="success-detail-value">{order?.stars} ⭐</span>
                   </div>
                   <div className="success-detail-row">
-                    <span className="success-detail-label">To'lov</span>
-                    <span className="success-detail-value">{formatAmount(order?.amount)} so'm</span>
+                    <span className="success-detail-label">{t("payment.payLabel")}</span>
+                    <span className="success-detail-value">{formatAmount(order?.amount)} {t("common.currency")}</span>
                   </div>
                 </div>
 
                 {txId && (
                   <div className="modal-txid">
-                    <span className="modal-txid-label">Tranzaksiya ID</span>
+                    <span className="modal-txid-label">{t("payment.txIdLabel")}</span>
                     <div className="modal-txid-row">
                       <code>{txId}</code>
                       <button type="button" className="modal-copy-btn" onClick={() => navigator.clipboard.writeText(txId)}>
@@ -1082,7 +1083,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
                   </div>
                 )}
 
-                <p className="modal-auto-close">Oyna {timer}s da yopiladi</p>
+                <p className="modal-auto-close">{t("stars.autoClose").replace("{timer}", timer)}</p>
               </div>
             )}
 
@@ -1091,9 +1092,9 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
               <div className="modal-result-section">
                 <button type="button" className="modal-close-x expired-x" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
                 <div className="modal-result-icon expired-bg">⏰</div>
-                <h3 className="modal-result-title">Vaqt tugadi</h3>
-                <p className="modal-result-desc">To'lov muddati o'tib ketdi. Qaytadan urinib ko'ring.</p>
-                <button type="button" className="btn-go-home" onClick={goToHome}>🏠 Bosh sahifaga qaytish</button>
+                <h3 className="modal-result-title">{t("payment.expiredTitle")}</h3>
+                <p className="modal-result-desc">{t("payment.expiredDesc")}</p>
+                <button type="button" className="btn-go-home" onClick={goToHome}>{t("payment.goHome")}</button>
               </div>
             )}
 
@@ -1102,9 +1103,9 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
               <div className="modal-result-section">
                 <button type="button" className="modal-close-x expired-x" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
                 <div className="modal-result-icon expired-bg" style={{background: 'rgba(255, 59, 48, 0.15)', color: '#ff3b30'}}>❌</div>
-                <h3 className="modal-result-title">Xatolik yuz berdi</h3>
-                <p className="modal-result-desc">{errorMessage || "Stars olishda xatolik. Admin bilan bog'laning."}</p>
-                <button type="button" className="btn-go-home" onClick={() => window.open("https://t.me/StarsjoySupport", "_blank")}>👨🏻‍💻 Admin bilan bog'lanish</button>
+                <h3 className="modal-result-title">{t("payment.errorTitle")}</h3>
+                <p className="modal-result-desc">{errorMessage || t("stars.starsError")}</p>
+                <button type="button" className="btn-go-home" onClick={() => window.open("https://t.me/StarsjoySupport", "_blank")}>{t("payment.contactAdmin")}</button>
               </div>
             )}
           </div>

@@ -19,12 +19,20 @@ import Notifications from "./pages/Notifications/Notifications";
 import TermsOfService from "./pages/Legal/TermsOfService";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import MaintenancePage from "./pages/Maintenance/MaintenancePage";
-import { LanguageProvider } from "./context/LanguageContext";
+import { LanguageProvider, useTranslation } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import TelegramGate from "./components/TelegramGate";
+import LanguageSetup from "./components/LanguageSetup";
 import apiFetch from "./utils/apiFetch";
 
 import ErrorBoundary from "./components/ErrorBoundary";
+
+// Yangi foydalanuvchilar uchun til tanlashni ta'minlaydi
+function LanguageGate({ children }) {
+  const { languageChosen } = useTranslation();
+  if (!languageChosen) return <LanguageSetup />;
+  return children;
+}
 
 function App() {
   const [maintenance, setMaintenance] = useState(false);
@@ -67,6 +75,7 @@ function App() {
       <TelegramGate>
         <ThemeProvider>
           <LanguageProvider>
+            <LanguageGate>
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Dashboard/>} />
@@ -89,6 +98,7 @@ function App() {
                 <Route path="/starsadmin" element={<AdminPanel/>} />
               </Routes>
             </BrowserRouter>
+            </LanguageGate>
           </LanguageProvider>
         </ThemeProvider>
       </TelegramGate>

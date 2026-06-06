@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Premium.css";
-import diamondGif from "../../assets/diamond.gif";
 import WebApp from "@twa-dev/sdk";
 import premiumGif from "../../assets/premium_gif.gif";
 import premiumSticker from "../../assets/AnimatedSticker_premium.tgs";
@@ -18,12 +17,14 @@ import {
 } from "../../utils/paymeeErrors";
 import { PaymeeStockBanner } from "../../components/PaymeeStockBanner";
 import { PaymeeStockAlert } from "../../components/PaymeeStockAlert";
+import { useTranslation } from "../../context/LanguageContext";
 function normalizePremiumPollStatus(status) {
   if (status === "completed" || status === "delivered") return "premium_sent";
   return status;
 }
 
 export function PremiumPurchasePage({ variant = "robynhood" }) {
+  const { t } = useTranslation();
   const isFragment = variant === "fragment";
   const isPaymee = variant === "paymee";
   const isCardFlow = isCardDeliveryVariant(variant);
@@ -44,9 +45,9 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
   const [loadingProfile, setLoadingProfile] = useState(false);
 
   const plans = [
-    { id: 1, label: "3 oy", price: PREMIUM_3, months: 3 },
-    { id: 2, label: "6 oy", price: PREMIUM_6, months: 6 },
-    { id: 3, label: "1 yil", price: PREMIUM_12, months: 12 },
+    { id: 1, labelKey: "premium.months3", price: PREMIUM_3, months: 3 },
+    { id: 2, labelKey: "premium.months6", price: PREMIUM_6, months: 6 },
+    { id: 3, labelKey: "premium.months12", price: PREMIUM_12, months: 12 },
   ];
 
   const [selectedPlan, setSelectedPlan] = useState(plans[0]);
@@ -519,7 +520,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
       <div className="premium-page-title">
         <h1>Telegram Premium</h1>
         <p>
-          xarid qilish
+          {t("premium.purchase")}
           {isCardFlow && fragmentPayLabel
             ? isPaymee
               ? ` · ${fragmentPayLabel}`
@@ -534,16 +535,15 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Foydalanuvchi nomi @username"
+            placeholder={t("stars.usernamePlaceholder")}
           />
-          {/* 🔹 Faqat Telegram Mini App’da */}
           {window?.Telegram?.WebApp && (
             <button
               type="button"
               className="btn-my"
               onClick={fillMyUsername}
             >
-              O‘zim
+              {t("common.me")}
             </button>
           )}
         </div>
@@ -563,7 +563,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
       )}
 
       {/* avto fragment orqali */}
-      <h3>Avto:</h3>
+      <h3>{t("premium.auto")}</h3>
 
       <div className="plans">
         {plans.map((p) => (
@@ -578,20 +578,20 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
             <img src={premiumGif} className="plan-gif" />
 
             <div className="narx">
-              <span>{p.label}</span>
+              <span>{t(p.labelKey)}</span>
               <span>
                 {isCardFlow && selectedPlan.id === p.id
                   ? fragmentPriceLoading
                     ? "..."
                     : fragmentPlanPrice != null
-                      ? `${formatAmount(fragmentPlanPrice)} so'm`
+                      ? `${formatAmount(fragmentPlanPrice)} ${t("common.currency")}`
                       : fragmentSlotsFull
-                        ? "Band"
+                        ? t("premium.soldOut")
                         : "—"
-                  : `${formatAmount(p.price)} so'm`}
+                  : `${formatAmount(p.price)} ${t("common.currency")}`}
               </span>
             </div>
-            <span style={{ marginLeft: "auto", fontSize: "13px", color: "#0088cc", fontWeight: "600" }}>(Avto)</span>
+            <span style={{ marginLeft: "auto", fontSize: "13px", color: "#0088cc", fontWeight: "600" }}>({t("premium.auto").replace(":", "")})</span>
           </label>
         ))}
       </div>
@@ -613,19 +613,19 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
           disabled={loadingBuy || Boolean(paymeeStockMessage)}
           onClick={handleCreateOrder}
         >
-          {loadingBuy ? "Yuklanmoqda..." : "Premium olish"}
+          {loadingBuy ? t("premium.loadingBuy") : t("premium.buyBtn")}
         </button>
       </div>
 
       <div className="promo-input-group" style={{ marginBottom: "15px" }}>
-        <input 
-          type="text" 
-          placeholder="Promokod kiriting (Agar bo'lsa)" 
-          value={pramacod} 
-          onChange={(e) => setPramacod(e.target.value)} 
+        <input
+          type="text"
+          placeholder={t("premium.promoPlaceholder")}
+          value={pramacod}
+          onChange={(e) => setPramacod(e.target.value)}
           style={{ width: "calc(100% - 100px)", padding: "12px", borderRadius: "14px", border: "1px solid #ccc", outline: "none", fontSize: "16px", marginRight: "10px" }}
         />
-        <button className="btn-my" onClick={handleCheckPromo} style={{ width: "90px", padding: "12px", borderRadius: "14px", border: "none", cursor: "pointer", background: "var(--tg-theme-button-color, #2481cc)", color: "white", fontSize: "14px" }}>Qo'llash</button>
+        <button className="btn-my" onClick={handleCheckPromo} style={{ width: "90px", padding: "12px", borderRadius: "14px", border: "none", cursor: "pointer", background: "var(--tg-theme-button-color, #2481cc)", color: "white", fontSize: "14px" }}>{t("premium.promoApply")}</button>
       </div>
       {promoMessage && (
         <div style={{ color: promoError ? 'red' : 'green', fontSize: '14px', marginBottom: '15px', textAlign: 'center' }}>
@@ -640,24 +640,24 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
         <div className="premium-warn-overlay">
           <div className="premium-warn-panel">
             <div className="premium-warn-header">
-              <h3 className="premium-warn-title">⚠️ MUHIM DIQQAT ⚠️</h3>
+              <h3 className="premium-warn-title">{t("payment.importantWarning")}</h3>
             </div>
 
             <div className="premium-warn-body">
               <div className="premium-warn-block">
-                <strong>1️⃣ To&apos;lov miqdori:</strong>
+                <strong>{t("payment.amountNote")}</strong>
                 <br />
-                Faqat ko&apos;rsatilgan summani aniq yuboring. Ozgina farq ham to&apos;lovni topishga xalaqit beradi.
+                {t("payment.exactNoteDesc")}
               </div>
 
               <div className="premium-warn-amount-highlight">
-                <span className="premium-warn-label">To&apos;lov summasi</span>
-                <span className="premium-warn-amount">{formatAmount(order?.amount)} so&apos;m</span>
+                <span className="premium-warn-label">{t("payment.amountLabel")}</span>
+                <span className="premium-warn-amount">{formatAmount(order?.amount)} {t("common.currency")}</span>
               </div>
             </div>
 
             <button type="button" className="premium-warn-btn" onClick={handleWarningUnderstood}>
-              ✅ Shartlarni tushundim
+              {t("payment.understoodBtn")}
             </button>
           </div>
         </div>
@@ -673,7 +673,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
               <div className="pending-section">
                 {/* Modal Header */}
                 <div className="modal-header-bar">
-                  <span className="modal-header-title">💳 Premium xarid qilish</span>
+                  <span className="modal-header-title">{t("premium.modalTitle")}</span>
                   <button type="button" className="modal-close-x" onClick={() => {
                     stopPolling();
                     stopCountdown();
@@ -699,7 +699,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                 {/* Payment Info Cards */}
                 <div className="modal-payment-grid">
                   <div className="modal-pay-item">
-                    <div className="modal-pay-label">Karta raqami</div>
+                    <div className="modal-pay-label">{t("payment.cardNumber")}</div>
                     <div className="modal-pay-row">
                       <span className="modal-pay-value">{CARD_NUMBER}</span>
                       <button type="button" className="modal-copy-btn" onClick={handleCopyCard}>
@@ -709,16 +709,16 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                   </div>
 
                   <div className="modal-pay-item">
-                    <div className="modal-pay-label">Karta egasi</div>
+                    <div className="modal-pay-label">{t("payment.cardOwner")}</div>
                     <div className="modal-pay-row">
                       <span className="modal-pay-value">{CARD_NAME}</span>
                     </div>
                   </div>
 
                   <div className="modal-pay-item highlight">
-                    <div className="modal-pay-label">To'lov summasi</div>
+                    <div className="modal-pay-label">{t("payment.amountLabel")}</div>
                     <div className="modal-pay-row">
-                      <span className="modal-pay-value bold">{formatAmount(order.amount)} so'm</span>
+                      <span className="modal-pay-value bold">{formatAmount(order.amount)} {t("common.currency")}</span>
                       <button type="button" className="modal-copy-btn" onClick={handleCopyAmount}>
                         {copiedAmount ? "✓" : "📋"}
                       </button>
@@ -729,7 +729,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                 {/* Warning */}
                 <div className="modal-warning">
                   <span className="modal-warning-icon">⚠️</span>
-                  <span>Aynan <b>{formatAmount(order.amount)} so'm</b> to'lang! Aks holda to'lov ko'rinmaydi.</span>
+                  <span>{t("payment.sendExactPre")} <b>{formatAmount(order.amount)} {t("common.currency")}</b> {t("payment.sendExactPost")} {t("payment.wrongAmountHint")}.</span>
                 </div>
 
                 {/* Timer */}
@@ -742,9 +742,9 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
 
                 {/* To'lov qildim button */}
                 <button type="button" className="btn-payment-done" onClick={handlePaymentDone}>
-                  ✅ To'lov qildim
+                  {t("payment.paidBtn")}
                 </button>
-                <p className="modal-close-hint">To'lovni amalga oshiring va tugmani bosing</p>
+                <p className="modal-close-hint">{t("payment.hint")}</p>
               </div>
             )}
 
@@ -753,7 +753,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
               <div className="pending-section">
                 {/* Modal Header */}
                 <div className="modal-header-bar">
-                  <span className="modal-header-title">⏳ To'lov kutilmoqda</span>
+                  <span className="modal-header-title">{t("payment.pendingTitle")}</span>
                   <button type="button" className="modal-close-x" onClick={() => {
                     stopPolling();
                     stopCountdown();
@@ -773,21 +773,21 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                   </div>
                 </div>
 
-                <h3 className="waiting-title">To'lov qidirilmoqda...</h3>
-                <p className="waiting-subtitle">To'lovingiz avtomatik aniqlanadi</p>
+                <h3 className="waiting-title">{t("payment.searching")}</h3>
+                <p className="waiting-subtitle">{t("payment.autoDetect")}</p>
 
                 {/* Payment Info */}
                 <div className="waiting-payment-info">
                   <div className="waiting-info-row">
-                    <span className="waiting-label">Karta:</span>
+                    <span className="waiting-label">{t("payment.cardLabel")}</span>
                     <span className="waiting-value">{CARD_NUMBER}</span>
                     <button type="button" className="modal-copy-btn-sm" onClick={handleCopyCard}>
                       {copiedCard ? "✓" : "📋"}
                     </button>
                   </div>
                   <div className="waiting-info-row highlight">
-                    <span className="waiting-label">Summa:</span>
-                    <span className="waiting-value bold">{formatAmount(order.amount)} so'm</span>
+                    <span className="waiting-label">{t("payment.amountShortLabel")}</span>
+                    <span className="waiting-value bold">{formatAmount(order.amount)} {t("common.currency")}</span>
                   </div>
                 </div>
 
@@ -799,11 +799,11 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
 
                 {cardLast4 && (
                   <div className="modal-card-detected">
-                    <span>✅ Karta aniqlandi: **** {cardLast4}</span>
+                    <span>{t("premium.cardDetected").replace("{last4}", cardLast4)}</span>
                   </div>
                 )}
 
-                <p className="modal-close-hint">Oyna yopilsa ham to'lov kuzatiladi</p>
+                <p className="modal-close-hint">{t("payment.tracked")}</p>
               </div>
             )}
 
@@ -816,12 +816,12 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                   <div className="sending-center-icon">💎</div>
                 </div>
                 <h3 className="sending-title">
-                  {paymentStatus === "payment_received" ? "To'lov qabul qilindi!" : "Premium yuborilmoqda"}
+                  {paymentStatus === "payment_received" ? t("payment.received") : t("premium.sending")}
                 </h3>
                 <p className="sending-subtitle">
                   {paymentStatus === "payment_received"
-                    ? "Premium yuborilmoqda..."
-                    : "Iltimos, biroz kuting — jarayon yakunlanmoqda"}
+                    ? t("premium.sending")
+                    : t("premium.processing")}
                 </p>
 
                 {profile && (
@@ -838,7 +838,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                 <div className="sending-progress-bar">
                   <div className="sending-progress-fill premium"></div>
                 </div>
-                <p className="sending-hint">Biroz kuting, jarayon avtomatik...</p>
+                <p className="sending-hint">{t("premium.waitAuto")}</p>
               </div>
             )}
 
@@ -856,8 +856,8 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                   </svg>
                 </div>
 
-                <h3 className="success-title">Muvaffaqiyatli! 🎉</h3>
-                <p className="success-amount">{order.muddat_oy} oylik Premium yuborildi</p>
+                <h3 className="success-title">{t("payment.successTitle")}</h3>
+                <p className="success-amount">{t("premium.monthsSent").replace("{months}", order.muddat_oy)}</p>
 
                 {profile && (
                   <div className="success-recipient-card">
@@ -866,23 +866,23 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                       <span className="success-user-name">{profile.fullName}</span>
                       <span className="success-user-handle">@{profile.username}</span>
                     </div>
-                    <div className="success-delivered-badge">✓ Yetkazildi</div>
+                    <div className="success-delivered-badge">{t("payment.deliveredBadge")}</div>
                   </div>
                 )}
 
                 <div className="success-details">
                   <div className="success-detail-row">
                     <span className="success-detail-label">Premium</span>
-                    <span className="success-detail-value">💎 {order.muddat_oy} oy</span>
+                    <span className="success-detail-value">💎 {order.muddat_oy} {t("premium.months")}</span>
                   </div>
                   <div className="success-detail-row">
-                    <span className="success-detail-label">To'lov</span>
-                    <span className="success-detail-value">{formatAmount(order.amount)} so'm</span>
+                    <span className="success-detail-label">{t("payment.payLabel")}</span>
+                    <span className="success-detail-value">{formatAmount(order.amount)} {t("common.currency")}</span>
                   </div>
                 </div>
 
                 <button type="button" className="modal-close-btn success-close" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>
-                  Yopish
+                  {t("common.close")}
                 </button>
               </div>
             )}
@@ -893,23 +893,23 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                 <div className="error-icon-wrap" style={{background: 'rgba(255, 59, 48, 0.15)', color: '#ff3b30', fontSize: '40px'}}>
                   <span className="error-icon">❌</span>
                 </div>
-                <h3 className="error-title">Xatolik yuz berdi</h3>
-                <p className="error-desc">{errorMessage || "Premium yuborishda muammo chiqdi. Iltimos, qaytadan urinib ko'ring."}</p>
-                
+                <h3 className="error-title">{t("payment.errorTitle")}</h3>
+                <p className="error-desc">{errorMessage || t("premium.errorDesc")}</p>
+
                 <div style={{display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 20px', paddingBottom: '20px'}}>
                   <button type="button" className="modal-close-btn" onClick={() => {
                     setShowModal(false);
                     setPaymentStatus("idle");
                   }}>
-                    Yopish
+                    {t("common.close")}
                   </button>
-                  <button 
-                    type="button" 
-                    className="modal-close-btn" 
-                    style={{ background: '#2b2d31', color: '#fff', border: '1px solid #444', marginTop: 0 }} 
+                  <button
+                    type="button"
+                    className="modal-close-btn"
+                    style={{ background: '#2b2d31', color: '#fff', border: '1px solid #444', marginTop: 0 }}
                     onClick={() => window.open("https://t.me/StarsjoySupport", "_blank")}
                   >
-                    👨🏻‍💻 Admin bilan bog'lanish
+                    {t("payment.contactAdmin")}
                   </button>
                 </div>
               </div>
@@ -921,14 +921,14 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
                 <div className="error-icon-wrap">
                   <span className="error-icon">⏰</span>
                 </div>
-                <h3 className="error-title">Vaqt tugadi</h3>
-                <p className="error-desc">To'lov muddati o'tib ketdi. Qaytadan urinib ko'ring.</p>
-                
+                <h3 className="error-title">{t("payment.expiredTitle")}</h3>
+                <p className="error-desc">{t("payment.expiredDesc")}</p>
+
                 <button type="button" className="modal-close-btn" onClick={() => {
                   setShowModal(false);
                   setPaymentStatus("idle");
                 }}>
-                  Yopish
+                  {t("common.close")}
                 </button>
               </div>
             )}
