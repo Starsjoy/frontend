@@ -9,12 +9,6 @@ import {
   isCardDeliveryVariant,
   starsApiPrefix,
 } from "../../utils/starsPurchaseRoute";
-import {
-  isPaymeeInsufficientError,
-  paymeeInsufficientAlertMessage,
-} from "../../utils/paymeeErrors";
-import { PaymeeStockBanner } from "../../components/PaymeeStockBanner";
-import { PaymeeStockAlert } from "../../components/PaymeeStockAlert";
 import { useTranslation } from "../../context/LanguageContext";
 import "./Stars.css";
 
@@ -85,8 +79,6 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [countdown, setCountdown] = useState(480); // 8 daqiqa
   const [showMorePlans, setShowMorePlans] = useState(false);
-  const [stockUnavailableMessage, setStockUnavailableMessage] = useState("");
-  const [paymeeStockModal, setPaymeeStockModal] = useState(null);
 
   // Promocode state
   const [pramacod, setPramacod] = useState("");
@@ -234,14 +226,8 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
       .then(data => {
         if (data.available && data.price) {
           setPrice(data.price);
-          setStockUnavailableMessage("");
         } else {
           setPrice(0);
-          if (isPaymeeInsufficientError(data)) {
-            setStockUnavailableMessage(paymeeInsufficientAlertMessage(data, "stars"));
-          } else {
-            setStockUnavailableMessage("");
-          }
         }
       })
       .catch(() => {
@@ -584,11 +570,6 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
           return;
         }
 
-        if (isPaymeeInsufficientError(errorData)) {
-          setPaymeeStockModal(paymeeInsufficientAlertMessage(errorData, "stars"));
-          return;
-        }
-        
         throw new Error(errorData.error || "Server xatosi");
       }
 
@@ -798,24 +779,11 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
         )}
       </div>
 
-      {stockUnavailableMessage && (
-        <PaymeeStockBanner product="stars" message={stockUnavailableMessage} />
-      )}
-
-      {paymeeStockModal && (
-        <PaymeeStockAlert
-          product="stars"
-          message={paymeeStockModal}
-          onClose={() => setPaymeeStockModal(null)}
-        />
-      )}
-
       <div className="actions" style={{ marginBottom: '20px' }}>
         <button
           type="button"
           className="tg-button"
           onClick={handlePayment}
-          disabled={Boolean(stockUnavailableMessage)}
         >
           {t("stars.buyBtn")} {price > 0 && `- ${formatAmount(appliedPromo ? appliedPromo.newPrice : price)} ${t("common.currency")}`}
         </button>

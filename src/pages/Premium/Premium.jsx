@@ -11,12 +11,6 @@ import {
   isCardDeliveryVariant,
   premiumApiPrefix,
 } from "../../utils/starsPurchaseRoute";
-import {
-  isPaymeeInsufficientError,
-  paymeeInsufficientAlertMessage,
-} from "../../utils/paymeeErrors";
-import { PaymeeStockBanner } from "../../components/PaymeeStockBanner";
-import { PaymeeStockAlert } from "../../components/PaymeeStockAlert";
 import { useTranslation } from "../../context/LanguageContext";
 function normalizePremiumPollStatus(status) {
   if (status === "completed" || status === "delivered") return "premium_sent";
@@ -78,8 +72,6 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
   const [fragmentPlanPrice, setFragmentPlanPrice] = useState(null);
   const [fragmentPriceLoading, setFragmentPriceLoading] = useState(false);
   const [fragmentSlotsFull, setFragmentSlotsFull] = useState(false);
-  const [paymeeStockMessage, setPaymeeStockMessage] = useState("");
-  const [paymeeStockModal, setPaymeeStockModal] = useState(null);
 
   // Format
   const formatAmount = (num) =>
@@ -145,13 +137,9 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
         if (data.available && data.price) {
           setFragmentPlanPrice(data.price);
           setFragmentSlotsFull(false);
-          setPaymeeStockMessage("");
         } else {
           setFragmentPlanPrice(null);
-          setFragmentSlotsFull(true);
-          setPaymeeStockMessage(
-            isPaymeeInsufficientError(data) ? paymeeInsufficientAlertMessage(data, "premium") : ""
-          );
+          setFragmentSlotsFull(false);
         }
       })
       .catch(() => {
@@ -343,10 +331,6 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
         // SLOTS_FULL xatosi
         if (data.code === "SLOTS_FULL") {
           alert("⏳ Hozirda juda ko'p buyurtmalar mavjud.\n\nIltimos, 1-2 daqiqadan keyin qayta urinib ko'ring.");
-          return;
-        }
-        if (isPaymeeInsufficientError(data)) {
-          setPaymeeStockModal(paymeeInsufficientAlertMessage(data, "premium"));
           return;
         }
         alert(data.error || "Order yaratishda xato");
@@ -596,21 +580,9 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
         ))}
       </div>
 
-      {paymeeStockMessage && (
-        <PaymeeStockBanner product="premium" message={paymeeStockMessage} />
-      )}
-
-      {paymeeStockModal && (
-        <PaymeeStockAlert
-          product="premium"
-          message={paymeeStockModal}
-          onClose={() => setPaymeeStockModal(null)}
-        />
-      )}
-
       <div className="actions" style={{ marginTop: "25px", marginBottom: "15px" }}>
         <button
-          disabled={loadingBuy || Boolean(paymeeStockMessage)}
+          disabled={loadingBuy}
           onClick={handleCreateOrder}
         >
           {loadingBuy ? t("premium.loadingBuy") : t("premium.buyBtn")}
