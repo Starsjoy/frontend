@@ -306,6 +306,51 @@ html, body {
   max-width: 118px;
 }
 
+.header-paymee-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  max-width: 104px;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(46, 213, 115, 0.32);
+  background: rgba(46, 213, 115, 0.1);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1.15;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.header-paymee-pill:hover {
+  background: rgba(46, 213, 115, 0.2);
+  border-color: rgba(46, 213, 115, 0.5);
+}
+
+.header-paymee-pill:active {
+  transform: scale(0.98);
+}
+
+.header-paymee-pill-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 600;
+}
+
+.header-paymee-pill-sep {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 400;
+}
+
+.header-paymee-pill-value {
+  font-weight: 700;
+  color: #2ed573;
+  letter-spacing: -0.02em;
+}
+
 .admin-custom-select--header-pay {
   flex: 0 0 auto;
   width: 72px;
@@ -2912,6 +2957,15 @@ html, body {
     min-width: 96px;
   }
 
+  .header-paymee-pill {
+    flex: 1;
+    max-width: none;
+    min-width: 88px;
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
   .admin-custom-select--header-pay {
     width: 68px;
   }
@@ -3101,6 +3155,10 @@ html, body {
 
   .admin-custom-select--header-mode {
     max-width: 148px;
+  }
+
+  .header-paymee-pill {
+    max-width: 120px;
   }
 
   .admin-custom-select--filter {

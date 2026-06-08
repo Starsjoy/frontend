@@ -119,20 +119,13 @@ export default function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("transactions");
 
-  const [bottomMenuOpen, setBottomMenuOpen] = useState(false);
-
   const goToTab = (tab) => {
     setActiveTab(tab);
-    setBottomMenuOpen(false);
   };
-
-  const SECONDARY_NAV_MENU = [
-    { id: "notifications", icon: "📣", label: "Xabar" },
-    { id: "fragment-cookie", icon: "🍪", label: "Fragment" },
-  ];
 
   const SECONDARY_NAV_BOTTOM = [
     { id: "analytics", icon: "📊", label: "Stat" },
+    { id: "notifications", icon: "📣", label: "Xabar" },
     { id: "settings", icon: "%", label: "Cheg" },
     { id: "promocodes", icon: "➕", label: "Promo" },
     { id: "referrals", icon: "🤝", label: "Ref" },
@@ -141,13 +134,10 @@ export default function AdminPanel() {
   const SECONDARY_NAV_HEADER = [
     { id: "analytics", icon: "📊", label: "Analitika" },
     { id: "notifications", icon: "📣", label: "Xabar" },
-    { id: "fragment-cookie", icon: "🍪", label: "Fragment" },
     { id: "settings", icon: "%", label: "Chegirma" },
     { id: "promocodes", icon: "➕", label: "Promokod" },
     { id: "referrals", icon: "🤝", label: "Referral" },
   ];
-
-  const isBottomMenuTabActive = SECONDARY_NAV_MENU.some((item) => item.id === activeTab);
   const [userStats, setUserStats] = useState({
     total: 0,
     today: 0,
@@ -277,6 +267,7 @@ export default function AdminPanel() {
     availableStars: null,
     error: null,
   });
+  const [headerPaymeeLoading, setHeaderPaymeeLoading] = useState(false);
 
   // Discount packages state
   const [discountPackages, setDiscountPackages] = useState([]);
@@ -435,6 +426,53 @@ export default function AdminPanel() {
     return starPrices?.availableStars || 0;
   };
 
+  const fetchHeaderPaymeeBalance = async () => {
+    setHeaderPaymeeLoading(true);
+    try {
+      const res = await apiFetch("/api/admin/paymee/status");
+      const data = await res.json();
+      if (data.configured && data.balance?.balance_usdt != null) {
+        setPaymeeWallet((prev) => ({
+          ...prev,
+          configured: true,
+          balanceUsdt: Number(data.balance.balance_usdt),
+          currency: data.balance.currency || "USDT",
+          error: null,
+        }));
+      } else if (data.configured) {
+        setPaymeeWallet((prev) => ({
+          ...prev,
+          configured: true,
+          balanceUsdt: null,
+          error: data.balance?.error || "Balans olinmadi",
+        }));
+      } else {
+        setPaymeeWallet((prev) => ({
+          ...prev,
+          configured: false,
+          balanceUsdt: null,
+          error: data.error || null,
+        }));
+      }
+    } catch (err) {
+      console.error("Header Paymee balance:", err);
+      setPaymeeWallet((prev) => ({
+        ...prev,
+        error: "Balans yuklanmadi",
+      }));
+    } finally {
+      setHeaderPaymeeLoading(false);
+    }
+  };
+
+  const formatHeaderPaymeeBalance = () => {
+    if (headerPaymeeLoading) return "…";
+    if (!paymeeWallet.configured) return "—";
+    if (paymeeWallet.error) return "!";
+    if (paymeeWallet.balanceUsdt == null || Number.isNaN(paymeeWallet.balanceUsdt)) return "—";
+    return `$${Number(paymeeWallet.balanceUsdt).toFixed(1)}`;
+  };
+
   const toggleUserbotRefill = async () => {
     setUserbotRefillToggleLoading(true);
     try {
@@ -454,6 +492,13 @@ export default function AdminPanel() {
       setUserbotRefillToggleLoading(false);
     }
   };
+
+  // Header Paymee balansi
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchHeaderPaymeeBalance();
+    }
+  }, [isAuthenticated]);
 
   // Fetch wallet when analytics tab is active
   useEffect(() => {
@@ -624,14 +669,8 @@ export default function AdminPanel() {
   }, [analyticsPeriod, activeTab, isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated && (activeTab === "settings" || activeTab === "fragment-cookie")) {
+    if (isAuthenticated && activeTab === "settings") {
       fetchFragmentTokens();
-    }
-  }, [isAuthenticated, activeTab]);
-
-  useEffect(() => {
-    if (isAuthenticated && activeTab === "fragment-cookie") {
-      fetchFragmentEnvStatus();
     }
   }, [isAuthenticated, activeTab]);
 
@@ -1195,8 +1234,6 @@ export default function AdminPanel() {
       fetchNotifications();
     } else if (activeTab === "promocodes") {
       fetchPromocodes();
-    } else if (activeTab === "fragment-cookie") {
-      fetchFragmentEnvStatus();
     }
   }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter, referralFilter]);
 
@@ -1834,25 +1871,17 @@ export default function AdminPanel() {
             </button>
           </div>
 
-          <AdminCustomSelect
-            className="admin-custom-select--header-mode"
-            value={starsPurchaseMode}
-            onChange={setPurchaseMode}
-            options={PURCHASE_MODE_OPTIONS}
-            disabled={purchaseModeLoading}
-            ariaLabel="Yetkazish rejimi"
-          />
-
-          {starsPurchaseMode === "fragment" && (
-            <AdminCustomSelect
-              className="admin-custom-select--header-pay"
-              value={fragmentPaymentMethod}
-              onChange={setFragmentPayMethod}
-              options={FRAGMENT_PAY_OPTIONS}
-              disabled={fragmentPayLoading}
-              ariaLabel="Fragment to'lov"
-            />
-          )}
+          <button
+            type="button"
+            className="header-paymee-pill"
+            onClick={() => goToTab("analytics")}
+            title="Paymee API balansi — Analitika"
+            aria-label="Paymee API balansi, Analitika tabiga o'tish"
+          >
+            <span className="header-paymee-pill-label">Paymee</span>
+            <span className="header-paymee-pill-sep">·</span>
+            <span className="header-paymee-pill-value">{formatHeaderPaymeeBalance()}</span>
+          </button>
 
           <div className="header-top-actions">
             <button
@@ -1860,6 +1889,7 @@ export default function AdminPanel() {
               type="button"
               aria-label="Yangilash"
               onClick={() => {
+                fetchHeaderPaymeeBalance();
                 if (activeTab === "transactions") fetchTransactions();
                 else if (activeTab === "users") fetchUsers();
                 else if (activeTab === "premium") fetchPremiumOrders();
@@ -3130,8 +3160,8 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* ==================== FRAGMENT COOKIE TAB ==================== */}
-      {activeTab === "fragment-cookie" && (
+      {/* ==================== FRAGMENT COOKIE TAB (yashirin) ==================== */}
+      {false && activeTab === "fragment-cookie" && (
         <div className="tab-content settings-tab fragment-cookie-tab">
           <h3 className="settings-section-title">🍪 Fragment cookie test</h3>
           <p className="settings-section-desc">
@@ -3430,10 +3460,6 @@ export default function AdminPanel() {
               </p>
             </div>
           )}
-
-          <p className="settings-section-desc" style={{ marginBottom: "20px" }}>
-            Fragment cookie va test: headerdagi <strong>🍪 Fragment</strong> tab.
-          </p>
 
           <h3 className="settings-section-title">🏷️ Chegirma Paketlari</h3>
           <p className="settings-section-desc">Maxsus chegirmali Stars paketlarini boshqaring</p>
@@ -3960,20 +3986,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Mobil: qo'shimcha bo'limlar — eng pastda */}
-      {bottomMenuOpen && (
-        <button
-          type="button"
-          className="bottom-nav-menu-backdrop"
-          aria-label="Menyuni yopish"
-          onClick={() => setBottomMenuOpen(false)}
-        />
-      )}
-      <nav
-        className={`admin-bottom-nav admin-bottom-nav--secondary${
-          bottomMenuOpen ? " admin-bottom-nav--menu-open" : ""
-        }`}
-        aria-label="Qo'shimcha bo'limlar"
-      >
+      <nav className="admin-bottom-nav admin-bottom-nav--secondary" aria-label="Qo'shimcha bo'limlar">
         {SECONDARY_NAV_BOTTOM.map((item) => (
           <button
             key={item.id}
@@ -3991,45 +4004,7 @@ export default function AdminPanel() {
               )}
           </button>
         ))}
-        <div className="bottom-nav-menu-wrap">
-          <button
-            type="button"
-            className={`bottom-nav-item bottom-nav-item--menu ${
-              isBottomMenuTabActive || bottomMenuOpen ? "active" : ""
-            }`}
-            onClick={() => setBottomMenuOpen((v) => !v)}
-            aria-expanded={bottomMenuOpen}
-            aria-haspopup="true"
-          >
-            <span className="bottom-nav-icon">☰</span>
-            <span className="bottom-nav-label">Menu</span>
-            {isBottomMenuTabActive && !bottomMenuOpen && (
-              <span className="bottom-nav-dot" />
-            )}
-          </button>
-        </div>
       </nav>
-
-      {bottomMenuOpen && (
-        <div
-          className="bottom-nav-menu-popover bottom-nav-menu-popover--fixed"
-          role="menu"
-          aria-label="Menu bo'limlari"
-        >
-          {SECONDARY_NAV_MENU.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="menuitem"
-              className={`bottom-nav-menu-option ${activeTab === item.id ? "active" : ""}`}
-              onClick={() => goToTab(item.id)}
-            >
-              <span className="bottom-nav-menu-option-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
       {manualPremiumModal && (
         <div
