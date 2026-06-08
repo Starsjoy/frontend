@@ -2217,29 +2217,6 @@ export default function AdminPanel() {
                 </button>
               </div>
             </div>
-            <p className="userbot-refill-hint">
-              {userbotRefillMin} ⭐ dan kam bo&apos;lsa gift buyurtmada avto{" "}
-              <b>{userbotRefillStars} ⭐</b> → @{userbotRefillUsername} (Paymee,{" "}
-              <code>userbot_star_refills</code> jadvali)
-            </p>
-            <div className="info-row">
-              <span className="info-label">💎 TON balance:</span>
-              <span className="info-value">{walletLoading ? '...' : walletBalance.mainnet.toFixed(2)}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">💵 1 star (Paymee):</span>
-              <span className="info-value green">
-                {walletLoading
-                  ? "..."
-                  : paymeeWallet.usdtPerStar != null
-                    ? `${paymeeWallet.usdtPerStar} USDT`
-                    : "—"}
-              </span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">💵 50 stars (Robyn TON):</span>
-              <span className="info-value">{walletLoading ? "..." : (starPrices.priceFor50 || 0).toFixed(3)} TON</span>
-            </div>
           </div>
 
           {/* Sales Stats List */}
