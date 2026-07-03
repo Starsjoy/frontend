@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../context/LanguageContext";
 import { TGSSticker } from "../../components/TGSSticker";
 import "./History.css";
@@ -9,39 +8,72 @@ import starsGif from "../../assets/stars.gif";
 import diamondGif from "../../assets/diamond.gif";
 import apiFetch from "../../utils/apiFetch";
 
+const getGiftStickerPath = (giftId) => {
+  if (!giftId) return null;
+  try {
+    return new URL(`../../assets/${giftId}.tgs`, import.meta.url).href;
+  } catch {
+    return null;
+  }
+};
+
+function resolveOrderKind(item) {
+  const k = String(item?.kind || "").toLowerCase();
+  if (k === "gift" || item?.gift_id) return "gift";
+  if (k.includes("premium")) return "premium";
+  return "stars";
+}
+
+function formatUsername(username) {
+  if (!username) return null;
+  const clean = String(username).replace(/^@/, "").trim();
+  return clean ? `@${clean}` : null;
+}
+
+function formatHistoryDateTime(dateStr) {
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return "";
+  const time = d.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" });
+  const date = d.toLocaleDateString("uz-UZ", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  return `${time} · ${date}`;
+}
+
+function getOrderTitle(item) {
+  const kind = resolveOrderKind(item);
+  if (kind === "gift") {
+    const stars = item.stars ?? item.type_amount;
+    return stars ? `Gift · ${Number(stars).toLocaleString()} ⭐` : "Gift";
+  }
+  if (kind === "premium") {
+    const months = item.months ?? item.type_amount ?? item.stars;
+    return `Premium · ${months} oy`;
+  }
+  const stars = item.stars ?? item.type_amount;
+  return `${Number(stars || 0).toLocaleString()} Stars`;
+}
+
 export default function History() {
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // State
-  const [username, setUsername] = useState(null);
-  const [userId, setUserId] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState("all"); // all, success, failed, expired, pending
+  const [filter, setFilter] = useState("all");
 
-  // Format amount helper
-  const formatAmount = (num) =>
-    Number(num || 0).toLocaleString("ru-RU");
+  const formatAmount = (num) => Number(num || 0).toLocaleString("ru-RU");
 
-  // Get Telegram user info
   useEffect(() => {
     try {
       WebApp.ready();
-      const tgUser =
-        WebApp?.initDataUnsafe?.user?.username ||
-        window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
       const tgUserId =
         WebApp?.initDataUnsafe?.user?.id ||
         window?.Telegram?.WebApp?.initDataUnsafe?.user?.id;
 
-      if (tgUser) {
-        const clean = tgUser.replace("@", "");
-        setUsername(clean);
-      }
       if (tgUserId) {
-        setUserId(String(tgUserId));
         loadHistory(String(tgUserId));
       }
     } catch (err) {
@@ -49,7 +81,6 @@ export default function History() {
     }
   }, []);
 
-  // Load user history by userId (owner_user_id)
   const loadHistory = async (uid) => {
     try {
       setLoading(true);
@@ -58,8 +89,7 @@ export default function History() {
       const res = await apiFetch(`/api/user/history/${uid}`);
       const json = await res.json();
 
-      const orders = json || [];
-      setHistory(orders);
+      setHistory(Array.isArray(json) ? json : []);
     } catch (err) {
       console.error("History error:", err);
       setError(t("common.error"));
@@ -68,19 +98,33 @@ export default function History() {
     }
   };
 
-  // Helper for status text and class
   const getStatusInfo = (status) => {
     switch (status) {
       case "pending":
-        return { label: t("stars.paymentPending") || "Kutilmoqda", class: "pending", filterKey: "pending" };
+      case "processing":
+        return {
+          label: t("stars.paymentPending") || "Kutilmoqda",
+          class: "pending",
+          filterKey: "pending",
+        };
       case "stars_sent":
       case "premium_sent":
+      case "gift_sent":
       case "completed":
       case "sent":
-        return { label: t("stars.paymentSuccess") || "Bajarildi", class: "success", filterKey: "success" };
+      case "delivered":
+        return {
+          label: t("stars.paymentSuccess") || "Bajarildi",
+          class: "success",
+          filterKey: "success",
+        };
       case "failed":
       case "error":
-        return { label: t("stars.paymentFailed") || "Bekor qilindi", class: "failed", filterKey: "failed" };
+        return {
+          label: t("stars.paymentFailed") || "Bekor qilindi",
+          class: "failed",
+          filterKey: "failed",
+        };
       case "expired":
         return { label: "Eskirgan", class: "expired", filterKey: "expired" };
       default:
@@ -88,7 +132,6 @@ export default function History() {
     }
   };
 
-  // Filter history based on selected filter
   const filteredHistory = history.filter((item) => {
     if (filter === "all") return true;
     const statusInfo = getStatusInfo(item.status);
@@ -97,41 +140,39 @@ export default function History() {
 
   return (
     <div className="history-page">
-      {/* Header with Sticker */}
       <div className="history-header centered-header">
         <div className="history-sticker-container">
-           <TGSSticker stickerPath={buyurtmalarSticker} className="history-sticker" />
+          <TGSSticker stickerPath={buyurtmalarSticker} className="history-sticker" />
         </div>
         <h1>Buyurtmalar bo'limi</h1>
       </div>
 
-      {/* Filter Tabs */}
       <div className="history-filter-tabs">
-        <button 
+        <button
           className={`filter-tab ${filter === "all" ? "active" : ""}`}
           onClick={() => setFilter("all")}
         >
           Barchasi
         </button>
-        <button 
+        <button
           className={`filter-tab filter-success ${filter === "success" ? "active" : ""}`}
           onClick={() => setFilter("success")}
         >
           ✓ Muvaffaqiyatli
         </button>
-        <button 
+        <button
           className={`filter-tab filter-failed ${filter === "failed" ? "active" : ""}`}
           onClick={() => setFilter("failed")}
         >
           ✕ Muvaffaqiyatsiz
         </button>
-        <button 
+        <button
           className={`filter-tab filter-expired ${filter === "expired" ? "active" : ""}`}
           onClick={() => setFilter("expired")}
         >
           ⏱ Eskirgan
         </button>
-        <button 
+        <button
           className={`filter-tab filter-pending ${filter === "pending" ? "active" : ""}`}
           onClick={() => setFilter("pending")}
         >
@@ -150,8 +191,12 @@ export default function History() {
       ) : filteredHistory.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📭</div>
-          <p className="empty-text">{filter === "all" ? (t("dashboard.noOrders")) : `Bu kategoriyada buyurtma yo'q`}</p>
-          <p className="empty-hint">{t("history.emptyHint") || "Buyurtmalaringiz shu yerda ko'rinadi"}</p>
+          <p className="empty-text">
+            {filter === "all" ? t("dashboard.noOrders") : `Bu kategoriyada buyurtma yo'q`}
+          </p>
+          <p className="empty-hint">
+            {t("history.emptyHint") || "Buyurtmalaringiz shu yerda ko'rinadi"}
+          </p>
         </div>
       ) : (
         <div className="history-list-container">
@@ -159,15 +204,30 @@ export default function History() {
             {filteredHistory.map((item) => {
               const statusInfo = getStatusInfo(item.status);
               const isPending = statusInfo.filterKey === "pending";
+              const kind = resolveOrderKind(item);
+              const recipient = formatUsername(item.username);
+              const giftSticker =
+                kind === "gift" && item.gift_id ? getGiftStickerPath(item.gift_id) : null;
+
               return (
-                <li key={`${item.kind}-${item.id}`} className={`history-item item-${statusInfo.class} ${isPending ? "item-pending-anim" : ""}`}>
-                  <div className={`history-badge ${item.kind}`}>
+                <li
+                  key={`${kind}-${item.id}`}
+                  className={`history-item item-${statusInfo.class} ${isPending ? "item-pending-anim" : ""}`}
+                >
+                  <div className={`history-badge history-badge--${kind}`}>
                     {isPending ? (
-                      <div className="pending-spinner"></div>
+                      <div className="pending-spinner" />
+                    ) : kind === "gift" && giftSticker ? (
+                      <TGSSticker
+                        stickerPath={giftSticker}
+                        className="history-gift-sticker"
+                        autoplay={false}
+                        loop={false}
+                      />
                     ) : (
-                      <img 
-                        src={item.kind === "stars" ? starsGif : diamondGif} 
-                        alt={item.kind} 
+                      <img
+                        src={kind === "premium" ? diamondGif : starsGif}
+                        alt={kind}
                         className="history-icon-img"
                       />
                     )}
@@ -175,20 +235,18 @@ export default function History() {
 
                   <div className="history-content">
                     <div className="history-row">
-                      <span className="history-title">
-                        {item.kind === "stars"
-                          ? `${item.stars} Stars`
-                          : `Premium ${item.stars} oy`}
-                      </span>
-                      <span className={`history-amount`}>
-                        {formatAmount(item.amount)} so'm
-                      </span>
+                      <span className="history-title">{getOrderTitle(item)}</span>
+                      <span className="history-amount">{formatAmount(item.amount)} so'm</span>
                     </div>
 
+                    {recipient && (
+                      <div className="history-row history-row--username">
+                        <span className="history-username">{recipient}</span>
+                      </div>
+                    )}
+
                     <div className="history-row meta-row">
-                      <span className="history-date">
-                        {new Date(item.created_at).toLocaleDateString()} {new Date(item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </span>
+                      <span className="history-date">{formatHistoryDateTime(item.created_at)}</span>
                       <span className={`history-status-badge status-${statusInfo.class}`}>
                         {statusInfo.label}
                       </span>
