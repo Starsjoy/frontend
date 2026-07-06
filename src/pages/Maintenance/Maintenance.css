@@ -173,10 +173,86 @@
 
 /* Description */
 .mt-page__desc {
-  color: #7a8ca0;
+  color: #9aa8bc;
   font-size: 14px;
+  line-height: 1.65;
+  margin: 0 0 20px;
+}
+
+/* Support notice */
+.mt-page__notice {
+  width: 100%;
+  margin-bottom: 22px;
+  padding: 16px 18px;
+  text-align: left;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(46, 213, 115, 0.1), rgba(46, 213, 115, 0.03));
+  border: 1px solid rgba(46, 213, 115, 0.22);
+}
+
+.mt-page__notice-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2ed573;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.mt-page__notice-text {
+  margin: 0 0 14px;
+  font-size: 13px;
   line-height: 1.6;
-  margin: 0 0 24px;
+  color: #b8c4d4;
+}
+
+.mt-page__notice-text strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.mt-page__support-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.22s ease;
+}
+
+.mt-page__support-link:hover {
+  background: rgba(46, 213, 115, 0.12);
+  border-color: rgba(46, 213, 115, 0.35);
+  transform: translateY(-1px);
+}
+
+.mt-page__support-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.mt-page__support-handle {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 800;
+  color: #2ed573;
+  letter-spacing: -0.02em;
+}
+
+.mt-page__support-arrow {
+  font-size: 18px;
+  color: rgba(46, 213, 115, 0.6);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.mt-page__support-link:hover .mt-page__support-arrow {
+  transform: translateX(4px);
+  color: #2ed573;
 }
 
 /* Progress bar */
