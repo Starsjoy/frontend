@@ -651,6 +651,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
       <div className="search-row">
         <div className="username-row" style={{ width: "100%" }}>
           <input
+            data-tour-id="tour-username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder={t("stars.usernamePlaceholder")}
@@ -666,6 +667,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
       <h3>{t("stars.enterAmountLabel")}</h3>
       <div className="input-group">
         <input
+          data-tour-id="tour-stars-amount"
           className="tg-input"
           type="number"
           value={stars}
@@ -783,6 +785,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
         <button
           type="button"
           className="tg-button"
+          data-tour-id="tour-stars-submit"
           onClick={handlePayment}
         >
           {t("stars.buyBtn")} {price > 0 && `- ${formatAmount(appliedPromo ? appliedPromo.newPrice : price)} ${t("common.currency")}`}

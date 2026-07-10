@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WebApp from "@twa-dev/sdk";
 import { useTranslation } from "../../context/LanguageContext";
+import { useOnboarding } from "../../context/OnboardingContext";
 import apiFetch from "../../utils/apiFetch";
 import {
   getStarsPurchasePath,
   getPremiumPurchasePath,
 } from "../../utils/starsPurchaseRoute";
 import { TGSSticker } from "../../components/TGSSticker";
+import BonusModal from "../../components/BonusModal";
 import "./Dashboard.css";
 
 import starsGif from "../../assets/stars.gif";
@@ -33,6 +35,7 @@ const formatAmount = (num) =>
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useTranslation();
+  const { startTour, tourActive } = useOnboarding();
 
   /* ================= USER ================= */
   const [username, setUsername] = useState(null);
@@ -60,6 +63,9 @@ export default function Dashboard() {
   const [showComingSoonToast, setShowComingSoonToast] = useState(false);
   const [starsPurchasePath, setStarsPurchasePath] = useState("/stars");
   const [premiumPurchasePath, setPremiumPurchasePath] = useState("/premium");
+
+  /* ================= BONUS MISSIYA ================= */
+  const [showBonus, setShowBonus] = useState(false);
 
   /* ================= NOTIFICATIONS ================= */
   const [unreadCount, setUnreadCount] = useState(0);
@@ -311,6 +317,33 @@ export default function Dashboard() {
     };
   }, []);
 
+  /* ================= O'RGATUVCHI TUR AVTO-START =================
+     Yangi foydalanuvchiga splash tugagach turni ochamiz. */
+  useEffect(() => {
+    if (splashVisible) return;
+    if (localStorage.getItem("spm_tour_done") === "1") return;
+
+    const timer = setTimeout(() => startTour(), 600);
+    return () => clearTimeout(timer);
+  }, [splashVisible, startTour]);
+
+  /* ================= BONUS AVTO-OCHILISH =================
+     Splash tugagach 3 soniyadan keyin, sessiyada bir marta.
+     Tur bilan bir vaqtda chiqmasligi uchun faqat tur tugagach ochiladi.
+     Hamma missiya olingan bo'lsa umuman ochilmaydi. */
+  useEffect(() => {
+    if (splashVisible || tab !== "home" || tourActive) return;
+    if (localStorage.getItem("spm_tour_done") !== "1") return;
+    if (localStorage.getItem("spmAllMissionsDone") === "1") return;
+    if (sessionStorage.getItem("spmBonusAutoShown") === "1") return;
+
+    const timer = setTimeout(() => {
+      sessionStorage.setItem("spmBonusAutoShown", "1");
+      setShowBonus(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [splashVisible, tab, tourActive]);
+
   /* ================= UI ================= */
 
   // Splash screen - StarsJoy Loader
@@ -367,24 +400,42 @@ export default function Dashboard() {
             <img src={starsjoyAvatar} alt="Starsjoy" className="brand-logo_dashboard" />
             Starsjoy
           </h1>
-          <button
-            className="notification-btn-dashboard"
-            onClick={() => navigate("/notifications")}
-            title="Notifications"
-          >
-            <img src={bellsIcon} alt="notifications" className="notification-btn-img" />
-            {unreadCount > 0 && (
-              <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
-            )}
-          </button>
+          <div className="header-actions_dashboard">
+            <button
+              className="help-btn-dashboard"
+              onClick={startTour}
+              title={t("onboarding.startBtn")}
+            >
+              ?
+            </button>
+            <button
+              className="bonus-btn-dashboard"
+              onClick={() => setShowBonus(true)}
+              title={t("bonus.openTitle")}
+            >
+              🎁
+            </button>
+            <button
+              className="notification-btn-dashboard"
+              onClick={() => navigate("/notifications")}
+              title="Notifications"
+            >
+              <img src={bellsIcon} alt="notifications" className="notification-btn-img" />
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
+
+      <BonusModal open={showBonus} onClose={() => setShowBonus(false)} />
 
       <main className="dash-main_dashboard" style={{display: tab === 'home' ? 'flex' : 'none'}}>
         {/* ACTION CARDS - Stars wide, Gift & Premium side by side */}
         <div className="dashboard-actions-container">
           {/* Stars - Full Width */}
-          <div className="action-card-wide" onClick={() => navigate(starsPurchasePath)}>
+          <div className="action-card-wide" data-tour-id="tour-stars-btn" onClick={() => navigate(starsPurchasePath)}>
             <img src={starsGif} className="action-card-wide__img" alt="stars" />
             <div className="action-card-wide__content">
               <span className="action-card-wide__title">{t("dashboard.buyStars") || "Stars olish"}</span>
@@ -393,11 +444,11 @@ export default function Dashboard() {
 
           {/* Gift & Premium - Side by Side */}
           <div className="action-cards-row">
-            <div className="action-card-half" onClick={() => navigate("/gift")}>
+            <div className="action-card-half" data-tour-id="tour-gift-btn" onClick={() => navigate("/gift")}>
               <TGSSticker stickerPath={actionCardSticker} className="action-card-half__img" autoplay={true} loop={true} />
               <span className="action-card-half__title">{t("dashboard.buyGift") || "Gift olish"}</span>
             </div>
-            <div className="action-card-half" onClick={() => navigate(premiumPurchasePath)}>
+            <div className="action-card-half" data-tour-id="tour-premium-btn" onClick={() => navigate(premiumPurchasePath)}>
               <img src={premiumGif} className="action-card-half__img" alt="premium" />
               <span className="action-card-half__title">{t("dashboard.buyPremium") || "Premium olish"}</span>
             </div>

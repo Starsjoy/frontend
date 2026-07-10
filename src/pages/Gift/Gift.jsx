@@ -417,6 +417,7 @@ export default function Gift() {
         <label className="gift-label">{t("gift.selectRecipient")}</label>
         <div className="gift-search-row">
           <input
+            data-tour-id="tour-username"
             className="gift-input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -452,7 +453,7 @@ export default function Gift() {
           <span className="gift-label-icon">🎁</span>
           {t("gift.selectGift")}
         </label>
-        <div className="gift-grid-4col">
+        <div className="gift-grid-4col" data-tour-id="tour-gift-select">
           {GIFTS.map((gift) => (
             <div
               key={gift.id}

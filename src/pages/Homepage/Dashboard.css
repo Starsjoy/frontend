@@ -259,6 +259,60 @@
   position: relative;
 }
 
+/* Header o'ng tomoni: bonus + bildirishnoma */
+.header-actions_dashboard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.help-btn-dashboard {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid var(--border-primary);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  transition: transform 0.2s, border-color 0.2s, color 0.2s;
+}
+.help-btn-dashboard:hover { border-color: #6366f1; color: #6366f1; transform: scale(1.05); }
+.help-btn-dashboard:active { transform: scale(0.95); }
+
+.bonus-btn-dashboard {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 218, 3, 0.45);
+  background: var(--bg-tertiary);
+  transition: transform 0.2s, border-color 0.2s;
+  animation: bonus-btn-pulse 2.2s ease-in-out infinite;
+}
+.bonus-btn-dashboard:hover { border-color: #ffda03; transform: scale(1.05); }
+.bonus-btn-dashboard:active { transform: scale(0.95); }
+
+@keyframes bonus-btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 218, 3, 0.35); }
+  50%      { box-shadow: 0 0 0 7px rgba(255, 218, 3, 0); }
+}
+
 .notification-btn-dashboard:hover {
   border-color: var(--color-primary);
   transform: scale(1.05);

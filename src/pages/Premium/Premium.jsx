@@ -517,6 +517,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
       <div className="search-row">
         <div className="username-row" style={{ width: "100%" }}>
           <input
+            data-tour-id="tour-username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder={t("stars.usernamePlaceholder")}
@@ -549,7 +550,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
       {/* avto fragment orqali */}
       <h3>{t("premium.auto")}</h3>
 
-      <div className="plans">
+      <div className="plans" data-tour-id="tour-premium-plan">
         {plans.map((p) => (
           <label key={p.id} className={selectedPlan.id === p.id ? "plan selected" : "plan"}>
             <input
@@ -582,6 +583,7 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
 
       <div className="actions" style={{ marginTop: "25px", marginBottom: "15px" }}>
         <button
+          data-tour-id="tour-premium-submit"
           disabled={loadingBuy}
           onClick={handleCreateOrder}
         >

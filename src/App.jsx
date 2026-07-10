@@ -21,6 +21,8 @@ import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import MaintenancePage from "./pages/Maintenance/MaintenancePage";
 import { LanguageProvider, useTranslation } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { OnboardingProvider } from "./context/OnboardingContext";
+import OnboardingTour from "./components/OnboardingTour/OnboardingTour";
 import TelegramGate from "./components/TelegramGate";
 import LanguageSetup from "./components/LanguageSetup";
 import apiFetch from "./utils/apiFetch";
@@ -76,7 +78,10 @@ function App() {
         <ThemeProvider>
           <LanguageProvider>
             <LanguageGate>
+            <OnboardingProvider>
             <BrowserRouter>
+              {/* Router ICHIDA — useNavigate/useLocation kerak */}
+              <OnboardingTour />
               <Routes>
                 <Route path="/" element={<Dashboard/>} />
                 <Route path="/stars" element={<Stars />} />
@@ -98,6 +103,7 @@ function App() {
                 <Route path="/starsadmin" element={<AdminPanel/>} />
               </Routes>
             </BrowserRouter>
+            </OnboardingProvider>
             </LanguageGate>
           </LanguageProvider>
         </ThemeProvider>
