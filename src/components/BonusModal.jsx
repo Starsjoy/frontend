@@ -165,24 +165,22 @@ export default function BonusModal({ open, onClose }) {
           <div className="bonus-loading">{error || t("bonus.loadError")}</div>
         ) : (
           <>
-            {/* ---- Navigatsiya ---- */}
+            {/* ---- Sarlavha + dots (o'qlar pastda) ---- */}
             <div className="bonus-nav">
-              <button className="bonus-nav-arrow" onClick={() => go(idx - 1)} disabled={idx === 0}>‹</button>
-              <div className="bonus-nav-center">
-                <span className="bonus-nav-title">
-                  {t("bonus.mission")} {mission.level}
-                </span>
-                <div className="bonus-dots">
-                  {data.missions.map((m, i) => (
-                    <span
-                      key={m.level}
-                      className={`bonus-dot ${i === idx ? "active" : ""} ${m.claimed ? "done" : ""}`}
-                      onClick={() => go(i)}
-                    />
-                  ))}
-                </div>
+              <span className="bonus-nav-title">
+                {t("bonus.mission")} {mission.level}
+              </span>
+              <div className="bonus-dots">
+                {data.missions.map((m, i) => (
+                  <button
+                    key={m.level}
+                    type="button"
+                    aria-label={`${t("bonus.mission")} ${m.level}`}
+                    className={`bonus-dot ${i === idx ? "active" : ""} ${m.claimed ? "done" : ""}`}
+                    onClick={() => go(i)}
+                  />
+                ))}
               </div>
-              <button className="bonus-nav-arrow" onClick={() => go(idx + 1)} disabled={idx === total - 1}>›</button>
             </div>
 
             {/* ---- Sovg'a stikeri ---- */}
@@ -217,56 +215,79 @@ export default function BonusModal({ open, onClose }) {
               />
             </div>
 
-            {/* ---- Holatga qarab bitta blok ---- */}
-            {needUsername ? (
-              <div className="bonus-warn">
-                <span className="bonus-warn-icon">@</span>
-                <p>{t("bonus.needUsername")}</p>
-                <button className="bonus-btn ghost" onClick={() => setNeedUsername(false)}>
-                  {t("bonus.gotIt")}
-                </button>
-              </div>
-            ) : mission.locked ? (
-              <div className="bonus-locked">
-                🔒 {t("bonus.lockedNote").replace("{n}", mission.level - 1)}
-              </div>
-            ) : mission.claimed ? (
-              <div className="bonus-claimed">
-                <p>🎉 {t("bonus.claimedMsg")}</p>
-                {idx < total - 1 && (
-                  <button className="bonus-btn ghost" onClick={() => go(idx + 1)}>
-                    {t("bonus.nextMission")} ›
-                  </button>
-                )}
-              </div>
-            ) : waiting ? (
-              <div className="bonus-waiting">
-                <div className="bonus-countdown">{formatRemain(remainMs)}</div>
-                <p className="bonus-wait-note">{t("bonus.waitNote")}</p>
-              </div>
-            ) : mission.can_claim ? (
-              <button className="bonus-btn claim" onClick={claim} disabled={claiming}>
-                {claiming ? t("bonus.sending") : `${t("bonus.claim")} 🎁`}
-              </button>
-            ) : (
-              <div className="bonus-invite">
-                {mission.friends_left && (
-                  <div className="bonus-left-note">⚠️ {t("bonus.friendsLeft")}</div>
-                )}
-                <div className="bonus-link-row">
-                  <span className="bonus-link-text">{referralLink || "..."}</span>
-                  <button className="bonus-copy" onClick={copyLink}>
-                    {copied ? "✅" : "📋"}
+            {/* ---- Holatga qarab bitta blok ----
+                 min-height CSS'da: missiyalar almashganda modal balandligi
+                 o'zgarib, oyna sakrab ketmasligi uchun. */}
+            <div className="bonus-state">
+              {needUsername ? (
+                <div className="bonus-warn">
+                  <span className="bonus-warn-icon">@</span>
+                  <p>{t("bonus.needUsername")}</p>
+                  <button className="bonus-btn ghost" onClick={() => setNeedUsername(false)}>
+                    {t("bonus.gotIt")}
                   </button>
                 </div>
-                <button className="bonus-btn share" onClick={share}>
-                  {t("bonus.inviteFriends")}
+              ) : mission.locked ? (
+                <div className="bonus-locked">
+                  🔒 {t("bonus.lockedNote").replace("{n}", mission.level - 1)}
+                </div>
+              ) : mission.claimed ? (
+                <div className="bonus-claimed">
+                  <div className="bonus-claimed-emoji">🎉</div>
+                  <p>{t("bonus.claimedMsg")}</p>
+                </div>
+              ) : waiting ? (
+                <div className="bonus-waiting">
+                  <div className="bonus-countdown">{formatRemain(remainMs)}</div>
+                  <p className="bonus-wait-note">{t("bonus.waitNote")}</p>
+                </div>
+              ) : mission.can_claim ? (
+                <button className="bonus-btn claim" onClick={claim} disabled={claiming}>
+                  {claiming ? t("bonus.sending") : `${t("bonus.claim")} 🎁`}
                 </button>
-                <p className="bonus-channel-note">{t("bonus.channelMini")}</p>
-              </div>
-            )}
+              ) : (
+                <div className="bonus-invite">
+                  {mission.friends_left && (
+                    <div className="bonus-left-note">⚠️ {t("bonus.friendsLeft")}</div>
+                  )}
+                  <div className="bonus-link-row">
+                    <span className="bonus-link-text">{referralLink || "..."}</span>
+                    <button className="bonus-copy" onClick={copyLink} aria-label="copy">
+                      {copied ? "✅" : "📋"}
+                    </button>
+                  </div>
+                  <button className="bonus-btn share" onClick={share}>
+                    {t("bonus.inviteFriends")}
+                  </button>
+                  <p className="bonus-channel-note">{t("bonus.channelMini")}</p>
+                </div>
+              )}
+            </div>
 
             {error && <div className="bonus-error">{error}</div>}
+
+            {/* ---- Missiyalar orasida o'tish (pastda) ---- */}
+            <div className="bonus-foot-nav">
+              <button
+                className="bonus-nav-arrow"
+                onClick={() => go(idx - 1)}
+                disabled={idx === 0}
+                aria-label="prev"
+              >
+                ‹
+              </button>
+              <span className="bonus-nav-pos">
+                {idx + 1} / {total}
+              </span>
+              <button
+                className="bonus-nav-arrow"
+                onClick={() => go(idx + 1)}
+                disabled={idx === total - 1}
+                aria-label="next"
+              >
+                ›
+              </button>
+            </div>
           </>
         )}
       </div>

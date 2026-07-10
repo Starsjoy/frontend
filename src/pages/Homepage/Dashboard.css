@@ -233,11 +233,12 @@
   50% { transform: scale(1.1); opacity: 0.85; }
 }
 
-/* HEADER ACTIONS */
+/* HEADER ACTIONS — yordam (?) + bonus (🎁) + bildirishnoma */
 .header-actions_dashboard {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 /* NOTIFICATION BUTTON */
@@ -259,17 +260,9 @@
   position: relative;
 }
 
-/* Header o'ng tomoni: bonus + bildirishnoma */
-.header-actions_dashboard {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
 .help-btn-dashboard {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -296,8 +289,6 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  font-size: 20px;
-  line-height: 1;
   cursor: pointer;
   border-radius: 50%;
   border: 2px solid rgba(255, 218, 3, 0.45);
@@ -307,6 +298,13 @@
 }
 .bonus-btn-dashboard:hover { border-color: #ffda03; transform: scale(1.05); }
 .bonus-btn-dashboard:active { transform: scale(0.95); }
+
+/* Lottie SVG tugmaning bosilishiga xalaqit qilmasin */
+.bonus-btn-dashboard__tgs {
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+}
 
 @keyframes bonus-btn-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255, 218, 3, 0.35); }

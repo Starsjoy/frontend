@@ -16,6 +16,7 @@ import starsGif from "../../assets/stars.gif";
 import premiumGif from "../../assets/premium_gif.gif";
 import ayiqImg from "../../assets/ayiqyurakchali.jpg";
 import actionCardSticker from "../../assets/5800655655995968830.tgs";
+import missionSticker from "../../assets/AnimatedSticker_mission.tgs";
 import tilSticker from "../../assets/AnimatedSticker_til.tgs";
 import referalSticker from "../../assets/AnimatedSticker_ref.tgs";
 import ordersIcon from "../../assets/orders_icon.png";
@@ -412,8 +413,14 @@ export default function Dashboard() {
               className="bonus-btn-dashboard"
               onClick={() => setShowBonus(true)}
               title={t("bonus.openTitle")}
+              aria-label={t("bonus.openTitle")}
             >
-              🎁
+              <TGSSticker
+                stickerPath={missionSticker}
+                className="bonus-btn-dashboard__tgs"
+                autoplay
+                loop
+              />
             </button>
             <button
               className="notification-btn-dashboard"

@@ -345,7 +345,6 @@
     "sending": "Sending...",
     "claimedMsg": "Your gift has been sent!",
     "claimError": "Could not claim the gift. Please try again.",
-    "nextMission": "Next mission",
     "needUsername": "Set a Telegram username to receive the gift (Settings → Username)",
     "gotIt": "Got it",
     "openTitle": "Bonus missions"

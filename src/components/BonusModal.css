@@ -20,7 +20,7 @@
   max-width: 330px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 18px 18px 20px;
+  padding: 20px 18px 16px;
   border-radius: 20px;
   border: 1px solid rgba(255, 218, 3, 0.22);
   background: linear-gradient(165deg, #1f2347, #161931, #12152b);
@@ -34,57 +34,57 @@
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* Tepadagi yopish tugmasi — barmoq bilan bosish uchun kattaroq */
 .bonus-close {
   position: absolute;
   top: 10px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  color: #94a3b8;
-  font-size: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  font-size: 26px;
   line-height: 1;
   cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
 }
-.bonus-close:hover { background: rgba(255, 255, 255, 0.12); color: #f1f5f9; }
+.bonus-close:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.bonus-close:active { transform: scale(0.92); }
 
+/* Yuklanish paytida ham to'ldirilgan modal balandligini egallaydi —
+   aks holda kontent kelganda modal cho'zilib, markazdan siljib ketadi. */
 .bonus-loading {
-  padding: 48px 0;
+  display: grid;
+  place-items: center;
+  min-height: 430px;
   text-align: center;
   color: #94a3b8;
   font-size: 14px;
 }
 
-/* ---------- Navigatsiya ---------- */
+/* ---------- Tepa: sarlavha + dots ---------- */
 .bonus-nav {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 7px;
+  padding: 0 44px; /* X tugmasi bilan to'qnashmasin */
   margin-bottom: 10px;
 }
-.bonus-nav-arrow {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #cbd5e1;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-.bonus-nav-arrow:disabled { opacity: 0.25; cursor: default; }
-.bonus-nav-center { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .bonus-nav-title { font-size: 14px; font-weight: 600; color: #e2e8f0; }
 
 .bonus-dots { display: flex; gap: 5px; }
 .bonus-dot {
   width: 6px;
   height: 6px;
+  padding: 0;
+  border: none;
   border-radius: 99px;
   background: rgba(255, 255, 255, 0.22);
   cursor: pointer;
@@ -92,6 +92,42 @@
 }
 .bonus-dot.done { background: #4cd964; }
 .bonus-dot.active { width: 18px; background: #ffda03; }
+
+/* ---------- Past: missiyalar orasida o'tish ---------- */
+.bonus-foot-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.bonus-nav-arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.bonus-nav-arrow:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
+.bonus-nav-arrow:active:not(:disabled) { transform: scale(0.92); }
+.bonus-nav-arrow:disabled { opacity: 0.22; cursor: default; }
+
+.bonus-nav-pos {
+  font-size: 12px;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ---------- Stiker ---------- */
 .bonus-sticker-wrap { position: relative; width: 104px; height: 104px; margin: 4px auto 10px; }
@@ -178,7 +214,17 @@
   50%      { box-shadow: 0 0 22px 2px rgba(255, 218, 3, 0.75); }
 }
 
-/* ---------- Holat bloklari ---------- */
+/* ---------- Holat bloklari ----------
+   Holatlar (qulf / kutish / claim / taklif) turli balandlikda bo'lgani uchun
+   missiyalar almashganda modal sakrardi. Barqaror maydon shu sakrashni to'xtatadi. */
+.bonus-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 168px;
+}
+.bonus-state > * { width: 100%; }
+
 .bonus-locked {
   padding: 14px;
   border-radius: 12px;
@@ -189,6 +235,7 @@
 }
 
 .bonus-claimed { text-align: center; }
+.bonus-claimed-emoji { font-size: 34px; line-height: 1; margin-bottom: 8px; }
 .bonus-claimed p { margin: 0; font-size: 14px; color: #4cd964; font-weight: 600; }
 
 .bonus-waiting {
