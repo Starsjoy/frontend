@@ -2346,6 +2346,25 @@ html, body {
   border-left: 3px solid #ffd700;
 }
 
+/* Foydalanuvchi o'sishi va bonus missiya analitikasi */
+.users-growth-list {
+  border-left: 3px solid #3390ec;
+}
+
+.bonus-stats-list {
+  border-left: 3px solid #7c3aed;
+}
+
+.bonus-stats-list .info-label small {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.bonus-failed {
+  color: #f87171;
+}
+
 .add-package-btn {
   width: 100%;
   padding: 14px;

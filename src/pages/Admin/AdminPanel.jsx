@@ -249,6 +249,10 @@ export default function AdminPanel() {
   const [dailyStats, setDailyStats] = useState([]); // [{date, stars, amount, count}]
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
+  // Foydalanuvchi o'sishi + bonus missiya analitikasi (backendda SQL bilan hisoblanadi)
+  const [growth, setGrowth] = useState(null);
+  const [growthLoading, setGrowthLoading] = useState(false);
+
   // Wallet & Prices state
   const [walletBalance, setWalletBalance] = useState({ mainnet: 0, testnet: 0 });
   const [starPrices, setStarPrices] = useState({ priceFor50: 0, pricePerStar: 0, currency: "TON", availableStars: 0 });
@@ -504,8 +508,26 @@ export default function AdminPanel() {
   useEffect(() => {
     if (activeTab === "analytics" && isAuthenticated) {
       fetchWalletAndPrices();
+      fetchGrowth();
     }
   }, [activeTab, isAuthenticated]);
+
+  // ========== FOYDALANUVCHI O'SISHI + BONUS ANALITIKASI ==========
+  const fetchGrowth = async () => {
+    if (!isAuthenticated) return;
+    setGrowthLoading(true);
+    try {
+      const res = await apiFetch("/api/admin/analytics/overview?days=30");
+      const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || "analytics error");
+      setGrowth(d);
+    } catch (err) {
+      console.error("❌ Growth analytics error:", err);
+      setGrowth(null);
+    } finally {
+      setGrowthLoading(false);
+    }
+  };
 
   // ========== ANALYTICS FUNCTION ==========
   const fetchAnalytics = async () => {
@@ -1898,6 +1920,7 @@ export default function AdminPanel() {
                 else if (activeTab === "referrals") fetchReferralRequests(referralFilter);
                 else if (activeTab === "analytics") {
                   fetchAnalytics();
+                  fetchGrowth();
                   fetchWalletAndPrices();
                 }
               }}
@@ -2249,6 +2272,92 @@ export default function AdminPanel() {
                 </span>
               </div>
             </div>
+          )}
+
+          {/* ===== Foydalanuvchilar o'sishi ===== */}
+          {growthLoading ? (
+            <div className="analytics-loading-v2">⏳ Foydalanuvchi analitikasi yuklanmoqda...</div>
+          ) : !growth ? (
+            <div className="info-list">
+              <div className="list-title">👥 Foydalanuvchilar</div>
+              <div className="info-row no-data">
+                <span className="info-label">Ma'lumot yuklanmadi</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="info-list users-growth-list">
+                <div className="list-title">👥 Yangi foydalanuvchilar</div>
+                {[
+                  ["Bugun", "day"],
+                  ["7 kun", "week"],
+                  ["Shu oy", "month"],
+                  ["Jami", "total"],
+                ].map(([label, key]) => (
+                  <div key={key} className={`info-row ${growth.users[key] > 0 ? "has-data" : "no-data"}`}>
+                    <span className="info-label">{label}:</span>
+                    <span className="info-value">
+                      <b>{growth.users[key].toLocaleString()}</b> ta
+                      &nbsp;·&nbsp; referaldan <b>{growth.referral_users[key].toLocaleString()}</b>
+                    </span>
+                  </div>
+                ))}
+                <div className="info-row">
+                  <span className="info-label">✅ Referal + kanalga obuna:</span>
+                  <span className="info-value gold">
+                    {growth.referral_users.subscribed.toLocaleString()} ta
+                  </span>
+                </div>
+              </div>
+
+              {/* ===== Bonus missiya sovg'alari ===== */}
+              <div className="info-list bonus-stats-list">
+                <div className="list-title">🎯 Bonus missiya sovg'alari</div>
+                <div className="info-row total-row">
+                  <span className="info-label">📈 Jami topshirilgan:</span>
+                  <span className="info-value">
+                    <b>{growth.bonus.total_delivered}</b> ta
+                    &nbsp;·&nbsp; <b>{growth.bonus.total_stars_spent.toLocaleString()}</b> ⭐
+                    {growth.bonus.total_failed > 0 && (
+                      <>&nbsp;·&nbsp; <span className="bonus-failed">{growth.bonus.total_failed} xato</span></>
+                    )}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">🗓 Claim: bugun / 7 kun / oy:</span>
+                  <span className="info-value">
+                    {growth.bonus.claims.day} &nbsp;·&nbsp; {growth.bonus.claims.week} &nbsp;·&nbsp; {growth.bonus.claims.month}
+                  </span>
+                </div>
+
+                {growth.bonus.levels.map((lv) => (
+                  <div key={lv.level} className={`info-row ${lv.delivered > 0 ? "has-data" : "no-data"}`}>
+                    <span className="info-label">
+                      {lv.level}. {lv.label} <small>({lv.required} do'st · {lv.gift_stars}⭐)</small>
+                    </span>
+                    <span className="info-value">
+                      <b>{lv.delivered}</b> yetkazildi
+                      {lv.failed > 0 && <> &nbsp;·&nbsp; <span className="bonus-failed">{lv.failed} xato</span></>}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* ===== Kunlik yangi foydalanuvchilar ===== */}
+              <div className="info-list daily-list">
+                <div className="list-title">📅 Kunlik yangi foydalanuvchilar</div>
+                {[...growth.daily].reverse().map((d) => (
+                  <div key={d.date} className={`info-row ${d.total > 0 ? "has-data" : "no-data"}`}>
+                    <span className="info-label">
+                      {new Date(d.date).toLocaleDateString("uz-UZ", { day: "2-digit", month: "short" })}
+                    </span>
+                    <span className="info-value">
+                      {d.total} ta &nbsp;·&nbsp; referaldan {d.referral}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
 
           {/* Daily Stats */}

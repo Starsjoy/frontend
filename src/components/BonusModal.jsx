@@ -29,6 +29,7 @@ export default function BonusModal({ open, onClose }) {
   const [idx, setIdx] = useState(0);
   const [loading, setLoading] = useState(false);
   const [claiming, setClaiming] = useState(false);
+  // { key } — tarjima kaliti, { text } — serverdan kelgan tayyor matn
   const [error, setError] = useState(null);
   const [needUsername, setNeedUsername] = useState(false);
   const [referralLink, setReferralLink] = useState("");
@@ -37,7 +38,13 @@ export default function BonusModal({ open, onClose }) {
 
   // Countdown 0 ga yetganda faqat BIR marta qayta yuklash uchun
   const reloadedRef = useRef(false);
+  // Aktiv missiyaga faqat modal ochilganda o'tamiz, har yuklashda emas —
+  // aks holda user boshqa missiyani ko'ra olmaydi (indeks qaytib ketadi).
+  const focusActiveRef = useRef(true);
 
+  // ⚠️ Bu useCallback BO'SH dep massivi bilan bo'lishi SHART.
+  // `t` har renderda yangi funksiya bo'lgani uchun uni dep qilsak,
+  // load() identifikatori o'zgarib, quyidagi effekt cheksiz qayta ishlaydi.
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -50,21 +57,25 @@ export default function BonusModal({ open, onClose }) {
       reloadedRef.current = false;
       if (d.all_claimed) localStorage.setItem("spmAllMissionsDone", "1");
 
-      // Aktiv missiyaga o'tamiz (hammasi olingan bo'lsa — oxirgisi)
-      const activeIdx = d.active_level
-        ? d.missions.findIndex((m) => m.level === d.active_level)
-        : d.missions.length - 1;
-      setIdx(activeIdx >= 0 ? activeIdx : 0);
+      if (focusActiveRef.current) {
+        focusActiveRef.current = false;
+        // Aktiv missiyaga o'tamiz (hammasi olingan bo'lsa — oxirgisi)
+        const activeIdx = d.active_level
+          ? d.missions.findIndex((m) => m.level === d.active_level)
+          : d.missions.length - 1;
+        setIdx(activeIdx >= 0 ? activeIdx : 0);
+      }
     } catch (err) {
       console.error("bonus status error:", err);
-      setError(t("bonus.loadError"));
+      setError({ key: "bonus.loadError" });
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
+    focusActiveRef.current = true;
     load();
 
     const userId = WebApp?.initDataUnsafe?.user?.id || localStorage.getItem("userId");
@@ -136,21 +147,25 @@ export default function BonusModal({ open, onClose }) {
       const d = await res.json();
 
       if (!res.ok) {
-        if (d.need_username) setNeedUsername(true);
-        else setError(d.error || t("bonus.claimError"));
         haptic("error");
+        // Avval holatni yangilaymiz (load() setError(null) qiladi),
+        // keyin xatoni ko'rsatamiz — aks holda xabar darhol o'chib ketardi.
         await load();
+        if (d.need_username) setNeedUsername(true);
+        else setError(d.error ? { text: d.error } : { key: "bonus.claimError" });
         return;
       }
       haptic("success");
       await load();
     } catch (err) {
       console.error("claim error:", err);
-      setError(t("bonus.claimError"));
+      setError({ key: "bonus.claimError" });
     } finally {
       setClaiming(false);
     }
   };
+
+  const errorMsg = error ? (error.key ? t(error.key) : error.text) : null;
 
   const badge = mission?.claimed ? "done" : mission?.locked ? "locked" : waiting ? "waiting" : null;
 
@@ -162,7 +177,7 @@ export default function BonusModal({ open, onClose }) {
         {loading && !data ? (
           <div className="bonus-loading">{t("bonus.loading")}</div>
         ) : !mission ? (
-          <div className="bonus-loading">{error || t("bonus.loadError")}</div>
+          <div className="bonus-loading">{errorMsg || t("bonus.loadError")}</div>
         ) : (
           <>
             {/* ---- Sarlavha + dots (o'qlar pastda) ---- */}
@@ -264,7 +279,7 @@ export default function BonusModal({ open, onClose }) {
               )}
             </div>
 
-            {error && <div className="bonus-error">{error}</div>}
+            {errorMsg && <div className="bonus-error">{errorMsg}</div>}
 
             {/* ---- Missiyalar orasida o'tish (pastda) ---- */}
             <div className="bonus-foot-nav">
