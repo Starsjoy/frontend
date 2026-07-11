@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
 import {
   getPremiumPurchasePath,
-  getFragmentPaymentLabel,
   isCardDeliveryVariant,
   starsApiPrefix,
 } from "../../utils/starsPurchaseRoute";
@@ -85,9 +84,8 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
   const [promoMessage, setPromoMessage] = useState("");
   const [promoError, setPromoError] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState(null);
-  const [fragmentPayLabel, setFragmentPayLabel] = useState("");
 
-  // Refs for polling (modal yopilsa ham davom etadi)
+  // Refs for polling
   const pollingRef = useRef(null);
   const countdownRef = useRef(null);
 
@@ -127,21 +125,6 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
 
   const formatAmount = (num) =>
     num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-
-  useEffect(() => {
-    if (!isCardFlow) {
-      setFragmentPayLabel("");
-      return;
-    }
-    if (isPaymee) {
-      setFragmentPayLabel("Paymee API");
-      return;
-    }
-    apiFetch("/api/app-config")
-      .then((r) => r.json())
-      .then((cfg) => setFragmentPayLabel(getFragmentPaymentLabel(cfg)))
-      .catch(() => setFragmentPayLabel("TON"));
-  }, [isCardFlow, isPaymee]);
 
   // Discount paketlarni yuklash (refreshable)
   const fetchDiscountPackages = async () => {
@@ -612,14 +595,6 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
 
       <div className="stars-page-title">
         <h1>Telegram Stars</h1>
-        <p>
-          {t("stars.purchase")}
-          {isCardFlow && fragmentPayLabel
-            ? isPaymee
-              ? ` · ${fragmentPayLabel}`
-              : ` · Fragment (${fragmentPayLabel})`
-            : ""}
-        </p>
       </div>
 
       {/* Profile */}

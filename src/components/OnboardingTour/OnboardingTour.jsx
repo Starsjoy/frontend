@@ -22,7 +22,10 @@ const MAX_TRIES = 20; // ~2.4s; topilmasa spotlightsiz davom etadi
  * Qadam maydonlari:
  *   tourId       — maqsad elementning data-tour-id si (null = faqat karta)
  *   route        — qadam ochilishi kerak bo'lgan sahifa
- *   hint         — "tap" (👆) yoki "type" (⌨️) badge
+ *   hint         — "tap" (👆) yoki "type" (👇) badge
+ *   hintPlacement — "above" | "below"
+ *   cardPlacement — "bottom" (default) | "top" — pastdagi tugma ko'rinsin
+ *   scrollBlock  — scrollIntoView block (submit qadamlar: "end")
  *   illustration — "card" yoki "payment" demo bloki
  */
 function buildSteps(t, paths) {
@@ -38,33 +41,39 @@ function buildSteps(t, paths) {
 
   return {
     stars: [
-      { tourId: "tour-stars-btn", route: "/", hint: "tap", icon: "⭐", title: s("stars.step0Title"), desc: s("stars.step0Desc") },
+      { tourId: "tour-stars-btn", route: "/", hint: "tap", hintPlacement: "below", icon: "⭐", title: s("stars.step0Title"), desc: s("stars.step0Desc") },
       { tourId: "tour-username", route: paths.stars, hint: "type", icon: "👤", title: s("stars.step1Title"), desc: s("stars.step1Desc") },
       { tourId: "tour-stars-amount", route: paths.stars, hint: "type", icon: "🔢", title: s("stars.step2Title"), desc: s("stars.step2Desc") },
-      { tourId: "tour-stars-submit", route: paths.stars, hint: "tap", icon: "🛒", title: s("stars.step3Title"), desc: s("stars.step3Desc") },
+      { tourId: "tour-stars-submit", route: paths.stars, hint: "tap", hintPlacement: "above", cardPlacement: "top", scrollBlock: "end", icon: "🛒", title: s("stars.step3Title"), desc: s("stars.step3Desc") },
       cardStep("stars"),
       payStep("stars"),
     ],
     premium: [
-      { tourId: "tour-premium-btn", route: "/", hint: "tap", icon: "👑", title: s("premium.step0Title"), desc: s("premium.step0Desc") },
+      { tourId: "tour-premium-btn", route: "/", hint: "tap", hintPlacement: "below", icon: "👑", title: s("premium.step0Title"), desc: s("premium.step0Desc") },
       { tourId: "tour-username", route: paths.premium, hint: "type", icon: "👤", title: s("premium.step1Title"), desc: s("premium.step1Desc") },
-      { tourId: "tour-premium-plan", route: paths.premium, hint: "tap", icon: "📅", title: s("premium.step2Title"), desc: s("premium.step2Desc") },
-      { tourId: "tour-premium-submit", route: paths.premium, hint: "tap", icon: "🛒", title: s("premium.step3Title"), desc: s("premium.step3Desc") },
+      { tourId: "tour-premium-plan", route: paths.premium, hint: "tap", hintPlacement: "above", icon: "📅", title: s("premium.step2Title"), desc: s("premium.step2Desc") },
+      { tourId: "tour-premium-submit", route: paths.premium, hint: "tap", hintPlacement: "above", cardPlacement: "top", scrollBlock: "end", icon: "🛒", title: s("premium.step3Title"), desc: s("premium.step3Desc") },
       cardStep("premium"),
       payStep("premium"),
     ],
     gift: [
-      { tourId: "tour-gift-btn", route: "/", hint: "tap", icon: "🎁", title: s("gift.step0Title"), desc: s("gift.step0Desc") },
+      { tourId: "tour-gift-btn", route: "/", hint: "tap", hintPlacement: "below", icon: "🎁", title: s("gift.step0Title"), desc: s("gift.step0Desc") },
       { tourId: "tour-username", route: "/gift", hint: "type", icon: "👤", title: s("gift.step1Title"), desc: s("gift.step1Desc") },
-      { tourId: "tour-gift-select", route: "/gift", hint: "tap", icon: "🎀", title: s("gift.step2Title"), desc: s("gift.step2Desc") },
+      { tourId: "tour-gift-select", route: "/gift", hint: "tap", hintPlacement: "above", icon: "🎀", title: s("gift.step2Title"), desc: s("gift.step2Desc") },
       cardStep("gift"),
       payStep("gift"),
     ],
   };
 }
 
+function getTapHintEmoji(step, tourService) {
+  const placement = step?.hintPlacement || "below";
+  if (tourService === "premium" && placement === "below") return "👆";
+  return "👇";
+}
+
 /** Maqsad elementni DOM'da kutadi va koordinatalarini beradi. */
-function useSpotlight(tourId, stepIndex, service) {
+function useSpotlight(tourId, stepIndex, service, scrollBlock = "center") {
   const [rect, setRect] = useState(null);
   const [gaveUp, setGaveUp] = useState(false);
   const timerRef = useRef(null);
@@ -85,7 +94,7 @@ function useSpotlight(tourId, stepIndex, service) {
       const el = document.querySelector(`[data-tour-id="${tourId}"]`);
       if (el) {
         measure(el);
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.scrollIntoView({ behavior: "smooth", block: scrollBlock });
         // scroll tugagach koordinatalar siljiydi — qayta o'lchaymiz
         timerRef.current = setTimeout(() => measure(el), 450);
         return;
@@ -101,7 +110,7 @@ function useSpotlight(tourId, stepIndex, service) {
 
     timerRef.current = setTimeout(find, 300); // route almashgach DOM'ga vaqt
     return () => clearTimeout(timerRef.current);
-  }, [tourId, stepIndex, service]);
+  }, [tourId, stepIndex, service, scrollBlock]);
 
   return { rect, gaveUp };
 }
@@ -166,7 +175,12 @@ export default function OnboardingTour() {
   const isDone = !!tourService && tourStep >= list.length;
   const currentStep = !isServiceSelect && !isDone ? list[tourStep] : null;
 
-  const { rect: spotRect, gaveUp } = useSpotlight(currentStep?.tourId, tourStep, tourService);
+  const { rect: spotRect, gaveUp } = useSpotlight(
+    currentStep?.tourId,
+    tourStep,
+    tourService,
+    currentStep?.scrollBlock || "center",
+  );
 
   // Qadam o'z sahifasiga o'zi o'tadi
   useEffect(() => {
@@ -249,10 +263,12 @@ export default function OnboardingTour() {
               {spotRect && (
                 <div className="ob-spotlight" style={spotRect}>
                   {currentStep.hint && (
-                    <span className={`ob-hint ${currentStep.hint}`}>
+                    <span
+                      className={`ob-hint ${currentStep.hint} ob-hint--${currentStep.hintPlacement || (currentStep.hint === "tap" ? "below" : "above")}`}
+                    >
                       {currentStep.hint === "tap"
-                        ? `👆 ${t("onboarding.tapHint")}`
-                        : `⌨️ ${t("onboarding.typeHint")}`}
+                        ? `${getTapHintEmoji(currentStep, tourService)} ${t("onboarding.tapHint")}`
+                        : `👇 ${t("onboarding.typeHint")}`}
                     </span>
                   )}
                 </div>
@@ -262,7 +278,10 @@ export default function OnboardingTour() {
             <div className="ob-backdrop ob-backdrop--full" />
           )}
 
-          <div className="ob-step-card" key={`${tourService}-${tourStep}`}>
+          <div
+            className={`ob-step-card${currentStep.cardPlacement === "top" ? " ob-step-card--top" : ""}`}
+            key={`${tourService}-${tourStep}`}
+          >
             <div className="ob-step-dots">
               {list.map((_, i) => (
                 <span key={i} className={`ob-dot ${i === tourStep ? "active" : ""} ${i < tourStep ? "past" : ""}`} />
