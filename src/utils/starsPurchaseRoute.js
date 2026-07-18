@@ -26,14 +26,12 @@ export function isCardDeliveryVariant(variant) {
 
 export function starsApiPrefix(variant) {
   if (variant === "paymee") return "/api/paymee-stars";
-  if (variant === "fragment") return "/api/usdt-stars";
-  return "/api/stars";
+  return "/api/usdt-stars";
 }
 
 export function premiumApiPrefix(variant) {
   if (variant === "paymee") return "/api/paymee-premium";
-  if (variant === "fragment") return "/api/usdt-premium";
-  return "/api/premium";
+  return "/api/usdt-premium";
 }
 
 export function getFragmentPaymentLabel(config) {

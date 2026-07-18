@@ -35,7 +35,7 @@ const formatAmount = (num) =>
 // ================== COMPONENT ==================
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { t, language, setLanguage } = useTranslation();
+  const { t, language, setLanguage, onboardingCompleted } = useTranslation();
   const { startTour, tourActive } = useOnboarding();
 
   /* ================= USER ================= */
@@ -95,6 +95,8 @@ export default function Dashboard() {
         body: JSON.stringify({
           username: user,
           referral_code: startParam || null,
+          language: localStorage.getItem("language") || "uz",
+          language_selected: localStorage.getItem("languageChosen") === "1",
         }),
       });
     } catch (err) {
@@ -322,11 +324,11 @@ export default function Dashboard() {
      Yangi foydalanuvchiga splash tugagach turni ochamiz. */
   useEffect(() => {
     if (splashVisible) return;
-    if (localStorage.getItem("spm_tour_done") === "1") return;
+    if (onboardingCompleted) return;
 
     const timer = setTimeout(() => startTour(), 600);
     return () => clearTimeout(timer);
-  }, [splashVisible, startTour]);
+  }, [splashVisible, startTour, onboardingCompleted]);
 
   /* ================= BONUS AVTO-OCHILISH =================
      Splash tugagach 3 soniyadan keyin, sessiyada bir marta.
@@ -334,7 +336,7 @@ export default function Dashboard() {
      Hamma missiya olingan bo'lsa umuman ochilmaydi. */
   useEffect(() => {
     if (splashVisible || tab !== "home" || tourActive) return;
-    if (localStorage.getItem("spm_tour_done") !== "1") return;
+    if (!onboardingCompleted) return;
     if (localStorage.getItem("spmAllMissionsDone") === "1") return;
     if (sessionStorage.getItem("spmBonusAutoShown") === "1") return;
 
@@ -343,7 +345,7 @@ export default function Dashboard() {
       setShowBonus(true);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [splashVisible, tab, tourActive]);
+  }, [splashVisible, tab, tourActive, onboardingCompleted]);
 
   /* ================= UI ================= */
 

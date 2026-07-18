@@ -453,10 +453,11 @@ export default function Gift() {
           <span className="gift-label-icon">🎁</span>
           {t("gift.selectGift")}
         </label>
-        <div className="gift-grid-4col" data-tour-id="tour-gift-select">
-          {GIFTS.map((gift) => (
+        <div className="gift-grid-4col">
+          {GIFTS.map((gift, index) => (
             <div
               key={gift.id}
+              {...(index === 0 ? { "data-tour-id": "tour-gift-select" } : {})}
               className={`gift-card ${selectedGift?.id === gift.id ? "selected" : ""}`}
               onClick={() => handleGiftSelect(gift)}
               onMouseEnter={() => setHoveredGift(gift.id)}

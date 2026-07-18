@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import uz from "../locales/uz.json";
 import en from "../locales/en.json";
 import ru from "../locales/ru.json";
@@ -17,16 +17,60 @@ export function LanguageProvider({ children }) {
     return localStorage.getItem("language") || "uz";
   });
 
-  // Foydalanuvchi hech bo'lmaganda bir marta til tanlaganmi?
-  const [languageChosen, setLanguageChosen] = useState(() => {
-    return Boolean(localStorage.getItem("languageChosen"));
-  });
+  const [languageChosen, setLanguageChosen] = useState(() =>
+    Boolean(localStorage.getItem("languageChosen"))
+  );
+  const [onboardingCompleted, setOnboardingCompleted] = useState(() =>
+    localStorage.getItem("spm_tour_done") === "1"
+  );
+  const [prefsLoading, setPrefsLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await apiFetch("/api/user/preferences");
+        if (!res.ok) throw new Error("prefs failed");
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (data.language) {
+          setLanguage(data.language);
+          localStorage.setItem("language", data.language);
+        }
+
+        if (data.exists) {
+          const selected = Boolean(data.language_selected);
+          setLanguageChosen(selected);
+          if (selected) {
+            localStorage.setItem("languageChosen", "1");
+          } else {
+            localStorage.removeItem("languageChosen");
+          }
+
+          const completed = Boolean(data.onboarding_completed);
+          setOnboardingCompleted(completed);
+          if (completed) {
+            localStorage.setItem("spm_tour_done", "1");
+          } else {
+            localStorage.removeItem("spm_tour_done");
+          }
+        }
+      } catch {
+        // API ishlamasa — localStorage dagi qiymatlar bilan davom etamiz
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("language", language);
   }, [language]);
 
-  // Boshqa oyna (iframe) da til o'zgarganda shu context ham yangilansin
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "language" && e.newValue && e.newValue !== language) {
@@ -37,20 +81,58 @@ export function LanguageProvider({ children }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [language]);
 
-  const markLanguageChosen = () => {
-    localStorage.setItem("languageChosen", "1");
+  const markLanguageChosen = useCallback(async (langCode) => {
+    const lang = langCode || language;
     setLanguageChosen(true);
-  };
+    localStorage.setItem("languageChosen", "1");
+    localStorage.setItem("language", lang);
+
+    try {
+      await apiFetch("/api/user/language", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ language: lang }),
+      });
+    } catch (err) {
+      console.error("Language save error:", err);
+    }
+  }, [language]);
+
+  const markOnboardingComplete = useCallback(async () => {
+    setOnboardingCompleted(true);
+    localStorage.setItem("spm_tour_done", "1");
+    try {
+      await apiFetch("/api/user/onboarding-complete", { method: "POST" });
+    } catch (err) {
+      console.error("Onboarding save error:", err);
+    }
+  }, []);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, languageChosen, markLanguageChosen }}>
+    <LanguageContext.Provider
+      value={{
+        language,
+        setLanguage,
+        languageChosen,
+        markLanguageChosen,
+        onboardingCompleted,
+        markOnboardingComplete,
+      }}
+    >
       {children}
     </LanguageContext.Provider>
   );
 }
 
 export function useTranslation() {
-  const { language, setLanguage, languageChosen, markLanguageChosen } = useContext(LanguageContext);
+  const {
+    language,
+    setLanguage,
+    languageChosen,
+    markLanguageChosen,
+    onboardingCompleted,
+    markOnboardingComplete,
+  } = useContext(LanguageContext);
 
   const t = (key) => {
     const keys = key.split(".");
@@ -60,7 +142,6 @@ export function useTranslation() {
       if (value && typeof value === "object") {
         value = value[k];
       } else {
-        // Fallback: ingliz tilida qidirish
         let fallback = translations["en"];
         for (const fk of keys) {
           if (fallback && typeof fallback === "object") {
@@ -78,20 +159,28 @@ export function useTranslation() {
 
   const changeLanguage = async (newLanguage) => {
     setLanguage(newLanguage);
+    localStorage.setItem("language", newLanguage);
 
     try {
-      const username = localStorage.getItem("username");
-      if (username) {
-        await apiFetch("/api/user/language", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, language: newLanguage }),
-        });
-      }
+      await apiFetch("/api/user/language", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ language: newLanguage }),
+      });
+      setLanguageChosen(true);
+      localStorage.setItem("languageChosen", "1");
     } catch (err) {
       console.error("Language save error:", err);
     }
   };
 
-  return { t, language, setLanguage: changeLanguage, languageChosen, markLanguageChosen };
+  return {
+    t,
+    language,
+    setLanguage: changeLanguage,
+    languageChosen,
+    markLanguageChosen,
+    onboardingCompleted,
+    markOnboardingComplete,
+  };
 }

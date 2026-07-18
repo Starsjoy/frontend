@@ -362,6 +362,7 @@
     "next": "Keyingisi",
     "finish": "Tugash",
     "tapHint": "Bosing",
+    "tapToContinue": "Yoritilgan tugmani bosing",
     "typeHint": "Yozing",
     "doneTitle": "Ajoyib!",
     "doneDesc": "Endi hammasini o'zingiz qila olasiz. Savol bo'lsa, yuqoridagi ? tugmasini bosing.",
@@ -402,12 +403,12 @@
       "payDesc": "Eng muhim qoida: ko'rsatilgan summani tiyinigacha aniq yuboring."
     },
     "gift": {
-      "step0Title": "Gift olish",
-      "step0Desc": "Do'stingizga Telegram sovg'asi shu tugma orqali yuboriladi.",
+      "step0Title": "Gift tugmasini bosing",
+      "step0Desc": "Bosh sahifada yoritilgan Gift kartasini bosing — sovg'a yuborish sahifasi ochiladi.",
       "step1Title": "Kimga yuboramiz?",
       "step1Desc": "Username yozing — qabul qiluvchi profili chiqadi.",
       "step2Title": "Sovg'ani tanlang",
-      "step2Desc": "Katalogdan sovg'ani bosing, pastdan yuborish oynasi ochiladi.",
+      "step2Desc": "Yoritilgan sovg'ani bosing — pastdan yuborish oynasi ochiladi.",
       "cardTitle": "Kartaga o'tkazish",
       "cardDesc": "Ochilgan oynada karta raqami chiqadi. Uni nusxalab oling.",
       "payTitle": "Aniq summani yuboring",

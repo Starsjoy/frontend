@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useState } from "react";
+import { useTranslation } from "./LanguageContext";
 
 const OnboardingContext = createContext(null);
 
@@ -6,12 +7,12 @@ const OnboardingContext = createContext(null);
  * O'rgatuvchi tur holati.
  *
  * tourStep: -1 = xizmat tanlash, 0+ = qadamlar, >= qadamlar soni = yakun ekrani.
- * (Til tanlash bosqichi yo'q — uni LanguageGate/LanguageSetup allaqachon bajaradi.)
  */
 export function OnboardingProvider({ children }) {
+  const { markOnboardingComplete } = useTranslation();
   const [tourActive, setTourActive] = useState(false);
   const [tourStep, setTourStep] = useState(-1);
-  const [tourService, setTourService] = useState(null); // "stars" | "premium" | "gift"
+  const [tourService, setTourService] = useState(null);
 
   const startTour = useCallback(() => {
     setTourService(null);
@@ -23,8 +24,8 @@ export function OnboardingProvider({ children }) {
     setTourActive(false);
     setTourService(null);
     setTourStep(-1);
-    localStorage.setItem("spm_tour_done", "1");
-  }, []);
+    markOnboardingComplete();
+  }, [markOnboardingComplete]);
 
   return (
     <OnboardingContext.Provider

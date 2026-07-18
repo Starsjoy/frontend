@@ -18,6 +18,15 @@
 }
 .ob-backdrop--full { background: rgba(5, 8, 20, 0.82); }
 
+/* Belgilangan tugmani bosish uchun — fon bosilishni to'smaydi */
+.ob-root--tap-target .ob-backdrop {
+  pointer-events: none;
+  background: transparent;
+}
+.ob-root--tap-target .ob-spotlight {
+  pointer-events: none;
+}
+
 /* ---------- Spotlight ("teshik" — box-shadow cutout) ---------- */
 .ob-spotlight {
   position: fixed;
@@ -51,12 +60,12 @@
 .ob-hint--below {
   top: auto;
   bottom: -40px;
-  animation: ob-hint-bounce-down 1s ease-in-out infinite alternate;
+  animation: ob-hint-bounce-up 1s ease-in-out infinite alternate;
 }
 
 .ob-hint--above {
   top: -38px;
-  animation: ob-hint-bounce-up 1s ease-in-out infinite alternate;
+  animation: ob-hint-bounce-down 1s ease-in-out infinite alternate;
 }
 @keyframes ob-hint-bounce-down {
   from { transform: translateX(-50%) translateY(0); }
@@ -283,6 +292,14 @@
 
 /* ---------- Tugmalar ---------- */
 .ob-step-actions { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
+.ob-tap-wait {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #a5b4fc;
+  padding: 10px 8px;
+}
 
 .ob-btn {
   padding: 11px 16px;

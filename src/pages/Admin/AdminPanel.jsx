@@ -6,8 +6,7 @@ import apiFetch from "../../utils/apiFetch";
 import AdminCustomSelect from "../../components/AdminCustomSelect";
 
 const PURCHASE_MODE_OPTIONS = [
-  { value: "robynhood", label: "RobynHood", icon: "🔷" },
-  { value: "fragment", label: "Fragment", icon: "🟣" },
+  { value: "fragment", label: "Fragment (USDT)", icon: "🟣" },
   { value: "paymee", label: "Paymee", icon: "🟢" },
 ];
 
@@ -177,7 +176,7 @@ export default function AdminPanel() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
 
-  const [starsPurchaseMode, setStarsPurchaseMode] = useState("robynhood");
+  const [starsPurchaseMode, setStarsPurchaseMode] = useState("fragment");
   const [purchaseModeLoading, setPurchaseModeLoading] = useState(false);
   const [fragmentTokens, setFragmentTokens] = useState({
     fragment_dt: "-300",
@@ -295,7 +294,11 @@ export default function AdminPanel() {
   const applySettingsFromApi = (data) => {
     if (!data) return;
     if (data.maintenance !== undefined) setMaintenanceMode(Boolean(data.maintenance));
-    if (data.stars_purchase_mode) setStarsPurchaseMode(data.stars_purchase_mode);
+    if (data.stars_purchase_mode) {
+      setStarsPurchaseMode(
+        data.stars_purchase_mode === "robynhood" ? "fragment" : data.stars_purchase_mode
+      );
+    }
     if (data.fragment_payment_method) setFragmentPaymentMethod(data.fragment_payment_method);
   };
 
@@ -3483,15 +3486,7 @@ export default function AdminPanel() {
           </p>
           <div className="purchase-mode-settings">
             <div className="purchase-mode-switch purchase-mode-switch--large">
-              <button
-                type="button"
-                className={`purchase-mode-btn ${starsPurchaseMode === "robynhood" ? "active robyn" : ""}`}
-                onClick={() => setPurchaseMode("robynhood")}
-                disabled={purchaseModeLoading}
-              >
-                RobynHood
-              </button>
-              <button
+<button
                 type="button"
                 className={`purchase-mode-btn ${starsPurchaseMode === "fragment" ? "active frag" : ""}`}
                 onClick={() => setPurchaseMode("fragment")}
@@ -3509,11 +3504,9 @@ export default function AdminPanel() {
               </button>
             </div>
             <p className="settings-hint">
-              {starsPurchaseMode === "fragment"
-                ? "Hozir: /usdtstars va /usdtpremium (karta + Fragment)"
-                : starsPurchaseMode === "paymee"
-                  ? "Hozir: /paymeestars va /paymeepremium (karta + StarsPaymee Partner API)"
-                  : "Hozir: /stars va /premium (RobynHood API)"}
+              {starsPurchaseMode === "paymee"
+                ? "Hozir: /paymeestars va /paymeepremium (karta + StarsPaymee Partner API)"
+                : "Hozir: /stars va /premium (karta + Fragment USDT)"}
             </p>
           </div>
 
@@ -3542,7 +3535,7 @@ export default function AdminPanel() {
                 </button>
               </div>
               <p className="settings-hint">
-                Faol: <strong>{fragmentPaymentMethod === "usdt_ton" ? "USDT TON" : "TON"}</strong> — /usdtstars va /usdtpremium uchun
+                Faol: <strong>{fragmentPaymentMethod === "usdt_ton" ? "USDT TON" : "TON"}</strong> — /stars va /premium uchun
               </p>
             </div>
           )}

@@ -16,7 +16,8 @@ export default function LanguageSetup() {
   const handleContinue = async () => {
     setLoading(true);
     await setLanguage(selected);
-    markLanguageChosen();
+    await markLanguageChosen(selected);
+    setLoading(false);
   };
 
   return (

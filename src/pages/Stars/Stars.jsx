@@ -43,7 +43,7 @@ const StarIcon = () => (
 // 8 daqiqa = 480 sekund
 const POLLING_DURATION = 8 * 60 * 1000; // 8 daqiqa millisekondda
 
-export function StarsPurchasePage({ variant = "robynhood" }) {
+export function StarsPurchasePage({ variant = "fragment" }) {
   const { t } = useTranslation();
   const isFragment = variant === "fragment";
   const isPaymee = variant === "paymee";
@@ -99,7 +99,7 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
       navigate(getPremiumPurchasePath(cfg));
     } catch {
       navigate(
-        isPaymee ? "/paymeepremium" : isFragment ? "/usdtpremium" : "/premium"
+        isPaymee ? "/paymeepremium" : "/premium"
       );
     }
   };
@@ -1059,8 +1059,4 @@ export function StarsPurchasePage({ variant = "robynhood" }) {
       )}
     </div>
   );
-}
-
-export default function Stars() {
-  return <StarsPurchasePage variant="robynhood" />;
 }

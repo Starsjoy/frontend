@@ -17,7 +17,7 @@ function normalizePremiumPollStatus(status) {
   return status;
 }
 
-export function PremiumPurchasePage({ variant = "robynhood" }) {
+export function PremiumPurchasePage({ variant = "fragment" }) {
   const { t } = useTranslation();
   const isFragment = variant === "fragment";
   const isPaymee = variant === "paymee";
@@ -919,8 +919,4 @@ export function PremiumPurchasePage({ variant = "robynhood" }) {
 
     </div>
   );
-}
-
-export default function Premium() {
-  return <PremiumPurchasePage variant="robynhood" />;
 }

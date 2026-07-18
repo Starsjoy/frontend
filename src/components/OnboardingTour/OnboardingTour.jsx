@@ -57,19 +57,18 @@ function buildSteps(t, paths) {
       payStep("premium"),
     ],
     gift: [
-      { tourId: "tour-gift-btn", route: "/", hint: "tap", hintPlacement: "below", icon: "🎁", title: s("gift.step0Title"), desc: s("gift.step0Desc") },
+      { tourId: "tour-gift-btn", route: "/", hint: "tap", hintPlacement: "below", advanceOnTap: true, icon: "🎁", title: s("gift.step0Title"), desc: s("gift.step0Desc") },
       { tourId: "tour-username", route: "/gift", hint: "type", icon: "👤", title: s("gift.step1Title"), desc: s("gift.step1Desc") },
-      { tourId: "tour-gift-select", route: "/gift", hint: "tap", hintPlacement: "above", icon: "🎀", title: s("gift.step2Title"), desc: s("gift.step2Desc") },
+      { tourId: "tour-gift-select", route: "/gift", hint: "tap", hintPlacement: "above", advanceOnTap: true, scrollBlock: "center", icon: "🎀", title: s("gift.step2Title"), desc: s("gift.step2Desc") },
       cardStep("gift"),
       payStep("gift"),
     ],
   };
 }
 
-function getTapHintEmoji(step, tourService) {
+function getTapHintEmoji(step) {
   const placement = step?.hintPlacement || "below";
-  if (tourService === "premium" && placement === "below") return "👆";
-  return "👇";
+  return placement === "below" ? "👆" : "👇";
 }
 
 /** Maqsad elementni DOM'da kutadi va koordinatalarini beradi. */
@@ -188,6 +187,22 @@ export default function OnboardingTour() {
     if (location.pathname !== currentStep.route) navigate(currentStep.route);
   }, [tourActive, tourStep, tourService, currentStep?.route, location.pathname, navigate]);
 
+  // Belgilangan elementni bosganda keyingi qadamga o'tish (Gift va boshqalar)
+  useEffect(() => {
+    if (!tourActive || !currentStep?.advanceOnTap || !currentStep?.tourId) return;
+
+    const tourId = currentStep.tourId;
+    const onClick = (e) => {
+      const el = document.querySelector(`[data-tour-id="${tourId}"]`);
+      if (el && el.contains(e.target)) {
+        setTimeout(() => setTourStep((s) => s + 1), 120);
+      }
+    };
+
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [tourActive, currentStep?.tourId, currentStep?.advanceOnTap, setTourStep]);
+
   const finish = useCallback(() => {
     endTour();
     navigate("/");
@@ -202,9 +217,10 @@ export default function OnboardingTour() {
   };
 
   const showSpotlight = currentStep?.tourId && !gaveUp;
+  const tapTargetMode = Boolean(currentStep?.advanceOnTap && showSpotlight);
 
   return createPortal(
-    <div className="ob-root">
+    <div className={`ob-root${tapTargetMode ? " ob-root--tap-target" : ""}`}>
       {/* ---------- Xizmat tanlash ---------- */}
       {isServiceSelect && (
         <div className="ob-fullscreen">
@@ -267,7 +283,7 @@ export default function OnboardingTour() {
                       className={`ob-hint ${currentStep.hint} ob-hint--${currentStep.hintPlacement || (currentStep.hint === "tap" ? "below" : "above")}`}
                     >
                       {currentStep.hint === "tap"
-                        ? `${getTapHintEmoji(currentStep, tourService)} ${t("onboarding.tapHint")}`
+                        ? `${getTapHintEmoji(currentStep)} ${t("onboarding.tapHint")}`
                         : `👇 ${t("onboarding.typeHint")}`}
                     </span>
                   )}
@@ -307,9 +323,13 @@ export default function OnboardingTour() {
                 ← {t("onboarding.back")}
               </button>
               <button className="ob-skip-inline" onClick={endTour}>{t("onboarding.skipStep")}</button>
-              <button className="ob-btn primary" onClick={() => setTourStep(tourStep + 1)}>
-                {tourStep === list.length - 1 ? `${t("onboarding.finish")} ✓` : `${t("onboarding.next")} →`}
-              </button>
+              {currentStep.advanceOnTap ? (
+                <span className="ob-tap-wait">{t("onboarding.tapToContinue")}</span>
+              ) : (
+                <button className="ob-btn primary" onClick={() => setTourStep(tourStep + 1)}>
+                  {tourStep === list.length - 1 ? `${t("onboarding.finish")} ✓` : `${t("onboarding.next")} →`}
+                </button>
+              )}
             </div>
           </div>
         </>

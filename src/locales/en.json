@@ -361,6 +361,7 @@
     "next": "Next",
     "finish": "Finish",
     "tapHint": "Tap",
+    "tapToContinue": "Tap the highlighted button",
     "typeHint": "Type",
     "doneTitle": "Nice work!",
     "doneDesc": "You can do it all yourself now. Tap the ? button at the top if you need this again.",
@@ -401,12 +402,12 @@
       "payDesc": "The one rule that matters: send the exact amount shown, to the last digit."
     },
     "gift": {
-      "step0Title": "Buy a gift",
-      "step0Desc": "Send a Telegram gift to a friend from this button.",
+      "step0Title": "Tap the Gift button",
+      "step0Desc": "On the home screen, tap the highlighted Gift card — the gift page will open.",
       "step1Title": "Who is it for?",
       "step1Desc": "Type a username — the recipient's profile appears.",
       "step2Title": "Pick a gift",
-      "step2Desc": "Tap a gift in the catalog; the send sheet opens from the bottom.",
+      "step2Desc": "Tap the highlighted gift — the send sheet opens from the bottom.",
       "cardTitle": "Transfer to the card",
       "cardDesc": "The window shows a card number. Copy it.",
       "payTitle": "Send the exact amount",

@@ -1,11 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Stars from "./pages/Stars/Stars";
 import UsdtStars from "./pages/UsdtStars/UsdtStars";
 import PaymeeStars from "./pages/PaymeeStars/PaymeeStars";
 import PaymeePremium from "./pages/PaymeePremium/PaymeePremium";
 import AdminPanel from "./pages/Admin/AdminPanel";
-import Premium from "./pages/Premium/Premium";
 import UsdtPremium from "./pages/UsdtPremium/UsdtPremium";
 import Dashboard from "./pages/Homepage/Dashboard";
 import Referral from "./pages/Referral/Referral";
@@ -84,11 +82,11 @@ function App() {
               <OnboardingTour />
               <Routes>
                 <Route path="/" element={<Dashboard/>} />
-                <Route path="/stars" element={<Stars />} />
-                <Route path="/usdtstars" element={<UsdtStars />} />
+                <Route path="/stars" element={<UsdtStars />} />
+                <Route path="/usdtstars" element={<Navigate to="/stars" replace />} />
                 <Route path="/paymeestars" element={<PaymeeStars />} />
-                <Route path="/premium" element={<Premium />} />
-                <Route path="/usdtpremium" element={<UsdtPremium />} />
+                <Route path="/premium" element={<UsdtPremium />} />
+                <Route path="/usdtpremium" element={<Navigate to="/premium" replace />} />
                 <Route path="/paymeepremium" element={<PaymeePremium />} />
                 <Route path="/referral" element={<Referral />} />
                 <Route path="/profile" element={<Profile />} />
