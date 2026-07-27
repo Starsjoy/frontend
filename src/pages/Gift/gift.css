@@ -78,8 +78,11 @@
 }
 
 .gift-label-icon {
-  font-size: 18px;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  flex-shrink: 0;
 }
 
 /* ===============================

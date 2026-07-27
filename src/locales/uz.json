@@ -337,7 +337,7 @@
     "loadError": "Ma'lumotni yuklab bo'lmadi",
     "needFriends": "{n} ta do'st taklif qiling",
     "lockedNote": "Bu missiya {n}-missiyadan keyin ochiladi",
-    "waitNote": "Do'stlaringiz kanalda 24 soat turishi kerak",
+    "waitNote": "Do'stlaringiz kanalda {h} soat turishi kerak",
     "friendsLeft": "Ba'zi do'stlaringiz kanaldan chiqdi. Yana do'st taklif qiling.",
     "inviteFriends": "Do'stlarni taklif qilish",
     "channelMini": "Do'st kanalga obuna bo'lgandan keyin hisoblanadi",

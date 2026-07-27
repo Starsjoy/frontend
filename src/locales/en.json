@@ -336,7 +336,7 @@
     "loadError": "Could not load data",
     "needFriends": "Invite {n} friends",
     "lockedNote": "This mission unlocks after mission {n}",
-    "waitNote": "Your friends must stay in the channel for 24 hours",
+    "waitNote": "Your friends must stay in the channel for {h} hours",
     "friendsLeft": "Some friends left the channel. Invite more.",
     "inviteFriends": "Invite friends",
     "channelMini": "A friend counts after subscribing to the channel",

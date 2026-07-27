@@ -9,6 +9,7 @@ import {
 import { PaymeeStockAlert } from "../../components/PaymeeStockAlert";
 import { TGSSticker } from "../../components/TGSSticker";
 import WebApp from "@twa-dev/sdk";
+import { Gift as GiftIcon } from "lucide-react";
 import starsjoyLogo from "../../assets/starsjoy.jpg";
 import "./gift.css";
 
@@ -16,7 +17,7 @@ const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
 const CARD_NAME = import.meta.env.VITE_CARD_NAME;
 
 // Gift IDlar - har bir gift fayl nomi gift ID ga mos keladi (masalan: 5170145012310081615.tgs)
-const GIFTS = [
+const GIFTS_RAW = [
   { id: "5170145012310081615", stars: 15 },
   { id: "5170233102089322756", stars: 15 },
   { id: "5170250947678437525", stars: 25 },
@@ -37,13 +38,20 @@ const GIFTS = [
   { id: "5170521118301225164", stars: 100 },
 ];
 
-// Gift ID dan TGS sticker path olish
+// Narxlar (so'mda) - Backend bilan sinxronlashtirilgan
+const PRICE_MAP = { 15: 5000, 25: 7000, 50: 13000, 100: 24000 };
+
+/** Qimmatdan arzoniga (narxi bo'yicha kamayish) */
+const GIFTS = [...GIFTS_RAW].sort((a, b) => {
+  const diff = (PRICE_MAP[b.stars] ?? 0) - (PRICE_MAP[a.stars] ?? 0);
+  if (diff !== 0) return diff;
+  return b.stars - a.stars;
+});
+
 const getGiftStickerPath = (giftId) => {
   return new URL(`../../assets/${giftId}.tgs`, import.meta.url).href;
 };
 
-// Narxlar (so'mda) - Backend bilan sinxronlashtirilgan
-const PRICE_MAP = { 15: 4500, 25: 6000, 50: 12000, 100: 24000 };
 const MAX_COMMENT_LENGTH = 128;
 
 const formatAmount = (num) => Number(num || 0).toLocaleString("ru-RU");
@@ -450,7 +458,9 @@ export default function Gift() {
       {/* All Gifts Grid */}
       <div className="gift-catalog">
         <label className="gift-label">
-          <span className="gift-label-icon">🎁</span>
+          <span className="gift-label-icon" aria-hidden>
+            <GiftIcon size={18} strokeWidth={2} />
+          </span>
           {t("gift.selectGift")}
         </label>
         <div className="gift-grid-4col">

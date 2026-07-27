@@ -96,6 +96,12 @@ export default function BonusModal({ open, onClose }) {
     return () => clearInterval(id);
   }, [open, waiting]);
 
+  useEffect(() => {
+    if (!open || !waiting) return;
+    const id = setInterval(() => load(), 90_000);
+    return () => clearInterval(id);
+  }, [open, waiting, load]);
+
   const remainMs = mission?.verify_at ? new Date(mission.verify_at).getTime() - nowTs : 0;
 
   useEffect(() => {
@@ -254,7 +260,9 @@ export default function BonusModal({ open, onClose }) {
               ) : waiting ? (
                 <div className="bonus-waiting">
                   <div className="bonus-countdown">{formatRemain(remainMs)}</div>
-                  <p className="bonus-wait-note">{t("bonus.waitNote")}</p>
+                  <p className="bonus-wait-note">
+                    {t("bonus.waitNote").replace("{h}", String(data?.verify_hours ?? 4))}
+                  </p>
                 </div>
               ) : mission.can_claim ? (
                 <button className="bonus-btn claim" onClick={claim} disabled={claiming}>

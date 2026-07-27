@@ -3,7 +3,16 @@ import "./AdminPanel.css";
 import { TGSSticker } from "../../components/TGSSticker";
 import adminSticker from "../../assets/AnimatedSticker_admin.tgs";
 import apiFetch from "../../utils/apiFetch";
+import { queued } from "../../utils/apiQueue";
 import AdminCustomSelect from "../../components/AdminCustomSelect";
+
+// ============================================================
+// 📄 Pagination — har bir tab boshida 8 ta yuklanadi,
+//    "Yana 8 ta ko'rsatish" tugmasi bosilganda LOAD_STEP tadan
+//    qo'shimcha qatorlar backenddan olinadi (append).
+// ============================================================
+const PAGE_SIZE = 8;
+const LOAD_STEP = 8;
 
 const PURCHASE_MODE_OPTIONS = [
   { value: "fragment", label: "Fragment (USDT)", icon: "🟣" },
@@ -143,9 +152,18 @@ export default function AdminPanel() {
     totalReferrals: 0
   });
 
-  // New: expanded order & show all
+  // New: expanded order
   const [expandedId, setExpandedId] = useState(null);
-  const [showAll, setShowAll] = useState(false);
+
+  // 📄 Pagination — har tab uchun alohida (yuklangan qatorlar backenddan)
+  const [transactionsTotal, setTransactionsTotal] = useState(0);
+  const [transactionsLoadingMore, setTransactionsLoadingMore] = useState(false);
+  const [usersTotal, setUsersTotal] = useState(0);
+  const [usersLoadingMore, setUsersLoadingMore] = useState(false);
+  const [premiumTotal, setPremiumTotal] = useState(0);
+  const [premiumLoadingMore, setPremiumLoadingMore] = useState(false);
+  const [giftTotal, setGiftTotal] = useState(0);
+  const [giftLoadingMore, setGiftLoadingMore] = useState(false);
 
   // Referral withdrawals state
   const [refWithdrawals, setRefWithdrawals] = useState([]);
@@ -215,8 +233,6 @@ export default function AdminPanel() {
     expired: 0,
     failed: 0
   });
-  const [premiumShowAll, setPremiumShowAll] = useState(false);
-
   // Manual Premium Order state
   const [manualPremiumModal, setManualPremiumModal] = useState(null); // "1_oy" | "1_yil" | null
   const [manualPremiumUsername, setManualPremiumUsername] = useState("");
@@ -234,7 +250,6 @@ export default function AdminPanel() {
     expired: 0,
     failed: 0
   });
-  const [giftShowAll, setGiftShowAll] = useState(false);
   const [adminSendingOrderId, setAdminSendingOrderId] = useState(null);
 
   // Analytics state
@@ -816,95 +831,123 @@ export default function AdminPanel() {
   };
 
   // ========== ALL FUNCTIONS ==========
-  const fetchTransactions = async () => {
+  // 📄 Paginated fetchers. `append=true` bo'lsa, mavjud arrayga qo'shadi.
+  // Barcha chaqiruvlar `queued()` orqali navbatga qo'yiladi — shu bilan
+  // tab ochilganda bir nechta so'rov paralell yubormay, ketma-ket yuboradi.
+  const fetchTransactions = async ({ append = false, offset = 0 } = {}) => {
     if (!isAuthenticated) return;
-    setLoading(true);
-    try {
-      let url = "/api/transactions/all";
-      if (filter !== "all") {
-        url = `/api/transactions/status/${filter}`;
-      }
+    return queued("admin:transactions", async () => {
+      if (append) setTransactionsLoadingMore(true);
+      else setLoading(true);
+      try {
+        const base =
+          filter !== "all"
+            ? `/api/transactions/status/${filter}`
+            : "/api/transactions/all";
+        const url = `${base}?limit=${LOAD_STEP}&offset=${offset}`;
 
-      const res = await apiFetch(url);
-      const data = await res.json();
-      setTransactions(data);
+        const res = await apiFetch(url);
+        const data = await res.json();
 
-      const stat = {
-        totalStars: 0,
-        completed: 0,
-        expired: 0,
-        pending: 0,
-        stars_sent: 0,
-        failed: 0,
-        error: 0,
-      };
+        // Backend endi { items, total, stats } qaytaradi (paginate mode)
+        const items = Array.isArray(data) ? data : data.items || [];
+        setTransactions((prev) => (append ? [...prev, ...items] : items));
 
-      data.forEach((tx) => {
-        stat.totalStars += tx.stars;
-        if (stat[tx.status] !== undefined) stat[tx.status]++;
-      });
-
-      setStats(stat);
-    } catch (err) {
-      console.error("❌ Transactionlarni olishda xato:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUsers = async () => {
-    if (!isAuthenticated) return;
-    setLoading(true);
-    try {
-      const res = await apiFetch("/api/admin/users");
-      const data = await res.json();
-      setUsers(data);
-
-      const todayStr = new Date().toDateString();
-      const stats = {
-        total: data.length,
-        today: data.filter(u => new Date(u.created_at).toDateString() === todayStr).length,
-        totalReferrals: data.reduce((acc, u) => acc + (u.total_referrals || 0), 0)
-      };
-      setUserStats(stats);
-    } catch (err) {
-      console.error("❌ Users fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPremiumOrders = async () => {
-    if (!isAuthenticated) return;
-    setLoading(true);
-    try {
-      const res = await apiFetch(`/api/admin/premium/list?status=${premiumFilter}`);
-      const data = await res.json();
-      
-      if (data.success) {
-        setPremiumOrders(data.orders || []);
-        
-        // Calculate stats from all orders
-        const allRes = await apiFetch("/api/admin/premium/list?status=all");
-        const allData = await allRes.json();
-        
-        if (allData.success) {
-          const orders = allData.orders || [];
-          const stats = {
-            total: orders.length,
-            pending: orders.filter(o => o.status === 'pending').length,
-            delivered: orders.filter(o => o.status === 'delivered' || o.status === 'premium_sent').length,
-            expired: orders.filter(o => o.status === 'expired').length,
-            failed: orders.filter(o => o.status === 'failed' || o.status === 'error').length
+        if (data && !Array.isArray(data)) {
+          if (data.stats) setStats(data.stats);
+          if (typeof data.total === "number") setTransactionsTotal(data.total);
+        } else {
+          // Legacy fallback
+          const stat = {
+            totalStars: 0,
+            completed: 0,
+            expired: 0,
+            pending: 0,
+            stars_sent: 0,
+            failed: 0,
+            error: 0,
           };
-          setPremiumStats(stats);
+          items.forEach((tx) => {
+            stat.totalStars += tx.stars || 0;
+            if (stat[tx.status] !== undefined) stat[tx.status]++;
+          });
+          setStats(stat);
+          setTransactionsTotal(items.length);
         }
+      } catch (err) {
+        console.error("❌ Transactionlarni olishda xato:", err);
+      } finally {
+        if (append) setTransactionsLoadingMore(false);
+        else setLoading(false);
       }
-    } catch (err) {
-      console.error("❌ Premium orders fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
+    });
+  };
+
+  const fetchUsers = async ({ append = false, offset = 0 } = {}) => {
+    if (!isAuthenticated) return;
+    return queued("admin:users", async () => {
+      if (append) setUsersLoadingMore(true);
+      else setLoading(true);
+      try {
+        const res = await apiFetch(
+          `/api/admin/users?limit=${LOAD_STEP}&offset=${offset}`
+        );
+        const data = await res.json();
+
+        const list = Array.isArray(data) ? data : data.users || [];
+        setUsers((prev) => (append ? [...prev, ...list] : list));
+
+        if (data && !Array.isArray(data)) {
+          if (data.stats) setUserStats(data.stats);
+          if (typeof data.total === "number") setUsersTotal(data.total);
+        } else {
+          // Legacy fallback
+          const todayStr = new Date().toDateString();
+          setUserStats({
+            total: list.length,
+            today: list.filter(
+              (u) => new Date(u.created_at).toDateString() === todayStr
+            ).length,
+            totalReferrals: list.reduce(
+              (acc, u) => acc + (u.total_referrals || 0),
+              0
+            ),
+          });
+          setUsersTotal(list.length);
+        }
+      } catch (err) {
+        console.error("❌ Users fetch error:", err);
+      } finally {
+        if (append) setUsersLoadingMore(false);
+        else setLoading(false);
+      }
+    });
+  };
+
+  const fetchPremiumOrders = async ({ append = false, offset = 0 } = {}) => {
+    if (!isAuthenticated) return;
+    return queued("admin:premium", async () => {
+      if (append) setPremiumLoadingMore(true);
+      else setLoading(true);
+      try {
+        const res = await apiFetch(
+          `/api/admin/premium/list?status=${premiumFilter}&limit=${LOAD_STEP}&offset=${offset}`
+        );
+        const data = await res.json();
+
+        if (data.success) {
+          const list = data.orders || [];
+          setPremiumOrders((prev) => (append ? [...prev, ...list] : list));
+          if (data.stats) setPremiumStats(data.stats);
+          if (typeof data.total === "number") setPremiumTotal(data.total);
+        }
+      } catch (err) {
+        console.error("❌ Premium orders fetch error:", err);
+      } finally {
+        if (append) setPremiumLoadingMore(false);
+        else setLoading(false);
+      }
+    });
   };
 
   const fetchRefWithdrawals = async () => {
@@ -921,38 +964,30 @@ export default function AdminPanel() {
     }
   };
 
-  const fetchGiftOrders = async () => {
+  const fetchGiftOrders = async ({ append = false, offset = 0 } = {}) => {
     if (!isAuthenticated) return;
-    setLoading(true);
-    try {
-      const res = await apiFetch(`/api/admin/gift/list?status=${giftFilter}`);
-      const data = await res.json();
+    return queued("admin:gift", async () => {
+      if (append) setGiftLoadingMore(true);
+      else setLoading(true);
+      try {
+        const res = await apiFetch(
+          `/api/admin/gift/list?status=${giftFilter}&limit=${LOAD_STEP}&offset=${offset}`
+        );
+        const data = await res.json();
 
-      if (data.success) {
-        setGiftOrders(data.orders || []);
-
-        // Calculate stats from all orders
-        const allRes = await apiFetch("/api/admin/gift/list?status=all");
-        const allData = await allRes.json();
-
-        if (allData.success) {
-          const orders = allData.orders || [];
-          const stats = {
-            total: orders.length,
-            pending: orders.filter(o => o.status === 'pending').length,
-            completed: orders.filter(o => o.status === 'completed').length,
-            gift_sent: orders.filter(o => o.status === 'gift_sent').length,
-            expired: orders.filter(o => o.status === 'expired').length,
-            failed: orders.filter(o => o.status === 'failed' || o.status === 'error').length
-          };
-          setGiftStats(stats);
+        if (data.success) {
+          const list = data.orders || [];
+          setGiftOrders((prev) => (append ? [...prev, ...list] : list));
+          if (data.stats) setGiftStats(data.stats);
+          if (typeof data.total === "number") setGiftTotal(data.total);
         }
+      } catch (err) {
+        console.error("❌ Gift orders fetch error:", err);
+      } finally {
+        if (append) setGiftLoadingMore(false);
+        else setLoading(false);
       }
-    } catch (err) {
-      console.error("❌ Gift orders fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   // Discount packages fetch
@@ -1835,10 +1870,10 @@ export default function AdminPanel() {
     );
   });
 
-  // Show last 20 or all
-  const displayedTransactions = showAll 
-    ? filteredTransactions 
-    : filteredTransactions.slice(0, 20);
+  // 📄 Client tarafida hamma yuklangan qatorlar ko'rsatiladi.
+  // Backend endi paginatsiya qiladi — search esa faqat yuklangan itemlar
+  // ichidan filter qiladi.
+  const displayedTransactions = filteredTransactions;
 
   const getStatusColor = (status) => {
     const colors = {
@@ -2516,16 +2551,21 @@ export default function AdminPanel() {
                 ))
               )}
 
-              {/* Show All Button */}
-              {filteredTransactions.length > 20 && !showAll && (
-                <button className="show-all-btn" onClick={() => setShowAll(true)}>
-                  📋 Barcha buyurtmalarni ko'rish ({filteredTransactions.length} ta)
-                </button>
-              )}
-
-              {showAll && filteredTransactions.length > 20 && (
-                <button className="show-all-btn" onClick={() => setShowAll(false)}>
-                  🔼 Faqat oxirgi 20 tani ko'rish
+              {/* 📄 Yana 8 ta — backenddan qo'shimcha yuklaydi */}
+              {transactions.length < transactionsTotal && (
+                <button
+                  className="show-all-btn"
+                  disabled={transactionsLoadingMore}
+                  onClick={() =>
+                    fetchTransactions({ append: true, offset: transactions.length })
+                  }
+                >
+                  {transactionsLoadingMore
+                    ? "⏳ Yuklanmoqda..."
+                    : `📋 Yana ${Math.min(
+                        LOAD_STEP,
+                        transactionsTotal - transactions.length
+                      )} ta yuklash (${transactions.length}/${transactionsTotal})`}
                 </button>
               )}
             </div>
@@ -2582,7 +2622,6 @@ export default function AdminPanel() {
                       tx.id.toString().includes(s)
                     );
                   })
-                  .slice(0, giftShowAll ? giftOrders.length : 20)
                   .map((tx) => (
                   <div key={tx.id} className={getOrderCardClassName(tx)}>
                     <div 
@@ -2705,16 +2744,21 @@ export default function AdminPanel() {
                 ))
               )}
 
-              {/* Show All Button */}
-              {giftOrders.length > 20 && !giftShowAll && (
-                <button className="show-all-btn" onClick={() => setGiftShowAll(true)}>
-                  🎁 Barcha buyurtmalarni ko'rish ({giftOrders.length} ta)
-                </button>
-              )}
-
-              {giftShowAll && giftOrders.length > 20 && (
-                <button className="show-all-btn" onClick={() => setGiftShowAll(false)}>
-                  🔼 Faqat oxirgi 20 tani ko'rish
+              {/* 📄 Yana 8 ta */}
+              {giftOrders.length < giftTotal && (
+                <button
+                  className="show-all-btn"
+                  disabled={giftLoadingMore}
+                  onClick={() =>
+                    fetchGiftOrders({ append: true, offset: giftOrders.length })
+                  }
+                >
+                  {giftLoadingMore
+                    ? "⏳ Yuklanmoqda..."
+                    : `🎁 Yana ${Math.min(
+                        LOAD_STEP,
+                        giftTotal - giftOrders.length
+                      )} ta yuklash (${giftOrders.length}/${giftTotal})`}
                 </button>
               )}
             </div>
@@ -2759,7 +2803,7 @@ export default function AdminPanel() {
               {filteredUsers.length === 0 ? (
                 <div className="empty-state">👤 Foydalanuvchilar yo'q</div>
               ) : (
-                filteredUsers.slice(0, showAll ? filteredUsers.length : 20).map((u, index) => (
+                filteredUsers.map((u, index) => (
                   <div 
                     key={u.id} 
                     className="user-card"
@@ -2904,18 +2948,21 @@ export default function AdminPanel() {
                 ))
               )}
 
-              {filteredUsers.length > 20 && !showAll && (
+              {users.length < usersTotal && (
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <button className="show-all-btn" onClick={() => setShowAll(true)}>
-                    👥 Barcha foydalanuvchilar ({filteredUsers.length} ta)
-                  </button>
-                </div>
-              )}
-
-              {showAll && filteredUsers.length > 20 && (
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <button className="show-all-btn" onClick={() => setShowAll(false)}>
-                    🔼 Faqat 20 tani ko'rish
+                  <button
+                    className="show-all-btn"
+                    disabled={usersLoadingMore}
+                    onClick={() =>
+                      fetchUsers({ append: true, offset: users.length })
+                    }
+                  >
+                    {usersLoadingMore
+                      ? "⏳ Yuklanmoqda..."
+                      : `👥 Yana ${Math.min(
+                          LOAD_STEP,
+                          usersTotal - users.length
+                        )} ta yuklash (${users.length}/${usersTotal})`}
                   </button>
                 </div>
               )}
@@ -3000,7 +3047,6 @@ export default function AdminPanel() {
                       tx.id.toString().includes(s)
                     );
                   })
-                  .slice(0, premiumShowAll ? premiumOrders.length : 20)
                   .map((tx) => (
                   <div
                     key={tx.id}
@@ -3101,16 +3147,24 @@ export default function AdminPanel() {
                 ))
               )}
 
-              {/* Show All Button */}
-              {premiumOrders.length > 20 && !premiumShowAll && (
-                <button className="show-all-btn" onClick={() => setPremiumShowAll(true)}>
-                  💎 Barcha buyurtmalarni ko'rish ({premiumOrders.length} ta)
-                </button>
-              )}
-
-              {premiumShowAll && premiumOrders.length > 20 && (
-                <button className="show-all-btn" onClick={() => setPremiumShowAll(false)}>
-                  🔼 Faqat oxirgi 20 tani ko'rish
+              {/* 📄 Yana 8 ta */}
+              {premiumOrders.length < premiumTotal && (
+                <button
+                  className="show-all-btn"
+                  disabled={premiumLoadingMore}
+                  onClick={() =>
+                    fetchPremiumOrders({
+                      append: true,
+                      offset: premiumOrders.length,
+                    })
+                  }
+                >
+                  {premiumLoadingMore
+                    ? "⏳ Yuklanmoqda..."
+                    : `💎 Yana ${Math.min(
+                        LOAD_STEP,
+                        premiumTotal - premiumOrders.length
+                      )} ta yuklash (${premiumOrders.length}/${premiumTotal})`}
                 </button>
               )}
             </div>
