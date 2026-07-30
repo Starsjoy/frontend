@@ -35,7 +35,7 @@ const formatAmount = (num) =>
 // ================== COMPONENT ==================
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { t, language, setLanguage, onboardingCompleted } = useTranslation();
+  const { t, language, setLanguage, onboardingCompleted, bonusAdShown, markBonusAdShown } = useTranslation();
   const { startTour, tourActive } = useOnboarding();
 
   /* ================= USER ================= */
@@ -331,21 +331,22 @@ export default function Dashboard() {
   }, [splashVisible, startTour, onboardingCompleted]);
 
   /* ================= BONUS AVTO-OCHILISH =================
-     Splash tugagach 3 soniyadan keyin, sessiyada bir marta.
+     Splash tugagach 3 soniyadan keyin, YANGI userga FAQAT BIR MARTA (bazada saqlanadi —
+     spmBonusAutoShown kabi sessionStorage emas, keyingi kirishda ham qayta ko'rsatilmaydi).
      Tur bilan bir vaqtda chiqmasligi uchun faqat tur tugagach ochiladi.
      Hamma missiya olingan bo'lsa umuman ochilmaydi. */
   useEffect(() => {
     if (splashVisible || tab !== "home" || tourActive) return;
     if (!onboardingCompleted) return;
+    if (bonusAdShown) return;
     if (localStorage.getItem("spmAllMissionsDone") === "1") return;
-    if (sessionStorage.getItem("spmBonusAutoShown") === "1") return;
 
     const timer = setTimeout(() => {
-      sessionStorage.setItem("spmBonusAutoShown", "1");
+      markBonusAdShown();
       setShowBonus(true);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [splashVisible, tab, tourActive, onboardingCompleted]);
+  }, [splashVisible, tab, tourActive, onboardingCompleted, bonusAdShown, markBonusAdShown]);
 
   /* ================= UI ================= */
 

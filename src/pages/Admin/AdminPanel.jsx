@@ -86,9 +86,10 @@ export default function AdminPanel() {
   // Telegram user admin ekanligini tekshirish
   useEffect(() => {
     try {
-      // Backend admin endpointga test so'rov yuborish
-      // Development da initData bo'lmasa ham backend o'tkazadi
-      apiFetch("/api/admin/users")
+      // ⚡ Yengil ping — DB'ga tegmaydi. Avval /api/admin/users edi, bu esa
+      // panel ochilishidan OLDIN butun users jadvalini skanerlab, qotishga
+      // sabab bo'lardi.
+      apiFetch("/api/admin/ping")
         .then(res => {
           if (res.ok) {
             setIsAuthenticated(true);
@@ -271,6 +272,9 @@ export default function AdminPanel() {
   const [walletBalance, setWalletBalance] = useState({ mainnet: 0, testnet: 0 });
   const [starPrices, setStarPrices] = useState({ priceFor50: 0, pricePerStar: 0, currency: "TON", availableStars: 0 });
   const [walletLoading, setWalletLoading] = useState(false);
+  // Analitika tabidagi og'ir bo'limlar — faqat tugma bosilganda yuklanadi
+  const [walletLoaded, setWalletLoaded] = useState(false);
+  const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
   const [botStarsBalance, setBotStarsBalance] = useState(0);
   const [userbotRefillEnabled, setUserbotRefillEnabled] = useState(true);
   const [userbotRefillMin, setUserbotRefillMin] = useState(200);
@@ -303,6 +307,10 @@ export default function AdminPanel() {
   const [referralRequests, setReferralRequests] = useState([]);
   const [referralFilter, setReferralFilter] = useState("pending");
   const [referralLoading, setReferralLoading] = useState(false);
+  const [referralTotal, setReferralTotal] = useState(0);
+  const [referralLoadingMore, setReferralLoadingMore] = useState(false);
+  // Yengil hisoblagich (badge/filter tugmalari uchun) — to'liq ro'yxatni tortmaydi
+  const [referralCounts, setReferralCounts] = useState({ pending: 0, accepted: 0, rejected: 0, total: 0 });
   const [rejectReason, setRejectReason] = useState("");
   const [rejectingId, setRejectingId] = useState(null);
 
@@ -331,7 +339,9 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchAdminSettings();
-    fetchReferralRequests("all");
+    // ⚡ To'liq ro'yxat emas — faqat badge uchun sonlar (yengil COUNT so'rovi).
+    // To'liq ro'yxat referrals tab ochilganda paginatsiya bilan yuklanadi.
+    fetchReferralCounts();
   }, [isAuthenticated]);
 
   const toggleMaintenance = async () => {
@@ -352,6 +362,7 @@ export default function AdminPanel() {
 
   // ========== WALLET & PRICES FUNCTION ==========
   const fetchWalletAndPrices = async () => {
+    setWalletLoaded(true);
     setWalletLoading(true);
     try {
       // Parallel fetch wallet info and bot stars balance
@@ -522,13 +533,9 @@ export default function AdminPanel() {
     }
   }, [isAuthenticated]);
 
-  // Fetch wallet when analytics tab is active
-  useEffect(() => {
-    if (activeTab === "analytics" && isAuthenticated) {
-      fetchWalletAndPrices();
-      fetchGrowth();
-    }
-  }, [activeTab, isAuthenticated]);
+  // ⚡ Analitika tabi ochilganda ENDI hech narsa avtomatik yuklanmaydi — balans,
+  // savdo statistikasi va foydalanuvchi o'sishi og'ir/tashqi so'rovlar bo'lgani uchun
+  // har biri o'z tugmasi bosilgandagina (pastda, JSX'da) chaqiriladi.
 
   // ========== FOYDALANUVCHI O'SISHI + BONUS ANALITIKASI ==========
   const fetchGrowth = async () => {
@@ -547,153 +554,20 @@ export default function AdminPanel() {
     }
   };
 
-  // ========== ANALYTICS FUNCTION ==========
+  // ========== SAVDO STATISTIKASI (backendda SQL bilan agregatsiya qilinadi) ==========
+  // Avval bu funksiya /api/transactions/all + /api/admin/premium/list + /api/admin/gift/list
+  // ni PARAMETRSIZ (ya'ni cheksiz) chaqirib, butun jadvallarni frontendga tortib, JS'da
+  // hisoblardi — eng og'ir so'rov shu edi. Endi bitta yengil, tayyor agregatsiya keladi.
   const fetchAnalytics = async () => {
     if (!isAuthenticated) return;
+    setAnalyticsLoaded(true);
     setAnalyticsLoading(true);
     try {
-      // Get date range based on period
-      const now = new Date();
-      let startDate = null;
-      
-      if (analyticsPeriod === "day") {
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      } else if (analyticsPeriod === "week") {
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      } else if (analyticsPeriod === "month") {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      }
-
-      // Fetch all data
-      const [starsRes, premiumRes, giftRes] = await Promise.all([
-        apiFetch("/api/transactions/all"),
-        apiFetch("/api/admin/premium/list"),
-        apiFetch("/api/admin/gift/list")
-      ]);
-
-      const starsData = await starsRes.json();
-      const premiumJson = await premiumRes.json();
-      const giftJson = await giftRes.json();
-
-      // Extract arrays (stars is direct array, premium/gift have .orders)
-      const premiumData = premiumJson.orders || [];
-      const giftData = giftJson.orders || [];
-
-      // Filter by date and completed status (stars_sent, premium_sent, gift_sent, completed)
-      const filterByDate = (items, dateField = "created_at") => {
-        if (!startDate) return items;
-        return items.filter(item => new Date(item[dateField]) >= startDate);
-      };
-
-      // Stars: stars_sent yoki completed
-      const filteredStars = filterByDate(starsData).filter(tx => 
-        tx.status === "stars_sent" || tx.status === "completed"
-      );
-      // Premium: premium_sent, completed yoki delivered
-      const filteredPremium = filterByDate(premiumData).filter(tx => 
-        tx.status === "premium_sent" || tx.status === "completed" || tx.status === "delivered"
-      );
-      // Gift: gift_sent yoki completed
-      const filteredGift = filterByDate(giftData).filter(tx => 
-        tx.status === "gift_sent" || tx.status === "completed"
-      );
-
-      // Calculate analytics
-      const starsStats = {
-        count: filteredStars.length,
-        totalStars: filteredStars.reduce((sum, tx) => sum + (tx.stars || 0), 0),
-        totalAmount: filteredStars.reduce((sum, tx) => sum + (tx.amount || 0), 0)
-      };
-
-      const premiumStats = {
-        count: filteredPremium.length,
-        totalAmount: filteredPremium.reduce((sum, tx) => sum + (tx.amount || 0), 0)
-      };
-
-      const giftStats = {
-        count: filteredGift.length,
-        totalStars: filteredGift.reduce((sum, tx) => sum + (tx.stars || 0), 0),
-        totalAmount: filteredGift.reduce((sum, tx) => sum + (tx.amount || 0), 0)
-      };
-
-      setAnalyticsData({
-        stars: starsStats,
-        premium: premiumStats,
-        gift: giftStats,
-        total: {
-          count: starsStats.count + premiumStats.count + giftStats.count,
-          totalAmount: starsStats.totalAmount + premiumStats.totalAmount + giftStats.totalAmount
-        }
-      });
-
-      // Calculate daily breakdown from all completed transactions
-      const successStatuses = ["stars_sent", "premium_sent", "gift_sent", "completed", "delivered", "accepted"];
-      const completedStars = starsData.filter(tx => successStatuses.includes(tx.status));
-      const completedPremium = premiumData.filter(tx => successStatuses.includes(tx.status));
-      const completedGift = giftData.filter(tx => successStatuses.includes(tx.status));
-      
-      const allCompleted = [...completedStars, ...completedPremium, ...completedGift];
-      
-      const dailyMap = {};
-      const today = new Date();
-      today.setHours(23,59,59,999);
-      
-      let oldestDate = new Date();
-      if (allCompleted.length > 0) {
-        oldestDate = new Date(Math.min(...allCompleted.map(tx => new Date(tx.created_at).getTime())));
-      } else {
-        // Default to a month ago if no data
-        oldestDate.setMonth(oldestDate.getMonth() - 1);
-      }
-      oldestDate.setHours(0,0,0,0);
-
-      // Generate daily keys from oldestDate to today
-      const curr = new Date(oldestDate);
-      while (curr <= today) {
-        const key = curr.toISOString().split('T')[0];
-        dailyMap[key] = { 
-          date: key, 
-          amount: 0, 
-          count: 0,
-          stars: 0, 
-          stars_amount: 0,
-          stars_count: 0,
-          premium_amount: 0,
-          premium_count: 0,
-          gift_amount: 0,
-          gift_count: 0
-        };
-        curr.setDate(curr.getDate() + 1);
-      }
-
-      // Aggregate all transactions by day
-      const aggregateToDaily = (transactions, category) => {
-        transactions.forEach(tx => {
-          const txDate = new Date(tx.created_at).toISOString().split('T')[0];
-          if (dailyMap[txDate]) {
-            dailyMap[txDate].amount += tx.amount || 0;
-            dailyMap[txDate].count += 1;
-            
-            if (category === "stars") {
-              dailyMap[txDate].stars += tx.stars || 0;
-              dailyMap[txDate].stars_amount += tx.amount || 0;
-              dailyMap[txDate].stars_count += 1;
-            } else if (category === "premium") {
-              dailyMap[txDate].premium_amount += tx.amount || 0;
-              dailyMap[txDate].premium_count += 1;
-            } else if (category === "gift") {
-              dailyMap[txDate].gift_amount += tx.amount || 0;
-              dailyMap[txDate].gift_count += 1;
-            }
-          }
-        });
-      };
-
-      aggregateToDaily(completedStars, "stars");
-      aggregateToDaily(completedPremium, "premium");
-      aggregateToDaily(completedGift, "gift");
-
-      setDailyStats(Object.values(dailyMap));
+      const res = await apiFetch(`/api/admin/analytics/sales?period=${analyticsPeriod}&days=30`);
+      const d = await res.json();
+      if (!res.ok || !d.success) throw new Error(d.error || "sales analytics error");
+      setAnalyticsData({ stars: d.stars, premium: d.premium, gift: d.gift, total: d.total });
+      setDailyStats(d.daily);
     } catch (err) {
       console.error("❌ Analytics fetch error:", err);
     } finally {
@@ -701,12 +575,11 @@ export default function AdminPanel() {
     }
   };
 
-  // Fetch analytics when period changes
+  // Period chip bosilganda — FAQAT bo'lim allaqachon ochilgan bo'lsa qayta yuklaydi
+  // (yopiq holatda period o'zgarishi mumkin emas, chunki chiplar shu holatda ko'rinmaydi).
   useEffect(() => {
-    if (activeTab === "analytics" && isAuthenticated) {
-      fetchAnalytics();
-    }
-  }, [analyticsPeriod, activeTab, isAuthenticated]);
+    if (analyticsLoaded) fetchAnalytics();
+  }, [analyticsPeriod]);
 
   useEffect(() => {
     if (isAuthenticated && activeTab === "settings") {
@@ -1085,16 +958,37 @@ export default function AdminPanel() {
   };
 
   // Fetch referral requests
-  const fetchReferralRequests = async (filter = "pending") => {
-    setReferralLoading(true);
+  const fetchReferralRequests = async (filter = referralFilter, { append = false, offset = 0 } = {}) => {
+    if (!isAuthenticated) return;
+    return queued("admin:referrals", async () => {
+      if (append) setReferralLoadingMore(true);
+      else setReferralLoading(true);
+      try {
+        const res = await apiFetch(
+          `/api/admin/referral-requests?filter=${filter}&limit=${LOAD_STEP}&offset=${offset}`
+        );
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : data.requests || [];
+        setReferralRequests((prev) => (append ? [...prev, ...list] : list));
+        if (typeof data.total === "number") setReferralTotal(data.total);
+      } catch (err) {
+        console.error("❌ Fetch referral requests error:", err);
+      } finally {
+        if (append) setReferralLoadingMore(false);
+        else setReferralLoading(false);
+      }
+    });
+  };
+
+  // ⚡ Yengil hisoblagich — badge/filter tugmalari uchun, to'liq ro'yxatni tortmaydi
+  const fetchReferralCounts = async () => {
+    if (!isAuthenticated) return;
     try {
-      const res = await apiFetch(`/api/admin/referral-requests?filter=${filter}`);
+      const res = await apiFetch("/api/admin/referral-requests/counts");
       const data = await res.json();
-      setReferralRequests(data);
+      if (data.success) setReferralCounts(data);
     } catch (err) {
-      console.error("❌ Fetch referral requests error:", err);
-    } finally {
-      setReferralLoading(false);
+      console.error("❌ Fetch referral counts error:", err);
     }
   };
 
@@ -1109,6 +1003,7 @@ export default function AdminPanel() {
       if (res.ok) {
         alert("✅ Referral tasdiqlandi!");
         fetchReferralRequests(referralFilter);
+        fetchReferralCounts();
       } else {
         alert("❌ Xato yuz berdi!");
       }
@@ -1132,6 +1027,7 @@ export default function AdminPanel() {
       if (res.ok) {
         alert("✅ Referral rad etildi!");
         fetchReferralRequests(referralFilter);
+        fetchReferralCounts();
       } else {
         alert("❌ Xato yuz berdi!");
       }
@@ -1289,7 +1185,7 @@ export default function AdminPanel() {
     } else if (activeTab === "settings") {
       fetchDiscountPackages();
     } else if (activeTab === "referrals") {
-      fetchReferralRequests("pending");
+      fetchReferralRequests(referralFilter);
     } else if (activeTab === "notifications") {
       fetchNotifications();
     } else if (activeTab === "promocodes") {
@@ -1955,11 +1851,15 @@ export default function AdminPanel() {
                 else if (activeTab === "premium") fetchPremiumOrders();
                 else if (activeTab === "gift") fetchGiftOrders();
                 else if (activeTab === "settings") fetchDiscountPackages();
-                else if (activeTab === "referrals") fetchReferralRequests(referralFilter);
+                else if (activeTab === "referrals") {
+                  fetchReferralRequests(referralFilter);
+                  fetchReferralCounts();
+                }
                 else if (activeTab === "analytics") {
-                  fetchAnalytics();
-                  fetchGrowth();
-                  fetchWalletAndPrices();
+                  // Faqat ochiq bo'limlarni yangilaydi — yopiq bo'limni majburan yuklamaydi
+                  if (analyticsLoaded) fetchAnalytics();
+                  if (growth) fetchGrowth();
+                  if (walletLoaded) fetchWalletAndPrices();
                 }
               }}
             >
@@ -1973,10 +1873,8 @@ export default function AdminPanel() {
               aria-label="Referral"
             >
               🔔
-              {referralRequests.filter((r) => !r.is_accepted && !r.rejected_at).length > 0 && (
-                <span className="hdr-badge">
-                  {referralRequests.filter((r) => !r.is_accepted && !r.rejected_at).length}
-                </span>
+              {referralCounts.pending > 0 && (
+                <span className="hdr-badge">{referralCounts.pending}</span>
               )}
             </button>
           </div>
@@ -2200,132 +2098,191 @@ export default function AdminPanel() {
       {/* ==================== ANALYTICS TAB ==================== */}
       {activeTab === "analytics" && (
         <div className="tab-content analytics-list">
-          <div className="paymee-balance-hero">
-            <span className="paymee-balance-hero-label">💳 Paymee API balansi</span>
-            <span className="paymee-balance-hero-value">
-              {walletLoading
-                ? "..."
-                : !paymeeWallet.configured
-                  ? "— (API sozlanmagan)"
-                  : paymeeWallet.error
-                    ? paymeeWallet.error
-                    : `${Number(paymeeWallet.balanceUsdt).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })} ${paymeeWallet.currency}`}
-            </span>
-            {!walletLoading && paymeeWallet.configured && !paymeeWallet.error && paymeeWallet.usdtPerStar > 0 && (
-              <span className="paymee-balance-hero-sub">
-                ≈ {getAvailableStars().toLocaleString()} stars (
-                {paymeeWallet.balanceUsdt} ÷ {paymeeWallet.usdtPerStar} USDT)
-              </span>
-            )}
-          </div>
-
-          {/* Period Filter */}
-          <div className="period-row">
-            {["day", "week", "month", "all"].map(p => (
-              <button 
-                key={p}
-                className={`period-chip ${analyticsPeriod === p ? "active" : ""}`}
-                onClick={() => setAnalyticsPeriod(p)}
-              >
-                {p === "day" ? "Kun" : p === "week" ? "Hafta" : p === "month" ? "Oy" : "Barchasi"}
-              </button>
-            ))}
-          </div>
-
-          {/* Wallet Info List */}
-          <div className="info-list wallet-list">
-            <div className="info-row">
-              <span className="info-label">⭐ Mavjud stars (Paymee):</span>
-              <span className="info-value gold">
-                {walletLoading
-                  ? "..."
-                  : !paymeeWallet.configured
-                    ? "—"
-                    : paymeeWallet.error
-                      ? "—"
-                      : getAvailableStars().toLocaleString()}
-              </span>
-            </div>
-            <div className="info-row info-row--userbot-refill">
-              <div className="userbot-refill-main">
-                <span className="info-label">⭐ Userbot balansi:</span>
-                <span className="info-value gold">
-                  {walletLoading ? "..." : `${botStarsBalance.toLocaleString()} ⭐`}
-                  {!walletLoading && botStarsBalance < userbotRefillMin && (
-                    <span className="userbot-refill-warn"> (min {userbotRefillMin})</span>
-                  )}
+          {/* ================= 💰 BALANS (Paymee/Robyn/Userbot — 5-6 tashqi so'rov) =================
+              Faqat tugma bosilganda yuklanadi — login/tab-open'da avtomatik chaqirilmaydi. */}
+          {!walletLoaded ? (
+            <button className="show-all-btn" onClick={fetchWalletAndPrices}>
+              💰 Balansni ko'rsatish
+            </button>
+          ) : (
+            <>
+              <div className="paymee-balance-hero">
+                <span className="paymee-balance-hero-label">💳 Paymee API balansi</span>
+                <span className="paymee-balance-hero-value">
+                  {walletLoading
+                    ? "..."
+                    : !paymeeWallet.configured
+                      ? "— (API sozlanmagan)"
+                      : paymeeWallet.error
+                        ? paymeeWallet.error
+                        : `${Number(paymeeWallet.balanceUsdt).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })} ${paymeeWallet.currency}`}
                 </span>
-              </div>
-              <div
-                className={`site-mini site-mini--compact userbot-refill-toggle ${userbotRefillEnabled ? "on" : "off"}`}
-                title="Balans past bo'lsa Paymee orqali avto to'ldirish"
-              >
-                <span className="site-dot" />
-                <span className="site-txt">Avto {userbotRefillEnabled ? "ON" : "OFF"}</span>
+                {!walletLoading && paymeeWallet.configured && !paymeeWallet.error && paymeeWallet.usdtPerStar > 0 && (
+                  <span className="paymee-balance-hero-sub">
+                    ≈ {getAvailableStars().toLocaleString()} stars (
+                    {paymeeWallet.balanceUsdt} ÷ {paymeeWallet.usdtPerStar} USDT)
+                  </span>
+                )}
                 <button
                   type="button"
-                  className="site-toggle"
-                  disabled={userbotRefillToggleLoading || walletLoading}
-                  onClick={toggleUserbotRefill}
-                  aria-label="Userbot avto to'ldirish"
+                  className="analytics-section-refresh"
+                  onClick={fetchWalletAndPrices}
+                  disabled={walletLoading}
+                  aria-label="Balansni yangilash"
                 >
-                  <span className={`toggle-track ${userbotRefillEnabled ? "active" : ""}`}>
-                    <span className="toggle-thumb" />
-                  </span>
+                  🔄
                 </button>
               </div>
-            </div>
-          </div>
 
-          {/* Sales Stats List */}
-          {analyticsLoading ? (
-            <div className="analytics-loading-v2">⏳ Yuklanmoqda...</div>
-          ) : (
-            <div className="info-list sales-list">
-              <div className="info-row total-row">
-                <span className="info-label">📈 Jami savdo:</span>
-                <span className="info-value">
-                  <b>{analyticsData.total.count}</b> ta &nbsp;·&nbsp; <b>{analyticsData.total.totalAmount.toLocaleString()}</b> so'm
-                </span>
+              {/* Wallet Info List */}
+              <div className="info-list wallet-list">
+                <div className="info-row">
+                  <span className="info-label">⭐ Mavjud stars (Paymee):</span>
+                  <span className="info-value gold">
+                    {walletLoading
+                      ? "..."
+                      : !paymeeWallet.configured
+                        ? "—"
+                        : paymeeWallet.error
+                          ? "—"
+                          : getAvailableStars().toLocaleString()}
+                  </span>
+                </div>
+                <div className="info-row info-row--userbot-refill">
+                  <div className="userbot-refill-main">
+                    <span className="info-label">⭐ Userbot balansi:</span>
+                    <span className="info-value gold">
+                      {walletLoading ? "..." : `${botStarsBalance.toLocaleString()} ⭐`}
+                      {!walletLoading && botStarsBalance < userbotRefillMin && (
+                        <span className="userbot-refill-warn"> (min {userbotRefillMin})</span>
+                      )}
+                    </span>
+                  </div>
+                  <div
+                    className={`site-mini site-mini--compact userbot-refill-toggle ${userbotRefillEnabled ? "on" : "off"}`}
+                    title="Balans past bo'lsa Paymee orqali avto to'ldirish"
+                  >
+                    <span className="site-dot" />
+                    <span className="site-txt">Avto {userbotRefillEnabled ? "ON" : "OFF"}</span>
+                    <button
+                      type="button"
+                      className="site-toggle"
+                      disabled={userbotRefillToggleLoading || walletLoading}
+                      onClick={toggleUserbotRefill}
+                      aria-label="Userbot avto to'ldirish"
+                    >
+                      <span className={`toggle-track ${userbotRefillEnabled ? "active" : ""}`}>
+                        <span className="toggle-thumb" />
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="info-row">
-                <span className="info-label">⭐ Stars:</span>
-                <span className="info-value">
-                  {analyticsData.stars.count} ta &nbsp;·&nbsp; {analyticsData.stars.totalStars.toLocaleString()} stars &nbsp;·&nbsp; {analyticsData.stars.totalAmount.toLocaleString()} so'm
-                </span>
-              </div>
-              <div className="info-row">
-                <span className="info-label">💎 Premium:</span>
-                <span className="info-value">
-                  {analyticsData.premium.count} ta &nbsp;·&nbsp; {analyticsData.premium.totalAmount.toLocaleString()} so'm
-                </span>
-              </div>
-              <div className="info-row">
-                <span className="info-label">🎁 Gift:</span>
-                <span className="info-value">
-                  {analyticsData.gift.count} ta &nbsp;·&nbsp; {analyticsData.gift.totalStars.toLocaleString()} stars &nbsp;·&nbsp; {analyticsData.gift.totalAmount.toLocaleString()} so'm
-                </span>
-              </div>
-            </div>
+            </>
           )}
 
-          {/* ===== Foydalanuvchilar o'sishi ===== */}
+          {/* ================= 📈 SAVDO STATISTIKASI (og'ir agregatsiya) =================
+              Faqat tugma bosilganda yuklanadi. Davr chiplari faqat bo'lim ochilgach ko'rinadi
+              va bosilganda backendda arzon SQL bilan qayta hisoblanadi. */}
+          {!analyticsLoaded ? (
+            <button className="show-all-btn" onClick={fetchAnalytics}>
+              📈 Savdo statistikasini ko'rsatish
+            </button>
+          ) : (
+            <>
+              <div className="period-row">
+                {["day", "week", "month", "all"].map(p => (
+                  <button
+                    key={p}
+                    className={`period-chip ${analyticsPeriod === p ? "active" : ""}`}
+                    onClick={() => setAnalyticsPeriod(p)}
+                  >
+                    {p === "day" ? "Kun" : p === "week" ? "Hafta" : p === "month" ? "Oy" : "Barchasi"}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="analytics-section-refresh"
+                  onClick={fetchAnalytics}
+                  disabled={analyticsLoading}
+                  aria-label="Savdo statistikasini yangilash"
+                >
+                  🔄
+                </button>
+              </div>
+
+              {analyticsLoading ? (
+                <div className="analytics-loading-v2">⏳ Yuklanmoqda...</div>
+              ) : (
+                <div className="info-list sales-list">
+                  <div className="info-row total-row">
+                    <span className="info-label">📈 Jami savdo:</span>
+                    <span className="info-value">
+                      <b>{analyticsData.total.count}</b> ta &nbsp;·&nbsp; <b>{analyticsData.total.totalAmount.toLocaleString()}</b> so'm
+                    </span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">⭐ Stars:</span>
+                    <span className="info-value">
+                      {analyticsData.stars.count} ta &nbsp;·&nbsp; {analyticsData.stars.totalStars.toLocaleString()} stars &nbsp;·&nbsp; {analyticsData.stars.totalAmount.toLocaleString()} so'm
+                    </span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">💎 Premium:</span>
+                    <span className="info-value">
+                      {analyticsData.premium.count} ta &nbsp;·&nbsp; {analyticsData.premium.totalAmount.toLocaleString()} so'm
+                    </span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">🎁 Gift:</span>
+                    <span className="info-value">
+                      {analyticsData.gift.count} ta &nbsp;·&nbsp; {analyticsData.gift.totalStars.toLocaleString()} stars &nbsp;·&nbsp; {analyticsData.gift.totalAmount.toLocaleString()} so'm
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Daily Stats — backend allaqachon so'nggi 30 kun bilan cheklaydi */}
+              <div className="info-list daily-list">
+                <div className="list-title">📅 Kunlik statistika</div>
+                {[...dailyStats].reverse().map((day, i) => (
+                  <div key={i} className={`info-row ${day.count > 0 ? 'has-data' : 'no-data'}`}>
+                    <span className="info-label">{new Date(day.date).toLocaleDateString('uz-UZ', {day: '2-digit', month: 'short'})}</span>
+                    <span className="info-value">
+                      {day.count} ta &nbsp;·&nbsp; {day.amount.toLocaleString()} so'm
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ================= 👥 FOYDALANUVCHILAR O'SISHI + 🎯 BONUS MISSIYA =================
+              Faqat tugma bosilganda yuklanadi (SQL agregatsiya yengil, lekin baribir
+              admin so'ramagan ma'lumotni avtomatik tortmaymiz). */}
           {growthLoading ? (
             <div className="analytics-loading-v2">⏳ Foydalanuvchi analitikasi yuklanmoqda...</div>
           ) : !growth ? (
-            <div className="info-list">
-              <div className="list-title">👥 Foydalanuvchilar</div>
-              <div className="info-row no-data">
-                <span className="info-label">Ma'lumot yuklanmadi</span>
-              </div>
-            </div>
+            <button className="show-all-btn" onClick={fetchGrowth}>
+              👥 Foydalanuvchi statistikasini ko'rsatish
+            </button>
           ) : (
             <>
               <div className="info-list users-growth-list">
-                <div className="list-title">👥 Yangi foydalanuvchilar</div>
+                <div className="list-title">
+                  👥 Yangi foydalanuvchilar
+                  <button
+                    type="button"
+                    className="analytics-section-refresh"
+                    onClick={fetchGrowth}
+                    aria-label="Foydalanuvchi statistikasini yangilash"
+                  >
+                    🔄
+                  </button>
+                </div>
                 {[
                   ["Bugun", "day"],
                   ["7 kun", "week"],
@@ -2397,24 +2354,6 @@ export default function AdminPanel() {
               </div>
             </>
           )}
-
-          {/* Daily Stats */}
-          <div className="info-list daily-list">
-            <div className="list-title">📅 Kunlik statistika</div>
-            {[...dailyStats].reverse().map((day, i) => {
-              const currentAmount = day.amount;
-              const currentCount = day.count;
-              
-              return (
-                <div key={i} className={`info-row ${currentCount > 0 ? 'has-data' : 'no-data'}`}>
-                  <span className="info-label">{new Date(day.date).toLocaleDateString('uz-UZ', {day: '2-digit', month: 'short'})}</span>
-                  <span className="info-value">
-                    {currentCount} ta &nbsp;·&nbsp; {currentAmount.toLocaleString()} so'm
-                  </span>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 
@@ -3710,10 +3649,7 @@ export default function AdminPanel() {
             {['pending', 'accepted', 'rejected', 'all'].map(f => (
               <button
                 key={f}
-                onClick={() => {
-                  setReferralFilter(f);
-                  fetchReferralRequests(f);
-                }}
+                onClick={() => setReferralFilter(f)}
                 style={{
                   padding: '10px 14px',
                   borderRadius: '8px',
@@ -3727,10 +3663,10 @@ export default function AdminPanel() {
                   fontFamily: 'monospace'
                 }}
               >
-                {f === 'pending' ? `pending: ${referralRequests.filter(r => !r.is_accepted && !r.rejected_at).length}` : 
-                 f === 'accepted' ? `accept: ${referralRequests.filter(r => r.is_accepted).length}` :
-                 f === 'rejected' ? `refuse: ${referralRequests.filter(r => r.rejected_at).length}` :
-                 `all: ${referralRequests.length}`}
+                {f === 'pending' ? `pending: ${referralCounts.pending}` :
+                 f === 'accepted' ? `accept: ${referralCounts.accepted}` :
+                 f === 'rejected' ? `refuse: ${referralCounts.rejected}` :
+                 `all: ${referralCounts.total}`}
               </button>
             ))}
           </div>
@@ -3842,6 +3778,24 @@ export default function AdminPanel() {
               ))
             )}
           </div>
+
+          {/* 📄 Yana 8 ta — backenddan qo'shimcha yuklaydi */}
+          {referralRequests.length < referralTotal && (
+            <button
+              className="show-all-btn"
+              disabled={referralLoadingMore}
+              onClick={() =>
+                fetchReferralRequests(referralFilter, { append: true, offset: referralRequests.length })
+              }
+            >
+              {referralLoadingMore
+                ? "⏳ Yuklanmoqda..."
+                : `📋 Yana ${Math.min(
+                    LOAD_STEP,
+                    referralTotal - referralRequests.length
+                  )} ta yuklash (${referralRequests.length}/${referralTotal})`}
+            </button>
+          )}
         </div>
       )}
 
@@ -4129,12 +4083,9 @@ export default function AdminPanel() {
           >
             <span className="bottom-nav-icon">{item.icon}</span>
             <span className="bottom-nav-label">{item.label}</span>
-            {item.id === "referrals" &&
-              referralRequests.filter((r) => !r.is_accepted && !r.rejected_at).length > 0 && (
-                <span className="bottom-nav-badge">
-                  {referralRequests.filter((r) => !r.is_accepted && !r.rejected_at).length}
-                </span>
-              )}
+            {item.id === "referrals" && referralCounts.pending > 0 && (
+              <span className="bottom-nav-badge">{referralCounts.pending}</span>
+            )}
           </button>
         ))}
       </nav>

@@ -39,7 +39,7 @@ const GIFTS_RAW = [
 ];
 
 // Narxlar (so'mda) - Backend bilan sinxronlashtirilgan
-const PRICE_MAP = { 15: 5000, 25: 7000, 50: 13000, 100: 24000 };
+const PRICE_MAP = { 15: 5000, 25: 7000, 50: 13000, 100: 25000 };
 
 /** Qimmatdan arzoniga (narxi bo'yicha kamayish) */
 const GIFTS = [...GIFTS_RAW].sort((a, b) => {

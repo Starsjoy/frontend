@@ -23,6 +23,9 @@ export function LanguageProvider({ children }) {
   const [onboardingCompleted, setOnboardingCompleted] = useState(() =>
     localStorage.getItem("spm_tour_done") === "1"
   );
+  const [bonusAdShown, setBonusAdShown] = useState(() =>
+    localStorage.getItem("spmBonusAdShown") === "1"
+  );
   const [prefsLoading, setPrefsLoading] = useState(false);
 
   useEffect(() => {
@@ -55,6 +58,14 @@ export function LanguageProvider({ children }) {
             localStorage.setItem("spm_tour_done", "1");
           } else {
             localStorage.removeItem("spm_tour_done");
+          }
+
+          const adShown = Boolean(data.bonus_ad_shown);
+          setBonusAdShown(adShown);
+          if (adShown) {
+            localStorage.setItem("spmBonusAdShown", "1");
+          } else {
+            localStorage.removeItem("spmBonusAdShown");
           }
         }
       } catch {
@@ -108,6 +119,18 @@ export function LanguageProvider({ children }) {
     }
   }, []);
 
+  // Bonus missiya reklamasi (BonusModal avto-ochilishi) — bazada bir marta belgilanadi,
+  // shuning uchun yangi userga faqat BIR marta ko'rsatiladi, keyingi kirishlarda ko'rsatilmaydi.
+  const markBonusAdShown = useCallback(async () => {
+    setBonusAdShown(true);
+    localStorage.setItem("spmBonusAdShown", "1");
+    try {
+      await apiFetch("/api/user/bonus-ad-shown", { method: "POST" });
+    } catch (err) {
+      console.error("Bonus ad save error:", err);
+    }
+  }, []);
+
   return (
     <LanguageContext.Provider
       value={{
@@ -117,6 +140,8 @@ export function LanguageProvider({ children }) {
         markLanguageChosen,
         onboardingCompleted,
         markOnboardingComplete,
+        bonusAdShown,
+        markBonusAdShown,
       }}
     >
       {children}
@@ -132,6 +157,8 @@ export function useTranslation() {
     markLanguageChosen,
     onboardingCompleted,
     markOnboardingComplete,
+    bonusAdShown,
+    markBonusAdShown,
   } = useContext(LanguageContext);
 
   const t = (key) => {
@@ -182,5 +209,7 @@ export function useTranslation() {
     markLanguageChosen,
     onboardingCompleted,
     markOnboardingComplete,
+    bonusAdShown,
+    markBonusAdShown,
   };
 }

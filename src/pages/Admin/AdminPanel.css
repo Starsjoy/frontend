@@ -2181,6 +2181,7 @@ html, body {
 }
 
 .paymee-balance-hero {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2192,6 +2193,47 @@ html, body {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.12));
   border: 1px solid rgba(16, 185, 129, 0.35);
   box-shadow: 0 4px 20px rgba(16, 185, 129, 0.12);
+}
+
+/* Analitika bo'limlari ichidagi kichik "qayta yuklash" tugmasi */
+.analytics-section-refresh {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.analytics-section-refresh:hover:not(:disabled) { background: rgba(255, 255, 255, 0.16); }
+.analytics-section-refresh:active:not(:disabled) { transform: scale(0.9) rotate(45deg); }
+.analytics-section-refresh:disabled { opacity: 0.4; cursor: default; }
+
+/* period-row ichida inline (absolute emas) — chiplar bilan bir qatorda */
+.period-row {
+  position: relative;
+  padding-right: 34px;
+}
+.period-row .analytics-section-refresh {
+  position: static;
+  margin-left: auto;
+}
+
+.list-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.list-title .analytics-section-refresh {
+  position: static;
+  margin-left: auto;
 }
 
 .paymee-balance-hero-label {
