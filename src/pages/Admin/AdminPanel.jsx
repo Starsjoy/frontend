@@ -252,6 +252,8 @@ export default function AdminPanel() {
     failed: 0
   });
   const [adminSendingOrderId, setAdminSendingOrderId] = useState(null);
+  // Yuborish muvaffaqiyatli bo'lgach qisqa "✓ Yuborildi!" animatsiyasini ko'rsatish uchun
+  const [adminSendSuccessId, setAdminSendSuccessId] = useState(null);
 
   // Analytics state
   const [analyticsPeriod, setAnalyticsPeriod] = useState("all"); // day, week, month, all
@@ -1281,21 +1283,35 @@ export default function AdminPanel() {
     }
   };
 
-  const executeSendPremium = async (id) => {
+  // Stars/Premium/Gift "qayta yuborish" tugmalarining umumiy oqimi:
+  // yuborilmoqda → muvaffaqiyatli bo'lsa qisqa "✓ Yuborildi!" animatsiyasi
+  // ko'rsatiladi, SO'NG ro'yxat yangilanadi (aks holda animatsiya ko'rinmay qolardi).
+  const ADMIN_SEND_SUCCESS_FLASH_MS = 900;
+  const runAdminSend = async (id, { url, refetch, collapse }) => {
     setAdminSendingOrderId(id);
     try {
-      const res = await apiFetch(`/api/admin/premium/resend/${id}`, { method: "POST" });
+      const res = await apiFetch(url, { method: "POST" });
       const data = await res.json();
       if (data.success) {
-        alert("💎 Premium yuborildi!");
-        fetchPremiumOrders();
-        setPremiumExpandedId(null);
+        setAdminSendSuccessId(id);
+        await new Promise((resolve) => setTimeout(resolve, ADMIN_SEND_SUCCESS_FLASH_MS));
+        refetch();
+        collapse();
       } else {
         alert("❌ Xato: " + data.error);
       }
     } finally {
       setAdminSendingOrderId(null);
+      setAdminSendSuccessId(null);
     }
+  };
+
+  const executeSendPremium = async (id) => {
+    await runAdminSend(id, {
+      url: `/api/admin/premium/resend/${id}`,
+      refetch: fetchPremiumOrders,
+      collapse: () => setPremiumExpandedId(null),
+    });
   };
 
   const premiumSendConfirmMessage = (status) => {
@@ -1389,20 +1405,11 @@ export default function AdminPanel() {
   };
 
   const executeSendStars = async (id) => {
-    setAdminSendingOrderId(id);
-    try {
-      const res = await apiFetch(`/api/admin/stars/send/${id}`, { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        alert("🌟 Stars yuborildi!");
-        fetchTransactions();
-        setExpandedId(null);
-      } else {
-        alert("❌ Xato: " + data.error);
-      }
-    } finally {
-      setAdminSendingOrderId(null);
-    }
+    await runAdminSend(id, {
+      url: `/api/admin/stars/send/${id}`,
+      refetch: fetchTransactions,
+      collapse: () => setExpandedId(null),
+    });
   };
 
   const starsSendConfirmMessage = (status) => {
@@ -1453,20 +1460,11 @@ export default function AdminPanel() {
   };
 
   const executeSendGift = async (id) => {
-    setAdminSendingOrderId(id);
-    try {
-      const res = await apiFetch(`/api/admin/gift/send/${id}`, { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        alert("🎁 Gift yuborildi!");
-        fetchGiftOrders();
-        setGiftExpandedId(null);
-      } else {
-        alert("❌ Xato: " + data.error);
-      }
-    } finally {
-      setAdminSendingOrderId(null);
-    }
+    await runAdminSend(id, {
+      url: `/api/admin/gift/send/${id}`,
+      refetch: fetchGiftOrders,
+      collapse: () => setGiftExpandedId(null),
+    });
   };
 
   const giftSendConfirmMessage = (status) => {
@@ -1493,19 +1491,28 @@ export default function AdminPanel() {
 
   const renderAdminSendButton = (orderId, onSend) => {
     const sending = adminSendingOrderId === orderId;
-    const busy = adminSendingOrderId !== null;
+    const succeeded = adminSendSuccessId === orderId;
+    // adminSendingOrderId muvaffaqiyat animatsiyasi paytida ham hali o'chirilmagan
+    // bo'ladi (runAdminSend'dagi kechikish tugagach o'chadi) — shuning uchun "busy"
+    // ni FAQAT boshqa (bu tugma emas) buyurtma yuborilayotganda hisoblaymiz.
+    const busy = adminSendingOrderId !== null && adminSendingOrderId !== orderId;
     return (
       <button
         type="button"
-        className={`action-btn send${sending ? " action-btn--sending" : ""}`}
-        disabled={busy}
+        className={`action-btn send${sending ? " action-btn--sending" : ""}${succeeded ? " action-btn--success" : ""}`}
+        disabled={busy || sending || succeeded}
         onClick={(e) => {
           e.stopPropagation();
-          if (busy) return;
+          if (busy || sending || succeeded) return;
           onSend();
         }}
       >
-        {sending ? (
+        {succeeded ? (
+          <span className="action-btn-send-inner">
+            <span className="action-btn-check" aria-hidden="true">✓</span>
+            Yuborildi!
+          </span>
+        ) : sending ? (
           <span className="action-btn-send-inner">
             <span className="action-btn-spinner" aria-hidden="true" />
             Yuborilmoqda...
