@@ -16,7 +16,9 @@ import "./gift.css";
 const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
 const CARD_NAME = import.meta.env.VITE_CARD_NAME;
 
-// Gift IDlar - har bir gift fayl nomi gift ID ga mos keladi (masalan: 5170145012310081615.tgs)
+// Gift IDlar - har bir gift fayl nomi gift ID ga mos keladi (masalan: 5170145012310081615.tgs).
+// Aksariyati animatsion .tgs stiker; agar ext:"jpg" (yoki boshqa rasm kengaytmasi) ko'rsatilsa,
+// GiftVisual uni oddiy <img> sifatida ko'rsatadi (pastga qarang).
 const GIFTS_RAW = [
   { id: "5170145012310081615", stars: 15 },
   { id: "5170233102089322756", stars: 15 },
@@ -33,6 +35,7 @@ const GIFTS_RAW = [
   { id: "5893356958802511476", stars: 50 },
   { id: "5935895822435615975", stars: 50 },
   { id: "5969796561943660080", stars: 50 },
+  { id: "6046178578163303744", stars: 50, ext: "jpg" },
   { id: "5168043875654172773", stars: 100 },
   { id: "5170690322832818290", stars: 100 },
   { id: "5170521118301225164", stars: 100 },
@@ -48,9 +51,29 @@ const GIFTS = [...GIFTS_RAW].sort((a, b) => {
   return b.stars - a.stars;
 });
 
-const getGiftStickerPath = (giftId) => {
-  return new URL(`../../assets/${giftId}.tgs`, import.meta.url).href;
+const GIFT_EXT_BY_ID = new Map(GIFTS_RAW.map((g) => [g.id, g.ext || "tgs"]));
+
+const getGiftMediaPath = (giftId) => {
+  const ext = GIFT_EXT_BY_ID.get(giftId) || "tgs";
+  return new URL(`../../assets/${giftId}.${ext}`, import.meta.url).href;
 };
+
+/** .tgs bo'lsa animatsion stiker (TGSSticker), aks holda oddiy rasm sifatida ko'rsatadi. */
+function GiftVisual({ giftId, className, autoplay, loop }) {
+  if (!giftId) return null;
+  const ext = GIFT_EXT_BY_ID.get(giftId) || "tgs";
+  if (ext !== "tgs") {
+    return <img src={getGiftMediaPath(giftId)} className={className} alt="" />;
+  }
+  return (
+    <TGSSticker
+      stickerPath={getGiftMediaPath(giftId)}
+      className={className}
+      autoplay={autoplay}
+      loop={loop}
+    />
+  );
+}
 
 const MAX_COMMENT_LENGTH = 128;
 
@@ -475,8 +498,8 @@ export default function Gift() {
               onTouchStart={() => setHoveredGift(gift.id)}
               onTouchEnd={() => setTimeout(() => setHoveredGift(null), 500)}
             >
-              <TGSSticker
-                stickerPath={getGiftStickerPath(gift.id)}
+              <GiftVisual
+                giftId={gift.id}
                 className="gift-tgs-sticker"
                 autoplay={hoveredGift === gift.id || selectedGift?.id === gift.id}
                 loop={true}
@@ -551,8 +574,8 @@ export default function Gift() {
               </p>
               
               <div className="gift-bs-sticker-wrap">
-                <TGSSticker
-                  stickerPath={getGiftStickerPath(selectedGift.id)}
+                <GiftVisual
+                  giftId={selectedGift.id}
                   className="gift-bs-sticker"
                   autoplay={true}
                   loop={true}
@@ -697,8 +720,8 @@ export default function Gift() {
 
                 {/* Gift preview */}
                 <div className="gift-modal-preview">
-                  <TGSSticker
-                    stickerPath={getGiftStickerPath(selectedGift?.id)}
+                  <GiftVisual
+                    giftId={selectedGift?.id}
                     className="gift-modal-tgs"
                     autoplay={true}
                   />
@@ -771,8 +794,8 @@ export default function Gift() {
 
                 {/* Gift preview */}
                 <div className="gift-modal-preview">
-                  <TGSSticker
-                    stickerPath={getGiftStickerPath(selectedGift?.id)}
+                  <GiftVisual
+                    giftId={selectedGift?.id}
                     className="gift-modal-tgs"
                     autoplay={true}
                   />
@@ -831,8 +854,8 @@ export default function Gift() {
             {/* COMPLETED — gift yuborilmoqda */}
             {status === "completed" && (
               <div className="gift-modal-sending">
-                <TGSSticker
-                  stickerPath={getGiftStickerPath(selectedGift?.id)}
+                <GiftVisual
+                  giftId={selectedGift?.id}
                   className="gift-modal-tgs-large"
                   autoplay={true}
                 />
@@ -847,8 +870,8 @@ export default function Gift() {
             {/* GIFT_SENT — muvaffaqiyat */}
             {status === "gift_sent" && (
               <div className="gift-modal-success">
-                <TGSSticker
-                  stickerPath={getGiftStickerPath(selectedGift?.id)}
+                <GiftVisual
+                  giftId={selectedGift?.id}
                   className="gift-modal-tgs-large"
                   autoplay={true}
                 />
