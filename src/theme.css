@@ -16,20 +16,18 @@
                                   qiladigan joy. Faqat fullscreen'da > 0,
                                   aks holda 0.
    Ikkalasi ketma-ket joylashadi (bir-birining ustiga tushmaydi), shuning
-   uchun xavfsiz umumiy balandlik — ikkalasining YIG'INDISI. Qurilma
-   qismi (notch/status bar) uchun Telegram'ning --tg-safe-area-inset-*
-   o'rniga standart CSS env(safe-area-inset-*) ishlatiladi — u brauzer
-   dvigateli tomonidan BIRINCHI chizishdan boshlab, Telegram skripti
-   ishga tushishini kutmasdan mavjud (index.html'da viewport-fit=cover
-   bor); content-safe-area-inset-* (close/⋯ zonasi) uchun esa web
-   standartida ekvivalenti yo'q, faqat Telegram orqali keladi. Ikkalasi
-   ham Telegram/qurilma tashqarisida mavjud emas — fallback har doim 0px.
+   uchun xavfsiz umumiy balandlik — ikkalasining YIG'INDISI. env() EMAS —
+   standart CSS env(safe-area-inset-*) Telegram WebView'ida (ayniqsa
+   Android'da) ishonchli emas, ko'pincha doim 0 qaytaradi; aynan shu sabab
+   Telegram o'zining --tg-safe-area-inset-* o'zgaruvchisini yaratgan —
+   faqat shuni ishlatamiz. Ikkalasi ham Telegram tashqarisida mavjud emas
+   — fallback har doim 0px.
    Ishlatish: eng tepada joylashgan HAR BIR mustaqil elementga
    `padding-top: calc(<asl bo'sh joy> + var(--tg-safe-top, 0px))` kabi qo'sh
    — umumiy layout oqimidagi elementlar buni avtomatik meros olmaydi. */
 :root {
-  --tg-safe-top: calc(var(--tg-content-safe-area-inset-top, 0px) + env(safe-area-inset-top, 0px));
-  --tg-safe-bottom: calc(var(--tg-content-safe-area-inset-bottom, 0px) + env(safe-area-inset-bottom, 0px));
+  --tg-safe-top: calc(var(--tg-content-safe-area-inset-top, 0px) + var(--tg-safe-area-inset-top, 0px));
+  --tg-safe-bottom: calc(var(--tg-content-safe-area-inset-bottom, 0px) + var(--tg-safe-area-inset-bottom, 0px));
 }
 
 /* Light Mode (unused - dark only) */
