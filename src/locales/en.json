@@ -29,6 +29,7 @@
     "home": "Home",
     "referral": "Referral",
     "profile": "Profile",
+    "discount": "Discount",
     "buyStars": "Buy Stars",
     "starsDesc": "Purchase Telegram stars",
     "buyGift": "Buy Gift",
@@ -61,6 +62,7 @@
     "prizesLabel": "Prizes",
     "understood": "Got it",
     "referralBanner": "Invite friends, earn bonus",
+    "contactAdminBanner": "Contact Admin",
     "getLink": "Get Link"
   },
   "history": {
@@ -364,8 +366,9 @@
     "tapToContinue": "Tap the highlighted button",
     "typeHint": "Type",
     "doneTitle": "Nice work!",
-    "doneDesc": "You can do it all yourself now. Tap the ? button at the top if you need this again.",
+    "doneDesc": "You can do it all yourself now. Tap the Guide button at the top if you need this again.",
     "startBtn": "Get started",
+    "guideBtn": "Guide",
     "cardLabel": "Card number",
     "copyBtn": "📋 Copy",
     "copyBtnDone": "✅ Copied!",

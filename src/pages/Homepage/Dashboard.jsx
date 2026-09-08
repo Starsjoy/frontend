@@ -8,6 +8,7 @@ import {
   getStarsPurchasePath,
   getPremiumPurchasePath,
 } from "../../utils/starsPurchaseRoute";
+import { BookOpen, Headset } from "lucide-react";
 import { TGSSticker } from "../../components/TGSSticker";
 import BonusModal from "../../components/BonusModal";
 import "./Dashboard.css";
@@ -16,15 +17,12 @@ import starsGif from "../../assets/stars.gif";
 import premiumGif from "../../assets/premium_gif.gif";
 import ayiqImg from "../../assets/ayiqyurakchali.jpg";
 import actionCardSticker from "../../assets/5800655655995968830.tgs";
-import missionSticker from "../../assets/AnimatedSticker_mission.tgs";
 import tilSticker from "../../assets/AnimatedSticker_til.tgs";
 import referalSticker from "../../assets/AnimatedSticker_ref.tgs";
 import ordersIcon from "../../assets/orders_icon.png";
 import profileIcon from "../../assets/profile_icon.png";
 import menuIcon from "../../assets/main_icon.png";
-import bellsIcon from "../../assets/bells_icon.png";
 import starsjoyAvatar from "../../assets/starsjoy.jpg";
-import statsIcon from "../../assets/stats_icon.png";
 import discountIcon from "../../assets/discount_icon.png";
 
 
@@ -67,9 +65,6 @@ export default function Dashboard() {
 
   /* ================= BONUS MISSIYA ================= */
   const [showBonus, setShowBonus] = useState(false);
-
-  /* ================= NOTIFICATIONS ================= */
-  const [unreadCount, setUnreadCount] = useState(0);
 
   /* ================= CHALLENGE ================= */
   const [myTotal, setMyTotal] = useState(0);
@@ -145,6 +140,12 @@ export default function Dashboard() {
       // Telegram expand qilish
       WebApp.expand();
 
+      // Pastga scroll qilganda mini app tasodifan yopilib qolmasligi uchun
+      // (fullscreen/expanded rejimda vertikal swipe-close'ni o'chiramiz)
+      if (typeof WebApp.disableVerticalSwipes === "function") {
+        WebApp.disableVerticalSwipes();
+      }
+
       const tgUser =
         WebApp?.initDataUnsafe?.user?.username ||
         window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
@@ -213,9 +214,6 @@ export default function Dashboard() {
         setReferralBalance(json.referralStats?.referral_balance || 0);
         setReferralCount(json.referralStats?.total_referrals || 0);
 
-        // Unread notifications
-        setUnreadCount(json.unreadCount || 0);
-
         console.log(`🚀 Dashboard yuklandi: ${json.loadTime}ms`);
 
       } catch (err) {
@@ -254,6 +252,14 @@ export default function Dashboard() {
   const handleLanguageConfirm = () => {
     setLanguage(selectedLanguage);
     setShowLanguageModal(false);
+  };
+
+  const handleContactAdmin = () => {
+    try {
+      WebApp.openTelegramLink("https://t.me/StarsjoySupport");
+    } catch {
+      window.open("https://t.me/StarsjoySupport", "_blank");
+    }
   };
 
   // Smooth Navigation Handler
@@ -408,9 +414,10 @@ export default function Dashboard() {
             <button
               className="help-btn-dashboard"
               onClick={startTour}
-              title={t("onboarding.startBtn")}
+              title={t("onboarding.guideBtn")}
             >
-              ?
+              <BookOpen size={14} strokeWidth={2.5} />
+              <span>{t("onboarding.guideBtn")}</span>
             </button>
             <button
               className="bonus-btn-dashboard"
@@ -418,22 +425,7 @@ export default function Dashboard() {
               title={t("bonus.openTitle")}
               aria-label={t("bonus.openTitle")}
             >
-              <TGSSticker
-                stickerPath={missionSticker}
-                className="bonus-btn-dashboard__tgs"
-                autoplay
-                loop
-              />
-            </button>
-            <button
-              className="notification-btn-dashboard"
-              onClick={() => navigate("/notifications")}
-              title="Notifications"
-            >
-              <img src={bellsIcon} alt="notifications" className="notification-btn-img" />
-              {unreadCount > 0 && (
-                <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
-              )}
+              <span className="bonus-btn-dashboard__icon" role="img" aria-hidden="true">🎁</span>
             </button>
           </div>
         </div>
@@ -464,23 +456,18 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Referral Invite Banner */}
-          <div
-            className="referral-invite-banner"
-            onClick={() => navigate("/referral")}
-          >
-            <div className="referral-banner-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            </div>
-            <div className="referral-banner-content">
-              <div className="referral-banner-text">
-                {t("dashboard.referralBanner") || "Taklif qiling, bonus oling"}
+          {/* Secondary Actions - Support (ikkinchi darajali) */}
+          <div className="secondary-actions-row">
+            <div
+              className="secondary-action-card"
+              onClick={handleContactAdmin}
+            >
+              <div className="secondary-action-card__icon">
+                <Headset size={18} strokeWidth={2} />
               </div>
+              <span className="secondary-action-card__text">
+                {t("dashboard.contactAdminBanner") || "Admin bilan bog'lanish"}
+              </span>
             </div>
           </div>
         </div>
@@ -496,26 +483,18 @@ export default function Dashboard() {
           <div className="nav-icon">
             <img src={menuIcon} alt="Home" />
           </div>
+          <span className="nav-label">{t("dashboard.home")}</span>
         </button>
 
         <button
-          className={`nav-btn_dashboard ${tab === "history" ? "active" : ""}`}
-          onClick={() => navigate("/statistics")}
-          title={t("dashboard.statistics") || "Statistika"}
-        >
-          <div className="nav-icon">
-            <img src={statsIcon} alt="Stats" />
-          </div>
-        </button>
-
-        <button
-          className={`nav-btn_dashboard ${tab === "referral" ? "active" : ""}`}
-          onClick={() => navigate("/discount")}
-          title="Chegirma"
+          className={`nav-btn_dashboard ${tab === "discount" ? "active" : ""}`}
+          onClick={() => handleNavClick("discount")}
+          title={t("dashboard.discount")}
         >
           <div className="nav-icon">
             <img src={discountIcon} alt="Discount" />
           </div>
+          <span className="nav-label">{t("dashboard.discount")}</span>
         </button>
 
         <button
@@ -526,6 +505,7 @@ export default function Dashboard() {
           <div className="nav-icon">
             <img src={profileIcon} alt="Profile" />
           </div>
+          <span className="nav-label">{t("dashboard.profile")}</span>
         </button>
       </div>
 
@@ -563,6 +543,16 @@ export default function Dashboard() {
             src="/profile"
             className="iframe-modal_dashboard"
             title="Profile"
+          ></iframe>
+        </div>
+      )}
+
+      {tab === "discount" && (
+        <div className="overlay-modal_dashboard">
+          <iframe
+            src="/discount"
+            className="iframe-modal_dashboard"
+            title="Discount"
           ></iframe>
         </div>
       )}

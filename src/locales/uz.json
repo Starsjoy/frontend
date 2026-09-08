@@ -29,6 +29,7 @@
     "home": "Asosiy",
     "referral": "Referral",
     "profile": "Profil",
+    "discount": "Chegirma",
     "buyStars": "Stars olish",
     "starsDesc": "Telegram stars xarid qiling",
     "buyGift": "Gift olish",
@@ -62,6 +63,7 @@
     "understood": "Tushundim",
     "startContest": "Boshlash",
     "referralBanner": "Taklif qiling, bonus oling",
+    "contactAdminBanner": "Admin bilan bog'lanish",
     "getLink": "Havola olish"
   },
   "history": {
@@ -365,8 +367,9 @@
     "tapToContinue": "Yoritilgan tugmani bosing",
     "typeHint": "Yozing",
     "doneTitle": "Ajoyib!",
-    "doneDesc": "Endi hammasini o'zingiz qila olasiz. Savol bo'lsa, yuqoridagi ? tugmasini bosing.",
+    "doneDesc": "Endi hammasini o'zingiz qila olasiz. Savol bo'lsa, yuqoridagi Qo'llanma tugmasini bosing.",
     "startBtn": "Boshlash",
+    "guideBtn": "Qo'llanma",
     "cardLabel": "Karta raqami",
     "copyBtn": "📋 Nusxalash",
     "copyBtnDone": "✅ Nusxalandi!",

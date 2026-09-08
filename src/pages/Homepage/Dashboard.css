@@ -183,6 +183,7 @@
 .dash-header_dashboard {
   background: transparent;
   padding: 14px 0;
+  padding-top: calc(14px + var(--tg-content-safe-area-inset-top, 0px));
   margin-bottom: 90px;
   border-radius: 0;
   box-shadow: none;
@@ -241,38 +242,20 @@
   flex-shrink: 0;
 }
 
-/* NOTIFICATION BUTTON */
-.notification-btn-dashboard {
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-primary);
-  color: var(--text-secondary);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0;
-  border-radius: 50%;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
-  position: relative;
-}
-
 .help-btn-dashboard {
-  width: 32px;
   height: 32px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  font-size: 16px;
+  gap: 4px;
+  padding: 0 10px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
-  border-radius: 50%;
+  border-radius: 999px;
   border: 2px solid var(--border-primary);
   background: var(--bg-tertiary);
   color: var(--text-secondary);
@@ -299,56 +282,15 @@
 .bonus-btn-dashboard:hover { border-color: #ffda03; transform: scale(1.05); }
 .bonus-btn-dashboard:active { transform: scale(0.95); }
 
-/* Lottie SVG tugmaning bosilishiga xalaqit qilmasin */
-.bonus-btn-dashboard__tgs {
-  width: 30px;
-  height: 30px;
+.bonus-btn-dashboard__icon {
+  font-size: 22px;
+  line-height: 1;
   pointer-events: none;
 }
 
 @keyframes bonus-btn-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255, 218, 3, 0.35); }
   50%      { box-shadow: 0 0 0 7px rgba(255, 218, 3, 0); }
-}
-
-.notification-btn-dashboard:hover {
-  border-color: var(--color-primary);
-  transform: scale(1.05);
-}
-
-.notification-btn-dashboard:active {
-  transform: scale(0.95);
-}
-
-.notification-btn-img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-  border: 2px solid var(--bg-primary);
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
-  animation: badgePulse 2s infinite;
-}
-
-@keyframes badgePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
 }
 
 /* LANGUAGE BUTTON */
@@ -515,35 +457,19 @@
     font-size: 9px;
   }
 
-  /* Referral Banner */
-  .referral-invite-banner {
-    padding: 14px 12px;
-    gap: 10px;
+  /* Secondary Actions - Referral & Support */
+  .secondary-action-card {
+    padding: 10px 8px;
+    gap: 5px;
   }
 
-  .referral-banner-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+  .secondary-action-card__icon svg {
+    width: 16px;
+    height: 16px;
   }
 
-  .referral-banner-icon svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .referral-banner-text {
-    font-size: 13px;
-  }
-
-  .referral-banner-rewards {
-    gap: 4px;
-  }
-
-  .referral-reward-badge {
-    padding: 3px 6px;
+  .secondary-action-card__text {
     font-size: 11px;
-    gap: 3px;
   }
 
   .referral-banner-button {
@@ -738,9 +664,9 @@
   flex-direction: column;
   gap: 18px;
   flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  padding-top: 40px;
+  padding-top: 20px;
   padding-bottom: 20px;
   width: 100%;
   max-width: 100%;
@@ -1052,7 +978,7 @@
 =============================== */
 .bottom-nav_dashboard {
   position: fixed;
-  bottom: 20px;
+  bottom: calc(20px + var(--tg-safe-area-inset-bottom, 0px));
   left: 14px;
   right: 14px;
   background: rgba(15, 23, 42, 0.4);
@@ -1082,13 +1008,13 @@
 .nav-btn_dashboard {
   background: transparent;
   border: none;
-  padding: 10px 14px;
+  padding: 10px 16px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
   transition: all 0.2s ease;
   color: rgba(255, 255, 255, 0.45);
   font-size: 12px;
@@ -1113,7 +1039,8 @@
 
 .nav-btn_dashboard.active {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(99,102,241,0.28), rgba(99,102,241,0.12));
+  box-shadow: 0 2px 12px rgba(99,102,241,0.25);
 }
 
 .nav-btn_dashboard.active img {
@@ -1142,6 +1069,7 @@
 
 .nav-label {
   font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   text-align: center;
@@ -2566,6 +2494,7 @@
   padding: 0;
   width: 100%;
   max-width: 100%;
+  transform: translateY(-5vh);
 }
 
 /* Stars Card - Full Width */
@@ -2645,132 +2574,56 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Referral Banner - Professional Dark Style */
-.referral-invite-banner {
-  background: linear-gradient(135deg, rgba(139,92,246,0.05), rgba(255,255,255,0.02), rgba(139,92,246,0.04));
-  background-size: 300% 300%;
-  animation: gradientRef 8s ease-in-out infinite;
+/* Secondary Actions - Referral & Support (ikkinchi darajali, asosiy card'lardan past) */
+.secondary-actions-row {
+  display: flex;
+  width: 100%;
+}
+
+.secondary-action-card {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(139,92,246,0.12);
-  border-radius: 18px;
-  padding: 18px 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 14px;
-  position: relative;
-  overflow: hidden;
+  justify-content: center;
+  gap: 6px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
-@keyframes gradientRef {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.secondary-action-card:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.1);
 }
 
-
-.referral-invite-banner:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  background: rgba(139,92,246,0.08);
+.secondary-action-card:active {
+  transform: scale(0.97);
 }
 
-.referral-invite-banner:active {
-  transform: scale(0.98);
-}
-
-.referral-invite-banner::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.08) 100%);
-  pointer-events: none;
-}
-
-.referral-banner-icon {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-  border-radius: 12px;
+.secondary-action-card__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  color: rgba(255,255,255,0.65);
 }
 
-.referral-banner-icon svg {
-  width: 22px;
-  height: 22px;
-  color: #ffffff;
+.secondary-action-card__icon svg {
+  width: 18px;
+  height: 18px;
 }
 
-.referral-banner-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 1;
-  min-width: 0;
-}
-
-.referral-banner-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.35;
-}
-
-.referral-banner-rewards {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.referral-reward-badge {
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.25);
-  border-radius: 6px;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.secondary-action-card__text {
   font-size: 12px;
   font-weight: 600;
-  color: #a78bfa;
-}
-
-.referral-banner-button {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-  z-index: 1;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-}
-
-.referral-banner-button:hover {
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
-}
-
-.referral-banner-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  line-height: 1.3;
 }
 
 /* Gift & Premium Row - Side by Side */
