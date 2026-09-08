@@ -161,6 +161,7 @@
 @media (max-width: 768px) {
   .legal-header {
     padding: 30px 15px;
+    padding-top: calc(30px + var(--tg-safe-top, 0px));
   }
 
   .legal-header h1 {
@@ -194,6 +195,7 @@
 @media (max-width: 480px) {
   .legal-header {
     padding: 20px 10px;
+    padding-top: calc(20px + var(--tg-safe-top, 0px));
   }
 
   .legal-header h1 {

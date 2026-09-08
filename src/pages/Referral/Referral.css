@@ -1075,6 +1075,7 @@
 
   .referral-header {
     padding: 12px;
+    padding-top: calc(12px + var(--tg-safe-top, 0px));
   }
 
   .referral-header h1 {

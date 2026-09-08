@@ -420,6 +420,22 @@ export default function Dashboard() {
         {debugSafeArea}
       </div>
 
+      {/* 🐛 VAQTINCHALIK DEBUG CHIZIQ — aynan hisoblangan --tg-safe-top
+          qiymati qayerga to'g'ri kelishini ko'rsatadi (Close/⋯ qatoridan
+          pastda bo'lishi kerak). Tasdiqlangach olib tashlansin. */}
+      <div
+        style={{
+          position: "fixed",
+          top: "var(--tg-safe-top, 0px)",
+          left: 0,
+          right: 0,
+          height: "4px",
+          background: "#39ff14",
+          zIndex: 999998,
+          pointerEvents: "none",
+        }}
+      />
+
       {/* HEADER */}
       <header className="dash-header_dashboard">
         <div className="header-inner_dashboard">

@@ -261,7 +261,13 @@
   }
 
   .dash-header_dashboard {
-    padding: 12px;
+    /* DIQQAT: shorthand `padding: 12px` ISHLATMANG — u padding-top'ni ham
+       nolga qaytarib, asosiy qoidadagi --tg-safe-top hisobini bekor qiladi
+       (aynan shu bug fullscreen'da header'ni Close/⋯ ostida qoldirgan edi).
+       Faqat kerakli tomonlarni alohida-alohida o'zgartiramiz. */
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: 12px;
     margin-bottom: 12px;
   }
 

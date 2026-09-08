@@ -2806,6 +2806,7 @@ html, body {
 @media (max-width: 767px) {
   .admin-panel-new {
     padding: 8px 10px calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-top: calc(8px + var(--tg-safe-top, 0px));
   }
 
   .header-title-text {
