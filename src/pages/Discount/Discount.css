@@ -16,7 +16,7 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 10px;
-  margin-top: var(--tg-safe-top, 0px);
+  margin-top: calc(20px + var(--tg-safe-top, 0px));
   min-height: 80px;
 }
 

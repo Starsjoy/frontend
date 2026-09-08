@@ -283,20 +283,15 @@ export default function Dashboard() {
   const handleNavClick = (targetTab) => {
     if (tab === targetTab) return;
 
-    // Only show loading for complex tabs (iframes)
-    if (targetTab !== 'home') {
-       setNavLoading(true);
-       setTab(targetTab);
+    // Barcha bo'limlar (Asosiy'ga qaytish ham) uchun bir xil loader —
+    // vizual izchillik uchun.
+    setNavLoading(true);
+    setTab(targetTab);
 
-       // Silliq animatsiya uchun delay (white flashni yopish)
-       setTimeout(() => {
-         setNavLoading(false);
-       }, 1500);
-    } else {
-       // Home is usually fast as it's not an iframe here,
-       // but let's give it a small feedback too for consistency or just direct swap
-       setTab(targetTab);
-    }
+    // Silliq animatsiya uchun delay (white flashni yopish)
+    setTimeout(() => {
+      setNavLoading(false);
+    }, 1500);
   };
 
   // Back Button Logic
