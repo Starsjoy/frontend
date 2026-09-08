@@ -81,7 +81,7 @@
      kafolatlangan minimal zaxira. --tg-content-safe-area-inset-top mavjud
      bo'lsa undan kattarog'i ishlatiladi (notch/dynamic island kattaroq bo'lgan
      qurilmalar uchun). */
-  padding-top: max(90px, calc(14px + var(--tg-content-safe-area-inset-top, 0px)));
+  padding-top: max(130px, calc(14px + var(--tg-content-safe-area-inset-top, 0px)));
   margin-bottom: 90px;
   border-radius: 0;
   box-shadow: none;
