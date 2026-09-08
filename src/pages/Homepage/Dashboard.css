@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 1;
   overflow: hidden;
   font-family: 'Poppins', sans-serif;
@@ -44,122 +44,15 @@
   animation: splashFadeIn 0.7s ease both;
 }
 
-/* === Icon Wrap === */
-.splash-icon-wrap {
-  position: relative;
-  width: 88px;
-  height: 88px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.splash-icon-wrap::before {
-  content: '';
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%);
-  animation: splashAura 3.5s ease-in-out infinite alternate;
-}
-
-/* === Oval Rings === */
-.splash-oval {
-  position: absolute;
-  border-radius: 50%;
-}
-
-.splash-oval-1 {
-  width: 72px;
-  height: 52px;
-  border: 1px solid rgba(167,139,250,0.35);
-  animation: splashSpin 5s linear infinite;
-}
-
-.splash-oval-2 {
-  width: 52px;
-  height: 72px;
-  border: 1px solid rgba(139,92,246,0.25);
-  animation: splashSpin 7s linear infinite reverse;
-}
-
-.splash-oval-3 {
-  width: 84px;
-  height: 84px;
-  border: 1px dashed rgba(167,139,250,0.12);
-  animation: splashSpin 12s linear infinite;
-}
-
-/* === Star Icon === */
-.splash-star {
-  position: relative;
-  z-index: 2;
-  animation: splashBob 2.5s ease-in-out infinite alternate;
-}
-
-/* === Brand Text === */
-.splash-brand {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #ede9fe;
-  letter-spacing: -0.02em;
-}
-
-.splash-brand em {
-  font-style: normal;
-  color: #a78bfa;
-}
-
-/* === Loading Dots === */
-.splash-dots {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.splash-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  animation: splashDotPop 1.3s ease-in-out infinite;
-}
-
-.splash-dot:nth-child(1) { background: #a78bfa; animation-delay: 0s; }
-.splash-dot:nth-child(2) { background: #8b5cf6; animation-delay: 0.18s; }
-.splash-dot:nth-child(3) { background: #7c3aed; animation-delay: 0.36s; }
-.splash-dot:nth-child(4) { background: #6d28d9; animation-delay: 0.54s; }
-.splash-dot:nth-child(5) { background: #5b21b6; animation-delay: 0.72s; }
-
 /* === Keyframes === */
-@keyframes splashSpin {
-  to { transform: rotate(360deg); }
-}
-
 @keyframes splashAura {
   from { transform: scale(1); }
   to { transform: scale(1.25); }
 }
 
-@keyframes splashBob {
-  from {
-    transform: translateY(-3px);
-    filter: drop-shadow(0 4px 12px rgba(139,92,246,0.4));
-  }
-  to {
-    transform: translateY(3px);
-    filter: drop-shadow(0 8px 24px rgba(139,92,246,0.7));
-  }
-}
-
 @keyframes splashFadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes splashDotPop {
-  0%, 100% { transform: scale(1); opacity: 0.25; }
-  50% { transform: scale(1.7); opacity: 1; }
 }
 
 /* ===============================
@@ -189,6 +82,12 @@
   box-shadow: none;
   border: none;
   transition: all 0.3s ease;
+}
+
+/* Fullscreen'da Telegram'ning close/⋯ tugmalari header'ni bosib qolmasligi uchun
+   kafolatlangan minimal zaxira (--tg-content-safe-area-inset-top yetarli kelmasa ham). */
+html.tg-fullscreen .dash-header_dashboard {
+  padding-top: max(54px, calc(14px + var(--tg-content-safe-area-inset-top, 0px)));
 }
 
 .header-inner_dashboard {
@@ -222,11 +121,8 @@
 }
 
 .brand-logo_dashboard {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  width: 52px;
+  height: 52px;
 }
 
 @keyframes starPulse {
@@ -386,9 +282,8 @@
   }
 
   .brand-logo_dashboard {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
+    width: 42px;
+    height: 42px;
   }
 
   .language-btn-dashboard {
@@ -2137,34 +2032,15 @@
   left: 0;
   right: 0;
   bottom: 60px; /* Leave nav visible or cover it? User said "screen fully opens", let's cover content area mainly */
-  background: var(--bg-primary); 
+  background: var(--bg-primary);
   z-index: 99; /* Below nav (100) but above content */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.nav-loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid var(--border-color, rgba(255,255,255,0.1));
-  border-top-color: var(--accent-primary, #8b5cf6);
-  border-radius: 50%;
-  animation: navSpinner 0.8s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes navSpinner {
-  to { transform: rotate(360deg); }
-}
-
-.nav-loading-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  animation: pulse 1.5s infinite ease-in-out;
+  /* Diqqat: background darhol to'liq mat (opaque) bo'lishi shart — agar bu
+     opacity bilan animatsiya qilinsa (masalan fadeIn), ostidagi sahifa/iframe
+     bir zumga "yaltirab" ko'rinib, keyin loader ustidan chiqib qoladi. */
 }
 
 /* =====================

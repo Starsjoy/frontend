@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import LogoWordmark from "./Loaders/LogoWordmark";
 import "./TelegramGate.css";
 
 /**
@@ -78,7 +79,7 @@ export default function TelegramGate({ children }) {
   if (checking) {
     return (
       <div className="tg-gate">
-        <div className="tg-gate-spinner"></div>
+        <LogoWordmark size={120} />
       </div>
     );
   }

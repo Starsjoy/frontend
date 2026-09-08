@@ -11,6 +11,8 @@ import {
 import { BookOpen, Headset } from "lucide-react";
 import { TGSSticker } from "../../components/TGSSticker";
 import BonusModal from "../../components/BonusModal";
+import StarsJoyLogoStatic from "../../components/Loaders/StarsJoyLogoStatic";
+import LogoWordmark from "../../components/Loaders/LogoWordmark";
 import "./Dashboard.css";
 
 import starsGif from "../../assets/stars.gif";
@@ -22,7 +24,6 @@ import referalSticker from "../../assets/AnimatedSticker_ref.tgs";
 import ordersIcon from "../../assets/orders_icon.png";
 import profileIcon from "../../assets/profile_icon.png";
 import menuIcon from "../../assets/main_icon.png";
-import starsjoyAvatar from "../../assets/starsjoy.jpg";
 import discountIcon from "../../assets/discount_icon.png";
 
 
@@ -33,7 +34,7 @@ const formatAmount = (num) =>
 // ================== COMPONENT ==================
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { t, language, setLanguage, onboardingCompleted, bonusAdShown, markBonusAdShown } = useTranslation();
+  const { t, language, setLanguage, onboardingCompleted } = useTranslation();
   const { startTour, tourActive } = useOnboarding();
 
   /* ================= USER ================= */
@@ -144,6 +145,17 @@ export default function Dashboard() {
       // (fullscreen/expanded rejimda vertikal swipe-close'ni o'chiramiz)
       if (typeof WebApp.disableVerticalSwipes === "function") {
         WebApp.disableVerticalSwipes();
+      }
+
+      // Fullscreen holatini <html>ga klass sifatida belgilaymiz — shunda CSS
+      // Telegram'ning close/⋯ tugmalari uchun kafolatlangan joy qoldira oladi
+      // (faqat --tg-content-safe-area-inset-top'ga tayanish ba'zi qurilmalarda yetarli emas).
+      const syncFullscreenClass = () => {
+        document.documentElement.classList.toggle("tg-fullscreen", !!WebApp.isFullscreen);
+      };
+      syncFullscreenClass();
+      if (typeof WebApp.onEvent === "function") {
+        WebApp.onEvent("fullscreenChanged", syncFullscreenClass);
       }
 
       const tgUser =
@@ -312,14 +324,21 @@ export default function Dashboard() {
     };
   }, [tab, showLanguageModal]);
 
-  /* ================= SPLASH AUTO-HIDE ================= */
+  /* ================= SPLASH AUTO-HIDE =================
+     Matn shimmeri (sjWordShimmerSweep, 3.6s tsikl) ~2.5s'da to'liq yorqin
+     holatga yetadi — undan keyingi qism faqat highlight chizig'ining
+     orqasidan xiralashishi, buni kutishning hojati yo'q. Shu sabab splash
+     to'liq matn animatsiyasi (3.6s) emas, balki "o'qilishi mumkin" bo'lgan
+     ~2.5s nuqtasida yopila boshlaydi — jami ~3s. */
   useEffect(() => {
     if (!splashVisible) return;
-    const fadeTimer = setTimeout(() => setSplashFading(true), 1250);
+    const ANIMATION_CYCLE_MS = 2500;
+    const FADE_DURATION_MS = 500; // .splash-screen { transition: opacity 0.5s }
+    const fadeTimer = setTimeout(() => setSplashFading(true), ANIMATION_CYCLE_MS);
     const hideTimer = setTimeout(() => {
       setSplashVisible(false);
       sessionStorage.setItem("splashShown", "1");
-    }, 2050);
+    }, ANIMATION_CYCLE_MS + FADE_DURATION_MS);
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(hideTimer);
@@ -336,23 +355,6 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, [splashVisible, startTour, onboardingCompleted]);
 
-  /* ================= BONUS AVTO-OCHILISH =================
-     Splash tugagach 3 soniyadan keyin, YANGI userga FAQAT BIR MARTA (bazada saqlanadi —
-     spmBonusAutoShown kabi sessionStorage emas, keyingi kirishda ham qayta ko'rsatilmaydi).
-     Tur bilan bir vaqtda chiqmasligi uchun faqat tur tugagach ochiladi.
-     Hamma missiya olingan bo'lsa umuman ochilmaydi. */
-  useEffect(() => {
-    if (splashVisible || tab !== "home" || tourActive) return;
-    if (!onboardingCompleted) return;
-    if (bonusAdShown) return;
-    if (localStorage.getItem("spmAllMissionsDone") === "1") return;
-
-    const timer = setTimeout(() => {
-      markBonusAdShown();
-      setShowBonus(true);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [splashVisible, tab, tourActive, onboardingCompleted, bonusAdShown, markBonusAdShown]);
 
   /* ================= UI ================= */
 
@@ -364,37 +366,7 @@ export default function Dashboard() {
         <div className="splash-aura"></div>
 
         <div className="splash-loader">
-          {/* Icon with oval rings */}
-          <div className="splash-icon-wrap">
-            <div className="splash-oval splash-oval-1"></div>
-            <div className="splash-oval splash-oval-2"></div>
-            <div className="splash-oval splash-oval-3"></div>
-            <svg className="splash-star" viewBox="0 0 48 48" width="40" height="40">
-              <defs>
-                <linearGradient id="splashGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ddd6fe"/>
-                  <stop offset="50%" stopColor="#8b5cf6"/>
-                  <stop offset="100%" stopColor="#6d28d9"/>
-                </linearGradient>
-              </defs>
-              <path 
-                d="M24 4C24 4 26.5 14 30 18C34 22 44 24 44 24C44 24 34 26 30 30C26.5 34 24 44 24 44C24 44 21.5 34 18 30C14 26 4 24 4 24C4 24 14 22 18 18C21.5 14 24 4 24 4Z" 
-                fill="url(#splashGradient)"
-              />
-            </svg>
-          </div>
-
-          {/* Brand name */}
-          <div className="splash-brand">Stars<em>Joy</em></div>
-
-          {/* Loading dots */}
-          <div className="splash-dots">
-            <div className="splash-dot"></div>
-            <div className="splash-dot"></div>
-            <div className="splash-dot"></div>
-            <div className="splash-dot"></div>
-            <div className="splash-dot"></div>
-          </div>
+          <LogoWordmark size={140} />
         </div>
       </div>
     );
@@ -407,7 +379,7 @@ export default function Dashboard() {
       <header className="dash-header_dashboard">
         <div className="header-inner_dashboard">
           <h1 className="brand-title_dashboard">
-            <img src={starsjoyAvatar} alt="Starsjoy" className="brand-logo_dashboard" />
+            <StarsJoyLogoStatic size={52} className="brand-logo_dashboard" />
             Starsjoy
           </h1>
           <div className="header-actions_dashboard">
@@ -519,8 +491,7 @@ export default function Dashboard() {
       {/* NAV LOADING OVERLAY */}
       {navLoading && (
         <div className="nav-loading-overlay">
-          <div className="nav-loading-spinner"></div>
-          <p className="nav-loading-text">{t("common.loading") || "Yuklanmoqda..."}</p>
+          <LogoWordmark size={140} />
         </div>
       )}
 

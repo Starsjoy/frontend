@@ -1,0 +1,55 @@
+.sj-draw {
+  position: relative;
+  width: var(--sj-size, 120px);
+  height: var(--sj-size, 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sj-draw-svg {
+  filter: drop-shadow(0 4px 16px rgba(139, 92, 246, 0.5));
+  overflow: visible;
+}
+
+.sj-draw-star {
+  stroke-dasharray: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sjDrawStroke 2.56s ease forwards;
+}
+
+.sj-draw-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sjDrawSparklePop 2.56s ease forwards;
+}
+
+.sj-draw-shimmer {
+  animation: sjDrawShimmerMove 2.56s ease forwards;
+}
+
+/* Yulduzning konturi chizilishi (0 -> 28%, ya'ni 1.12s) o'z asl tezligida
+   qoldirilgan; shundan keyingi barcha fazalar (to'lish, sparkle) 2x
+   tezlashtirilgan. Animatsiya bir marta ishlaydi (infinite emas) va
+   to'liq chizilgan/to'lgan holatda muzlab qoladi — qaytadan bo'shab
+   chizilmaydi. */
+@keyframes sjDrawStroke {
+  0% { stroke-dashoffset: 1; fill-opacity: 0; stroke-opacity: 1; }
+  43.75% { stroke-dashoffset: 0; fill-opacity: 0; stroke-opacity: 1; }
+  54.69% { stroke-dashoffset: 0; fill-opacity: 1; stroke-opacity: 0; }
+  100% { stroke-dashoffset: 0; fill-opacity: 1; stroke-opacity: 0; }
+}
+
+@keyframes sjDrawSparklePop {
+  0%, 51.56% { transform: scale(0) rotate(-35deg); opacity: 0; }
+  64.84% { transform: scale(1) rotate(0deg); opacity: 1; }
+  73.44% { transform: scale(0.9) rotate(0deg); opacity: 1; }
+  80.47%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes sjDrawShimmerMove {
+  0%, 64.84% { transform: translateX(0) skewX(-18deg); opacity: 0; }
+  70.31% { opacity: 0.9; }
+  85.94%, 100% { transform: translateX(2600px) skewX(-18deg); opacity: 0; }
+}
