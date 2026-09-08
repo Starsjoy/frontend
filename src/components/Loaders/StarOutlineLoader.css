@@ -5,12 +5,12 @@
 
 .sj-star-outline__path {
   stroke-dasharray: 1;
-  animation: sjStarOutlineDraw 1.6s ease-in-out infinite;
+  animation: sjStarOutlineDraw 1.12s ease forwards;
 }
 
+/* Bir marta chiziladi (infinite emas) va to'liq chizilgan holatda qotib
+   qoladi — orqaga qaytib o'chib ketmaydi. */
 @keyframes sjStarOutlineDraw {
   0% { stroke-dashoffset: 1; }
-  45% { stroke-dashoffset: 0; }
-  80% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: 1; }
+  100% { stroke-dashoffset: 0; }
 }

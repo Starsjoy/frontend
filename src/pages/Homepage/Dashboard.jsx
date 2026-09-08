@@ -482,7 +482,7 @@ export default function Dashboard() {
       {/* NAV LOADING OVERLAY */}
       {navLoading && (
         <div className="nav-loading-overlay">
-          <StarOutlineLoader size={64} />
+          <StarOutlineLoader size={140} />
         </div>
       )}
 
