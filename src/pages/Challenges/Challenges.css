@@ -13,6 +13,7 @@
 
 .challenges-header {
   margin-bottom: 20px;
+  margin-top: var(--tg-safe-top, 0px);
 }
 
 .header-title-section {

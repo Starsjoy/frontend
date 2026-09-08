@@ -8,6 +8,7 @@
   font-family: "Inter", sans-serif;
   color: var(--text-primary);
   padding-bottom: 30px;
+  padding-top: calc(16px + var(--tg-safe-top, 0px));
 }
 
 /* Back Button */

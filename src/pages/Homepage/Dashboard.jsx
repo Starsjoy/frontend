@@ -142,6 +142,20 @@ export default function Dashboard() {
       // Telegram expand qilish
       WebApp.expand();
 
+      // Fullscreen'ga o'tish (Bot API 8.0+) — eski klientlarda metod
+      // umuman mavjud bo'lmasligi yoki mos kelmagan versiyada xato
+      // (WebAppMethodUnsupported) tashlashi mumkin, shu sabab ham
+      // mavjudligini, ham versiyasini tekshirib, try/catch bilan o'raymiz.
+      if (typeof WebApp.requestFullscreen === "function") {
+        try {
+          if (typeof WebApp.isVersionAtLeast !== "function" || WebApp.isVersionAtLeast("8.0")) {
+            WebApp.requestFullscreen();
+          }
+        } catch {
+          // Eski klient yoki qo'llab-quvvatlanmaydi — jim o'tkazib yuboramiz
+        }
+      }
+
       // Pastga scroll qilganda mini app tasodifan yopilib qolmasligi uchun
       // (fullscreen/expanded rejimda vertikal swipe-close'ni o'chiramiz)
       if (typeof WebApp.disableVerticalSwipes === "function") {

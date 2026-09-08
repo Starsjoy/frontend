@@ -9,6 +9,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>Starsjoy</title>
+    <!-- Telegram klientining o'zi avtomatik inject qilgan window.Telegram.WebApp
+         eski/keshlangan bo'lishi mumkin (masalan fullscreen/safe-area API'lari
+         yo'q) — shuning uchun rasmiy skriptni aniq yuklaymiz, u har doim eng
+         yangi versiyani ta'minlaydi. Quyidagi inline skript ham, main.jsx ham
+         shunga tayanadi, shuning uchun bu HAMMASIDAN OLDIN kelishi shart. -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
       (function () {
         try {

@@ -77,11 +77,10 @@
   background: transparent;
   padding: 14px 0;
   /* Telegram'ning fullscreen'dagi close/⋯ tugmalari header'ni bosib qolmasligi
-     uchun HAR DOIM (JS orqali fullscreen aniqlashiga bog'liq bo'lmagan holda)
-     kafolatlangan minimal zaxira. --tg-content-safe-area-inset-top mavjud
-     bo'lsa undan kattarog'i ishlatiladi (notch/dynamic island kattaroq bo'lgan
-     qurilmalar uchun). */
-  padding-top: max(130px, calc(14px + var(--tg-content-safe-area-inset-top, 0px)));
+     uchun — qattiq piksel EMAS, balki Telegram'ning o'zi qurilmaga qarab
+     hisoblab beradigan --tg-safe-top (theme.css'da aniqlangan). Telegram
+     tashqarisida (brauzer) bu 0px, hech narsa o'zgarmaydi. */
+  padding-top: calc(14px + var(--tg-safe-top, 0px));
   margin-bottom: 90px;
   border-radius: 0;
   box-shadow: none;
@@ -872,7 +871,7 @@
 =============================== */
 .bottom-nav_dashboard {
   position: fixed;
-  bottom: calc(20px + var(--tg-safe-area-inset-bottom, 0px));
+  bottom: calc(20px + var(--tg-safe-bottom, 0px));
   left: 14px;
   right: 14px;
   background: rgba(15, 23, 42, 0.4);

@@ -16,6 +16,7 @@
 .history-header {
   background: transparent;
   padding: 10px 14px;
+  padding-top: calc(10px + var(--tg-safe-top, 0px));
   margin-bottom: 20px;
   border-radius: 0;
   box-shadow: none;

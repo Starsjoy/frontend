@@ -17,6 +17,7 @@
 .notifications-header {
   text-align: center;
   padding: 20px 14px;
+  padding-top: calc(20px + var(--tg-safe-top, 0px));
   margin-bottom: 20px;
 }
 
