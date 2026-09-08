@@ -1,0 +1,16 @@
+.sj-star-outline {
+  overflow: visible;
+  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.25));
+}
+
+.sj-star-outline__path {
+  stroke-dasharray: 1;
+  animation: sjStarOutlineDraw 1.6s ease-in-out infinite;
+}
+
+@keyframes sjStarOutlineDraw {
+  0% { stroke-dashoffset: 1; }
+  45% { stroke-dashoffset: 0; }
+  80% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 1; }
+}

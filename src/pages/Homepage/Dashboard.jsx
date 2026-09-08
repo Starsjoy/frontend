@@ -13,6 +13,7 @@ import { TGSSticker } from "../../components/TGSSticker";
 import BonusModal from "../../components/BonusModal";
 import StarsJoyLogoStatic from "../../components/Loaders/StarsJoyLogoStatic";
 import LogoWordmark from "../../components/Loaders/LogoWordmark";
+import StarOutlineLoader from "../../components/Loaders/StarOutlineLoader";
 import "./Dashboard.css";
 
 import starsGif from "../../assets/stars.gif";
@@ -147,16 +148,6 @@ export default function Dashboard() {
         WebApp.disableVerticalSwipes();
       }
 
-      // Fullscreen holatini <html>ga klass sifatida belgilaymiz — shunda CSS
-      // Telegram'ning close/⋯ tugmalari uchun kafolatlangan joy qoldira oladi
-      // (faqat --tg-content-safe-area-inset-top'ga tayanish ba'zi qurilmalarda yetarli emas).
-      const syncFullscreenClass = () => {
-        document.documentElement.classList.toggle("tg-fullscreen", !!WebApp.isFullscreen);
-      };
-      syncFullscreenClass();
-      if (typeof WebApp.onEvent === "function") {
-        WebApp.onEvent("fullscreenChanged", syncFullscreenClass);
-      }
 
       const tgUser =
         WebApp?.initDataUnsafe?.user?.username ||
@@ -491,7 +482,7 @@ export default function Dashboard() {
       {/* NAV LOADING OVERLAY */}
       {navLoading && (
         <div className="nav-loading-overlay">
-          <LogoWordmark size={140} />
+          <StarOutlineLoader size={64} />
         </div>
       )}
 

@@ -76,18 +76,17 @@
 .dash-header_dashboard {
   background: transparent;
   padding: 14px 0;
-  padding-top: calc(14px + var(--tg-content-safe-area-inset-top, 0px));
+  /* Telegram'ning fullscreen'dagi close/⋯ tugmalari header'ni bosib qolmasligi
+     uchun HAR DOIM (JS orqali fullscreen aniqlashiga bog'liq bo'lmagan holda)
+     kafolatlangan minimal zaxira. --tg-content-safe-area-inset-top mavjud
+     bo'lsa undan kattarog'i ishlatiladi (notch/dynamic island kattaroq bo'lgan
+     qurilmalar uchun). */
+  padding-top: max(90px, calc(14px + var(--tg-content-safe-area-inset-top, 0px)));
   margin-bottom: 90px;
   border-radius: 0;
   box-shadow: none;
   border: none;
   transition: all 0.3s ease;
-}
-
-/* Fullscreen'da Telegram'ning close/⋯ tugmalari header'ni bosib qolmasligi uchun
-   kafolatlangan minimal zaxira (--tg-content-safe-area-inset-top yetarli kelmasa ham). */
-html.tg-fullscreen .dash-header_dashboard {
-  padding-top: max(54px, calc(14px + var(--tg-content-safe-area-inset-top, 0px)));
 }
 
 .header-inner_dashboard {
