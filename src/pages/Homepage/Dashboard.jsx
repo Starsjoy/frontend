@@ -43,25 +43,6 @@ export default function Dashboard() {
   const [userPhoto, setUserPhoto] = useState(null);
   const [isTelegram, setIsTelegram] = useState(false);
 
-  /* ================= 🐛 VAQTINCHALIK DEBUG =================
-     safe-area qiymatlarini haqiqiy qurilmada tasdiqlash uchun. Tasdiqlangach
-     shu state, useEffect va JSX'dagi debug banner OLIB TASHLANSIN. */
-  const [debugSafeArea, setDebugSafeArea] = useState("...");
-  useEffect(() => {
-    const readValues = () => {
-      const cs = getComputedStyle(document.documentElement);
-      const top = cs.getPropertyValue("--tg-safe-area-inset-top").trim() || "(yo'q)";
-      const contentTop = cs.getPropertyValue("--tg-content-safe-area-inset-top").trim() || "(yo'q)";
-      const fs = window?.Telegram?.WebApp?.isFullscreen;
-      setDebugSafeArea(
-        `safe-top=${top} content-top=${contentTop} isFullscreen=${String(fs)}`
-      );
-    };
-    readValues();
-    const interval = setInterval(readValues, 500);
-    return () => clearInterval(interval);
-  }, []);
-
   /* ================= DATA ================= */
   const [leaderboard, setLeaderboard] = useState([]);
   const [myRank, setMyRank] = useState(null);
@@ -398,43 +379,6 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-root_dashboard">
-
-      {/* 🐛 VAQTINCHALIK DEBUG BANNER — tasdiqlangach olib tashlansin */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 999999,
-          background: "#ff2d55",
-          color: "#fff",
-          fontSize: "10px",
-          fontFamily: "monospace",
-          padding: "4px 6px",
-          textAlign: "center",
-          wordBreak: "break-all",
-          pointerEvents: "none",
-        }}
-      >
-        {debugSafeArea}
-      </div>
-
-      {/* 🐛 VAQTINCHALIK DEBUG CHIZIQ — aynan hisoblangan --tg-safe-top
-          qiymati qayerga to'g'ri kelishini ko'rsatadi (Close/⋯ qatoridan
-          pastda bo'lishi kerak). Tasdiqlangach olib tashlansin. */}
-      <div
-        style={{
-          position: "fixed",
-          top: "var(--tg-safe-top, 0px)",
-          left: 0,
-          right: 0,
-          height: "4px",
-          background: "#39ff14",
-          zIndex: 999998,
-          pointerEvents: "none",
-        }}
-      />
 
       {/* HEADER */}
       <header className="dash-header_dashboard">
