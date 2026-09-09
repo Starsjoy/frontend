@@ -1026,7 +1026,9 @@
   border: 1px solid var(--border-primary);
   border-radius: 10px;
   padding: 12px 14px;
-  font-size: 14px;
+  /* 16px'dan kichik bo'lsa iOS input'ga fokus qilinganda avtomatik
+     zoom qiladi — shu sabab 16px'dan pasaytirmang. */
+  font-size: 16px;
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.2s;

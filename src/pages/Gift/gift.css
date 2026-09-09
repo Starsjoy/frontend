@@ -106,7 +106,8 @@
   border: 1px solid var(--border-primary);
   background: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: 14px;
+  /* 16px'dan kichik bo'lsa iOS avtomatik zoom qiladi */
+  font-size: 16px;
   transition: 0.2s;
 }
 
@@ -701,7 +702,8 @@
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   color: var(--text-primary);
-  font-size: 14px;
+  /* 16px'dan kichik bo'lsa iOS avtomatik zoom qiladi */
+  font-size: 16px;
   font-family: inherit;
   resize: none;
   outline: none;
@@ -1605,7 +1607,8 @@
   background: transparent;
   border: none;
   outline: none;
-  font-size: 15px;
+  /* 16px'dan kichik bo'lsa iOS avtomatik zoom qiladi */
+  font-size: 16px;
   color: #fff;
   padding: 0 6px;
   font-family: inherit;
@@ -1834,7 +1837,8 @@
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  font-size: 13px;
+  /* 16px'dan kichik bo'lsa iOS avtomatik zoom qiladi */
+  font-size: 16px;
   color: #fff;
   outline: none;
   transition: all 0.2s;
