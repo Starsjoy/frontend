@@ -164,6 +164,17 @@ export default function Dashboard() {
         }
       }
 
+      // Close (✕) tugmasi yoki pastga svayp bilan yopishga urinilganda
+      // Telegram'ning o'zi "Yopishni xohlaysizmi?" tasdiqlash oynasini
+      // ko'rsatadi — tasodifan chiqib ketishning oldini oladi.
+      if (typeof WebApp.enableClosingConfirmation === "function") {
+        try {
+          WebApp.enableClosingConfirmation();
+        } catch {
+          // Eski klient — jim o'tkazib yuboramiz
+        }
+      }
+
       // Pastga scroll qilganda mini app tasodifan yopilib qolmasligi uchun
       // (fullscreen/expanded rejimda vertikal swipe-close'ni o'chiramiz)
       if (typeof WebApp.disableVerticalSwipes === "function") {
