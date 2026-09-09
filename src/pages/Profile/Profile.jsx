@@ -21,6 +21,22 @@ export default function Profile() {
 
   const langLabels = { uz: "O'zbekcha", en: "English", ru: "Русский" };
 
+  /* ================= 🐛 VAQTINCHALIK DEBUG =================
+     Tasdiqlangach shu state, useEffect va JSX'dagi banner OLIB TASHLANSIN. */
+  const [debugInfo, setDebugInfo] = useState("...");
+  useEffect(() => {
+    const isIframe = window.top !== window.self;
+    const read = () => {
+      const val = getComputedStyle(document.documentElement)
+        .getPropertyValue("--tg-safe-top")
+        .trim();
+      setDebugInfo(`isIframe=${isIframe} --tg-safe-top=${val || "(bo'sh)"}`);
+    };
+    read();
+    const interval = setInterval(read, 500);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     let username = "User";
     let photoUrl = null;
@@ -71,6 +87,27 @@ export default function Profile() {
 
   return (
     <div className="settings-page">
+      {/* 🐛 VAQTINCHALIK DEBUG BANNER — tasdiqlangach olib tashlansin */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 999999,
+          background: "#ff2d55",
+          color: "#fff",
+          fontSize: "10px",
+          fontFamily: "monospace",
+          padding: "4px 6px",
+          textAlign: "center",
+          wordBreak: "break-all",
+          pointerEvents: "none",
+        }}
+      >
+        {debugInfo}
+      </div>
+
       {/* Profile Header */}
       <div className="settings-profile-header">
         <div className="settings-avatar-wrap">
