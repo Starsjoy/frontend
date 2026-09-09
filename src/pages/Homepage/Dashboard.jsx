@@ -14,6 +14,7 @@ import BonusModal from "../../components/BonusModal";
 import StarsJoyLogoStatic from "../../components/Loaders/StarsJoyLogoStatic";
 import LogoWordmark from "../../components/Loaders/LogoWordmark";
 import StarOutlineLoader from "../../components/Loaders/StarOutlineLoader";
+import { broadcastSafeAreaTo, listenForIframeReadyPings } from "../../utils/tgSafeAreaBridge";
 import "./Dashboard.css";
 
 import starsGif from "../../assets/stars.gif";
@@ -114,6 +115,13 @@ export default function Dashboard() {
   useEffect(() => {
     loadPurchasePaths();
   }, []);
+
+  // Ichki tab'lar (Profil, Chegirma, Tarix) <iframe>da yuklanadi — ular
+  // Telegram'ning safe-area qiymatlarini o'zi ololmaydi, shu sabab
+  // "tayyorman" signali kelganda darhol shu oynadagi haqiqiy qiymatni
+  // yuboramiz (onLoad orqali ham yuboriladi — timing race'ga qarshi
+  // ikkalasi ham ishlatiladi).
+  useEffect(() => listenForIframeReadyPings(), []);
 
   useEffect(() => {
     if (tab === "home") loadPurchasePaths();
@@ -502,6 +510,7 @@ export default function Dashboard() {
             src="/history"
             className="iframe-modal_dashboard"
             title="History"
+            onLoad={(e) => broadcastSafeAreaTo(e.currentTarget)}
           ></iframe>
         </div>
       )}
@@ -514,6 +523,7 @@ export default function Dashboard() {
             src="/profile"
             className="iframe-modal_dashboard"
             title="Profile"
+            onLoad={(e) => broadcastSafeAreaTo(e.currentTarget)}
           ></iframe>
         </div>
       )}
@@ -524,6 +534,7 @@ export default function Dashboard() {
             src="/discount"
             className="iframe-modal_dashboard"
             title="Discount"
+            onLoad={(e) => broadcastSafeAreaTo(e.currentTarget)}
           ></iframe>
         </div>
       )}

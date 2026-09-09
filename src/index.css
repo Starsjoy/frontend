@@ -1,5 +1,12 @@
+/* Ilova doim qorong'i tema (ThemeContext'da isDark har doim true) — fon
+   rangi qattiq yozilgan, CSS o'zgaruvchisiga tayanilmagan. Sabab: .dark-mode
+   klassi React effect orqali mount bo'lgandan KEYIN qo'shiladi, shu oraliqda
+   (yoki iframe kabi alohida hujjatlarda) fon bir zumga oq (:root standart
+   qiymati) ko'rinib qolishi mumkin edi — masalan Profil/Chegirma kabi
+   iframe'da yuklanadigan sahifalarda scroll oxiriga borilganda shu oq fon
+   orqadan ko'rinib qolardi. */
 html, body, #root {
-  background-color: var(--bg-secondary) !important;
+  background-color: #1a1a2e !important;
   color: var(--text-primary) !important;
 }
 

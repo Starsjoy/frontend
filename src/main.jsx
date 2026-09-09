@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './theme.css'
 import './index.css'
 import { initVersionCheck } from './utils/versionCheck.js'
+import { listenForSafeAreaFromParent } from './utils/tgSafeAreaBridge.js'
 
 // Telegram Mini App SDK
 import WebApp from '@twa-dev/sdk'
@@ -15,6 +16,11 @@ WebApp.ready()
 // bo'lsa avtomatik reload qiladi (eski foydalanuvchilar qo'lda
 // yangilamasdan yangi build'ni ko'radi)
 initVersionCheck()
+
+// Agar bu sahifa Dashboard ichidagi <iframe>da yuklangan bo'lsa (Profil,
+// Chegirma va h.k.), Telegram'ning safe-area qiymatlarini o'zi ololmaydi —
+// ota oynadan (Dashboard) postMessage orqali oladi.
+listenForSafeAreaFromParent()
 
 // Boshlang'ich rangni o'rnatish (tema ThemeContext'da boshqariladi)
 // Dark mode ni tekshirish

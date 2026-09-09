@@ -877,7 +877,12 @@
 =============================== */
 .bottom-nav_dashboard {
   position: fixed;
-  bottom: calc(20px + var(--tg-safe-bottom, 0px));
+  /* iOS'da home-indicator (--tg-safe-bottom) tufayli nav tabiiy ravishda
+     biroz yuqoriroqda turadi; Android'da bu qiymat odatda 0 bo'lgani uchun
+     tekis 20px'da qolib ketardi. max() bilan Android'ga ham shunga
+     o'xshash minimal zaxira (34px) berilgan — iOS'ning haqiqiy dinamik
+     qiymati kattaroq bo'lsa, u hech qachon kamaytirilmaydi. */
+  bottom: max(34px, calc(20px + var(--tg-safe-bottom, 0px)));
   left: 14px;
   right: 14px;
   background: rgba(15, 23, 42, 0.4);
