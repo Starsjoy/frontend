@@ -7,11 +7,30 @@
 
 const CHANNEL = "sj-tg-safe-area";
 
+function toPx(value) {
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+// DIQQAT: --tg-safe-top/--tg-safe-bottom o'zlari calc()/var() formulasi
+// (theme.css'da aniqlangan) — maxsus xususiyatlarni (custom property)
+// getComputedStyle orqali o'qiganda brauzer ICHKI var()/calc()'ni
+// HISOBLAMAYDI, formulaning O'ZINI (satr sifatida) qaytaradi. Shu
+// formula string holida iframe'ga yuborilsa, u yerda ichki
+// --tg-content-safe-area-inset-top kabi o'zgaruvchilar mavjud emasligi
+// sababli natija yana 0 bo'lib chiqadi. Shuning uchun Telegram'ning XOM
+// (calc'siz, faqat piksel qiymat) o'zgaruvchilarini o'qib, YIG'INDINI
+// shu yerning o'zida (JavaScript'da) hisoblab, tayyor piksel qiymatini
+// yuboramiz.
 function readSafeArea() {
   const cs = getComputedStyle(document.documentElement);
+  const safeTop = toPx(cs.getPropertyValue("--tg-safe-area-inset-top"));
+  const contentTop = toPx(cs.getPropertyValue("--tg-content-safe-area-inset-top"));
+  const safeBottom = toPx(cs.getPropertyValue("--tg-safe-area-inset-bottom"));
+  const contentBottom = toPx(cs.getPropertyValue("--tg-content-safe-area-inset-bottom"));
   return {
-    top: cs.getPropertyValue("--tg-safe-top").trim() || "0px",
-    bottom: cs.getPropertyValue("--tg-safe-bottom").trim() || "0px",
+    top: `${safeTop + contentTop}px`,
+    bottom: `${safeBottom + contentBottom}px`,
   };
 }
 
