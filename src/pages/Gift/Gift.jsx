@@ -19,6 +19,10 @@ const CARD_NAME = import.meta.env.VITE_CARD_NAME;
 // Gift IDlar - har bir gift fayl nomi gift ID ga mos keladi (masalan: 5170145012310081615.tgs).
 // Aksariyati animatsion .tgs stiker; agar ext:"jpg" (yoki boshqa rasm kengaytmasi) ko'rsatilsa,
 // GiftVisual uni oddiy <img> sifatida ko'rsatadi (pastga qarang).
+// `hidden: true` — katalogda ko'rsatilmaydi, lekin yozuvi SHU YERDA QOLADI:
+// eski buyurtmalar tarixi rasmni chizish uchun shu ro'yxatdagi `ext` ga
+// tayanadi (GIFT_EXT_BY_ID pastda butun ro'yxat bo'yicha quriladi).
+// Qaytarish uchun `hidden: true` ni olib tashlash kifoya.
 const GIFTS_RAW = [
   { id: "5170145012310081615", stars: 15 },
   { id: "5170233102089322756", stars: 15 },
@@ -28,14 +32,14 @@ const GIFTS_RAW = [
   { id: "5170314324215857265", stars: 50 },
   { id: "5170564780938756245", stars: 50 },
   { id: "6028601630662853006", stars: 50 },
-  { id: "5922558454332916696", stars: 50 },
-  { id: "5801108895304779062", stars: 50 },
-  { id: "5800655655995968830", stars: 50 },
-  { id: "5956217000635139069", stars: 50 },
-  { id: "5893356958802511476", stars: 50 },
-  { id: "5935895822435615975", stars: 50 },
-  { id: "5969796561943660080", stars: 50 },
-  { id: "6046178578163303744", stars: 50, ext: "jpg" },
+  { id: "5922558454332916696", stars: 50, hidden: true }, // 🏆 G'olib kubogi
+  { id: "5801108895304779062", stars: 50, hidden: true }, // 💍 Uzuk
+  { id: "5800655655995968830", stars: 50, hidden: true }, // 🐻 Sevimli ayiqcha
+  { id: "5956217000635139069", stars: 50, hidden: true }, // 💎 Olmos
+  { id: "5893356958802511476", stars: 50, hidden: true }, // ⭐ Yulduz
+  { id: "5935895822435615975", stars: 50, hidden: true }, // 👑 Toj
+  { id: "5969796561943660080", stars: 50, hidden: true }, // 🐻 Ayiqcha Pro
+  { id: "6046178578163303744", stars: 50, ext: "jpg", hidden: true }, // 😈 Terror ayiqcha
   { id: "5168043875654172773", stars: 100 },
   { id: "5170690322832818290", stars: 100 },
   { id: "5170521118301225164", stars: 100 },
@@ -44,8 +48,8 @@ const GIFTS_RAW = [
 // Narxlar (so'mda) - Backend bilan sinxronlashtirilgan
 const PRICE_MAP = { 15: 5000, 25: 7000, 50: 13000, 100: 25000 };
 
-/** Qimmatdan arzoniga (narxi bo'yicha kamayish) */
-const GIFTS = [...GIFTS_RAW].sort((a, b) => {
+/** Katalogda ko'rinadiganlar, qimmatdan arzoniga (narxi bo'yicha kamayish) */
+const GIFTS = GIFTS_RAW.filter((g) => !g.hidden).sort((a, b) => {
   const diff = (PRICE_MAP[b.stars] ?? 0) - (PRICE_MAP[a.stars] ?? 0);
   if (diff !== 0) return diff;
   return b.stars - a.stars;
