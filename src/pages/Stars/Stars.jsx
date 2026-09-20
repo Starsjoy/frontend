@@ -3,6 +3,7 @@ import starsSticker from "../../assets/AnimatedSticker_stars.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
+import { usePaymentCard } from "../../hooks/usePaymentCard";
 import {
   getPremiumPurchasePath,
   isCardDeliveryVariant,
@@ -49,8 +50,11 @@ export function StarsPurchasePage({ variant = "fragment" }) {
   const isPaymee = variant === "paymee";
   const isCardFlow = isCardDeliveryVariant(variant);
   const starsApi = starsApiPrefix(variant);
-  const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
-  const CARD_NAME = import.meta.env.VITE_CARD_NAME;
+  // Karta serverdan keladi — admin switchi (UZCARD ⇄ HUMO) qayta build
+  // qilmasdan darhol qo'llanadi. API ishlamasa eski VITE_ qiymatiga tushadi.
+  const paymentCard = usePaymentCard();
+  const CARD_NUMBER = paymentCard.display;
+  const CARD_NAME = paymentCard.name;
   const NARX = parseInt(import.meta.env.VITE_NARX);
 
   // Stars options
@@ -290,7 +294,7 @@ export function StarsPurchasePage({ variant = "fragment" }) {
 
   // Copy card
   const handleCopy = () => {
-    navigator.clipboard.writeText(CARD_NUMBER);
+    navigator.clipboard.writeText(paymentCard.number);
     setCopiedCard(true);
     setTimeout(() => setCopiedCard(false), 2000);
   };

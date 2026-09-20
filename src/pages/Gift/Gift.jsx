@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../context/LanguageContext";
 import apiFetch from "../../utils/apiFetch";
+import { usePaymentCard } from "../../hooks/usePaymentCard";
 import {
   isPaymeeInsufficientError,
   paymeeInsufficientAlertMessage,
@@ -13,8 +14,6 @@ import { Gift as GiftIcon } from "lucide-react";
 import starsjoyLogo from "../../assets/starsjoy.jpg";
 import "./gift.css";
 
-const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
-const CARD_NAME = import.meta.env.VITE_CARD_NAME;
 
 // Gift IDlar - har bir gift fayl nomi gift ID ga mos keladi (masalan: 5170145012310081615.tgs).
 // Aksariyati animatsion .tgs stiker; agar ext:"jpg" (yoki boshqa rasm kengaytmasi) ko'rsatilsa,
@@ -91,6 +90,12 @@ const formatTime = (sec) => {
 export default function Gift() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  // Karta serverdan keladi — admin switchi (UZCARD ⇄ HUMO) qayta build
+  // qilmasdan darhol qo'llanadi. API ishlamasa eski VITE_ qiymatiga tushadi.
+  const paymentCard = usePaymentCard();
+  const CARD_NUMBER = paymentCard.display;
+  const CARD_NAME = paymentCard.name;
 
   // Step 1: Recipient
   const [username, setUsername] = useState("");
@@ -412,7 +417,7 @@ export default function Gift() {
 
   // === Copy handlers ===
   const handleCopyCard = () => {
-    navigator.clipboard.writeText(CARD_NUMBER);
+    navigator.clipboard.writeText(paymentCard.number);
     setCopiedCard(true);
     setTimeout(() => setCopiedCard(false), 1500);
   };

@@ -4,13 +4,17 @@ import { TGSSticker } from "../../components/TGSSticker";
 import { useNavigate, useLocation } from "react-router-dom";
 import WebApp from "@twa-dev/sdk";
 import apiFetch from "../../utils/apiFetch";
+import { usePaymentCard } from "../../hooks/usePaymentCard";
 import "./Discount.css";
 
 const POLLING_DURATION = 8 * 60 * 1000;
 
 export default function Discount() {
-  const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
-  const CARD_NAME = import.meta.env.VITE_CARD_NAME;
+  // Karta serverdan keladi — admin switchi (UZCARD ⇄ HUMO) qayta build
+  // qilmasdan darhol qo'llanadi. API ishlamasa eski VITE_ qiymatiga tushadi.
+  const paymentCard = usePaymentCard();
+  const CARD_NUMBER = paymentCard.display;
+  const CARD_NAME = paymentCard.name;
   const NARX = parseInt(import.meta.env.VITE_NARX); // 240 so'm per star
 
   // Discount packages from API
@@ -181,7 +185,7 @@ export default function Discount() {
 
   // Copy handlers
   const handleCopy = () => {
-    navigator.clipboard.writeText(CARD_NUMBER);
+    navigator.clipboard.writeText(paymentCard.number);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

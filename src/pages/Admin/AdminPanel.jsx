@@ -207,6 +207,9 @@ export default function AdminPanel() {
   const [fragmentVerifyLoading, setFragmentVerifyLoading] = useState(false);
   const [fragmentVerifyMsg, setFragmentVerifyMsg] = useState("");
   const [fragmentPaymentMethod, setFragmentPaymentMethod] = useState("ton");
+  // To'lov kartalari (UZCARD / HUMO) — qaysi biri mijozga ko'rsatiladi
+  const [paymentCards, setPaymentCards] = useState([]);
+  const [paymentCardLoading, setPaymentCardLoading] = useState(false);
   const [fragmentPayLoading, setFragmentPayLoading] = useState(false);
   const [fragmentEnvStatus, setFragmentEnvStatus] = useState(null);
   const [fragmentEnvLoading, setFragmentEnvLoading] = useState(false);
@@ -586,6 +589,7 @@ export default function AdminPanel() {
   useEffect(() => {
     if (isAuthenticated && activeTab === "settings") {
       fetchFragmentTokens();
+      fetchPaymentCards();
     }
   }, [isAuthenticated, activeTab]);
 
@@ -683,6 +687,45 @@ export default function AdminPanel() {
       alert("Server xatosi");
     } finally {
       setFragmentPayLoading(false);
+    }
+  };
+
+  // ========== TO'LOV KARTASI (UZCARD ⇄ HUMO) ==========
+  const fetchPaymentCards = async () => {
+    try {
+      const res = await apiFetch("/api/admin/payment-cards");
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.cards)) setPaymentCards(data.cards);
+    } catch (err) {
+      console.error("To'lov kartalarini yuklash:", err);
+    }
+  };
+
+  const switchPaymentCard = async (slot) => {
+    const target = paymentCards.find((c) => c.slot === slot);
+    if (!target || target.active || paymentCardLoading) return;
+    if (!target.payable) {
+      alert(`${target.title} sozlanmagan — .env da karta raqami yo'q`);
+      return;
+    }
+    setPaymentCardLoading(true);
+    try {
+      const res = await apiFetch("/api/admin/payment-system", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slot }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (Array.isArray(data.cards)) setPaymentCards(data.cards);
+        applySettingsFromApi(data);
+      } else {
+        alert(data.error || "Xato");
+      }
+    } catch {
+      alert("Server xatosi");
+    } finally {
+      setPaymentCardLoading(false);
     }
   };
 
@@ -3539,6 +3582,72 @@ export default function AdminPanel() {
               </p>
             </div>
           )}
+
+          {/* ========== TO'LOV KARTASI (UZCARD ⇄ HUMO) ========== */}
+          <h3 className="settings-section-title">💳 To‘lov kartasi</h3>
+          <p className="settings-section-desc">
+            Mijozga to‘lov ekranida qaysi karta ko‘rsatiladi. Almashtirish darhol
+            ishlaydi — saytni qayta qurish shart emas.
+          </p>
+
+          <div className="pay-cards">
+            {paymentCards.length === 0 && (
+              <p className="settings-hint">Kartalar yuklanmoqda…</p>
+            )}
+
+            {paymentCards.map((c) => (
+              <button
+                key={c.slot}
+                type="button"
+                className={`pay-card ${c.active ? "active" : ""} ${
+                  c.payable ? "" : "disabled"
+                } pay-card--${c.brand}`}
+                onClick={() => switchPaymentCard(c.slot)}
+                disabled={!c.payable || paymentCardLoading || c.active}
+                title={
+                  c.payable
+                    ? c.active
+                      ? "Hozir shu karta ko‘rsatilmoqda"
+                      : "Shu kartaga almashtirish"
+                    : ".env da karta raqami yo‘q"
+                }
+              >
+                <span className="pay-card__top">
+                  <span className="pay-card__brand">{c.title}</span>
+                  {c.active && <span className="pay-card__badge">FAOL</span>}
+                  {!c.payable && (
+                    <span className="pay-card__badge pay-card__badge--off">
+                      SOZLANMAGAN
+                    </span>
+                  )}
+                </span>
+
+                <span className="pay-card__number">
+                  {c.payable ? c.display : "—— —— —— ——"}
+                </span>
+
+                <span className="pay-card__bottom">
+                  <span className="pay-card__name">{c.name || "—"}</span>
+                  <span
+                    className={`pay-card__sms ${c.configured ? "ok" : "warn"}`}
+                    title={
+                      c.configured
+                        ? `SMS chat: ${c.chat_id}`
+                        : "SMS chat yoki suffiks yo‘q — bu kartaga tushgan to‘lov avtomatik topilmaydi"
+                    }
+                  >
+                    {c.configured ? "SMS ulangan" : "SMS yo‘q"}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <p className="settings-hint">
+            SMS listener <strong>ikkala kartani ham</strong> kuzatadi. Shuning uchun
+            kartani almashtirganingizda, ekranida hali eski karta turgan mijoz eski
+            kartaga to‘lasa ham buyurtmasi avtomatik yopiladi.
+          </p>
 
           <h3 className="settings-section-title">🏷️ Chegirma Paketlari</h3>
           <p className="settings-section-desc">Maxsus chegirmali Stars paketlarini boshqaring</p>

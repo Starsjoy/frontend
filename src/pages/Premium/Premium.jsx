@@ -6,6 +6,7 @@ import premiumGif from "../../assets/premium_gif.gif";
 import premiumSticker from "../../assets/AnimatedSticker_premium.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
 import apiFetch from "../../utils/apiFetch";
+import { usePaymentCard } from "../../hooks/usePaymentCard";
 import {
   getFragmentPaymentLabel,
   isCardDeliveryVariant,
@@ -27,8 +28,11 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
   const PREMIUM_3 = parseInt(import.meta.env.VITE_PREMIUM_3);
   const PREMIUM_6 = parseInt(import.meta.env.VITE_PREMIUM_6);
   const PREMIUM_12 = parseInt(import.meta.env.VITE_PREMIUM_12);
-  const CARD_NUMBER = import.meta.env.VITE_CARD_NUMBER;
-  const CARD_NAME = import.meta.env.VITE_CARD_NAME;
+  // Karta serverdan keladi — admin switchi (UZCARD ⇄ HUMO) qayta build
+  // qilmasdan darhol qo'llanadi. API ishlamasa eski VITE_ qiymatiga tushadi.
+  const paymentCard = usePaymentCard();
+  const CARD_NUMBER = paymentCard.display;
+  const CARD_NAME = paymentCard.name;
 
   // ====================
   // STATE
@@ -466,7 +470,7 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
 
   // Copy handlers - alohida animatsiyalar
   const handleCopyCard = () => {
-    navigator.clipboard.writeText(CARD_NUMBER);
+    navigator.clipboard.writeText(paymentCard.number);
     setCopiedCard(true);
     setTimeout(() => setCopiedCard(false), 1500);
   };
