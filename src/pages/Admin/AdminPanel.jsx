@@ -14,6 +14,16 @@ import AdminCustomSelect from "../../components/AdminCustomSelect";
 const PAGE_SIZE = 8;
 const LOAD_STEP = 8;
 
+/**
+ * "⚡ Stars / Premium yetkazish" switchi (Fragment ⇄ Paymee) sozlamalarda
+ * ko'rsatilsinmi.
+ *
+ * Hozir yashirilgan: rejim DB da qanday bo'lsa shunday qoladi, admin uni
+ * tasodifan almashtirib yubormaydi. Kod va API o'z joyida — qaytarish uchun
+ * shu qiymatni true qilish kifoya, qayta yozish shart emas.
+ */
+const SHOW_PURCHASE_MODE_SWITCH = false;
+
 const PURCHASE_MODE_OPTIONS = [
   { value: "fragment", label: "Fragment (USDT)", icon: "🟣" },
   { value: "paymee", label: "Paymee", icon: "🟢" },
@@ -3593,35 +3603,39 @@ export default function AdminPanel() {
             kartaga to‘lasa ham buyurtmasi avtomatik yopiladi.
           </p>
 
-          <h3 className="settings-section-title">⚡ Stars / Premium yetkazish</h3>
-          <p className="settings-section-desc">
-            Dashboard dagi &quot;Stars olish&quot; va &quot;Premium olish&quot; tugmalari qaysi sahifaga ochilishini tanlang.
-          </p>
-          <div className="purchase-mode-settings">
-            <div className="purchase-mode-switch purchase-mode-switch--large">
-<button
-                type="button"
-                className={`purchase-mode-btn ${starsPurchaseMode === "fragment" ? "active frag" : ""}`}
-                onClick={() => setPurchaseMode("fragment")}
-                disabled={purchaseModeLoading}
-              >
-                Fragment (USDT)
-              </button>
-              <button
-                type="button"
-                className={`purchase-mode-btn ${starsPurchaseMode === "paymee" ? "active paymee" : ""}`}
-                onClick={() => setPurchaseMode("paymee")}
-                disabled={purchaseModeLoading}
-              >
-                Paymee API
-              </button>
-            </div>
-            <p className="settings-hint">
-              {starsPurchaseMode === "paymee"
-                ? "Hozir: /paymeestars va /paymeepremium (karta + StarsPaymee Partner API)"
-                : "Hozir: /stars va /premium (karta + Fragment USDT)"}
-            </p>
-          </div>
+          {SHOW_PURCHASE_MODE_SWITCH && (
+            <>
+              <h3 className="settings-section-title">⚡ Stars / Premium yetkazish</h3>
+              <p className="settings-section-desc">
+                Dashboard dagi &quot;Stars olish&quot; va &quot;Premium olish&quot; tugmalari qaysi sahifaga ochilishini tanlang.
+              </p>
+              <div className="purchase-mode-settings">
+                <div className="purchase-mode-switch purchase-mode-switch--large">
+                  <button
+                    type="button"
+                    className={`purchase-mode-btn ${starsPurchaseMode === "fragment" ? "active frag" : ""}`}
+                    onClick={() => setPurchaseMode("fragment")}
+                    disabled={purchaseModeLoading}
+                  >
+                    Fragment (USDT)
+                  </button>
+                  <button
+                    type="button"
+                    className={`purchase-mode-btn ${starsPurchaseMode === "paymee" ? "active paymee" : ""}`}
+                    onClick={() => setPurchaseMode("paymee")}
+                    disabled={purchaseModeLoading}
+                  >
+                    Paymee API
+                  </button>
+                </div>
+                <p className="settings-hint">
+                  {starsPurchaseMode === "paymee"
+                    ? "Hozir: /paymeestars va /paymeepremium (karta + StarsPaymee Partner API)"
+                    : "Hozir: /stars va /premium (karta + Fragment USDT)"}
+                </p>
+              </div>
+            </>
+          )}
 
           {starsPurchaseMode === "fragment" && (
             <div className="purchase-mode-settings">
