@@ -135,7 +135,9 @@ export default function AdminPanel() {
   const SECONDARY_NAV_BOTTOM = [
     { id: "analytics", icon: "📊", label: "Stat" },
     { id: "notifications", icon: "📣", label: "Xabar" },
-    { id: "settings", icon: "%", label: "Cheg" },
+    // Bu tabda endi faqat chegirma emas: to'lov kartasi, yetkazish rejimi,
+    // Fragment to'lov usuli ham shu yerda — shuning uchun "Sozlama".
+    { id: "settings", icon: "⚙️", label: "Sozlama" },
     { id: "promocodes", icon: "➕", label: "Promo" },
     { id: "referrals", icon: "🤝", label: "Ref" },
   ];
@@ -143,7 +145,7 @@ export default function AdminPanel() {
   const SECONDARY_NAV_HEADER = [
     { id: "analytics", icon: "📊", label: "Analitika" },
     { id: "notifications", icon: "📣", label: "Xabar" },
-    { id: "settings", icon: "%", label: "Chegirma" },
+    { id: "settings", icon: "⚙️", label: "Sozlamalar" },
     { id: "promocodes", icon: "➕", label: "Promokod" },
     { id: "referrals", icon: "🤝", label: "Referral" },
   ];
@@ -3523,67 +3525,9 @@ export default function AdminPanel() {
       {/* ==================== SETTINGS TAB ==================== */}
       {activeTab === "settings" && (
         <div className="tab-content settings-tab">
-          <h3 className="settings-section-title">⚡ Stars / Premium yetkazish</h3>
-          <p className="settings-section-desc">
-            Dashboard dagi &quot;Stars olish&quot; va &quot;Premium olish&quot; tugmalari qaysi sahifaga ochilishini tanlang.
-          </p>
-          <div className="purchase-mode-settings">
-            <div className="purchase-mode-switch purchase-mode-switch--large">
-<button
-                type="button"
-                className={`purchase-mode-btn ${starsPurchaseMode === "fragment" ? "active frag" : ""}`}
-                onClick={() => setPurchaseMode("fragment")}
-                disabled={purchaseModeLoading}
-              >
-                Fragment (USDT)
-              </button>
-              <button
-                type="button"
-                className={`purchase-mode-btn ${starsPurchaseMode === "paymee" ? "active paymee" : ""}`}
-                onClick={() => setPurchaseMode("paymee")}
-                disabled={purchaseModeLoading}
-              >
-                Paymee API
-              </button>
-            </div>
-            <p className="settings-hint">
-              {starsPurchaseMode === "paymee"
-                ? "Hozir: /paymeestars va /paymeepremium (karta + StarsPaymee Partner API)"
-                : "Hozir: /stars va /premium (karta + Fragment USDT)"}
-            </p>
-          </div>
-
-          {starsPurchaseMode === "fragment" && (
-            <div className="purchase-mode-settings">
-              <h3 className="settings-section-title">💰 Fragment to‘lov usuli</h3>
-              <p className="settings-section-desc">
-                Fragment hamyonidan stars/premium yuborish: native TON yoki USDT TON.
-              </p>
-              <div className="purchase-mode-switch purchase-mode-switch--large">
-                <button
-                  type="button"
-                  className={`purchase-mode-btn ${fragmentPaymentMethod === "ton" ? "active ton" : ""}`}
-                  onClick={() => setFragmentPayMethod("ton")}
-                  disabled={fragmentPayLoading}
-                >
-                  TON
-                </button>
-                <button
-                  type="button"
-                  className={`purchase-mode-btn ${fragmentPaymentMethod === "usdt_ton" ? "active usdt" : ""}`}
-                  onClick={() => setFragmentPayMethod("usdt_ton")}
-                  disabled={fragmentPayLoading}
-                >
-                  USDT TON
-                </button>
-              </div>
-              <p className="settings-hint">
-                Faol: <strong>{fragmentPaymentMethod === "usdt_ton" ? "USDT TON" : "TON"}</strong> — /stars va /premium uchun
-              </p>
-            </div>
-          )}
-
-          {/* ========== TO'LOV KARTASI (UZCARD ⇄ HUMO) ========== */}
+          {/* ========== TO'LOV KARTASI (UZCARD ⇄ HUMO) ==========
+              Tabning ENG TEPASIDA: eng tez-tez ishlatiladigan switch shu.
+              Pastroqqa qo'yilganda uzun ro'yxat ichida ko'rinmay qolgan edi. */}
           <h3 className="settings-section-title">💳 To‘lov kartasi</h3>
           <p className="settings-section-desc">
             Mijozga to‘lov ekranida qaysi karta ko‘rsatiladi. Almashtirish darhol
@@ -3648,6 +3592,66 @@ export default function AdminPanel() {
             kartani almashtirganingizda, ekranida hali eski karta turgan mijoz eski
             kartaga to‘lasa ham buyurtmasi avtomatik yopiladi.
           </p>
+
+          <h3 className="settings-section-title">⚡ Stars / Premium yetkazish</h3>
+          <p className="settings-section-desc">
+            Dashboard dagi &quot;Stars olish&quot; va &quot;Premium olish&quot; tugmalari qaysi sahifaga ochilishini tanlang.
+          </p>
+          <div className="purchase-mode-settings">
+            <div className="purchase-mode-switch purchase-mode-switch--large">
+<button
+                type="button"
+                className={`purchase-mode-btn ${starsPurchaseMode === "fragment" ? "active frag" : ""}`}
+                onClick={() => setPurchaseMode("fragment")}
+                disabled={purchaseModeLoading}
+              >
+                Fragment (USDT)
+              </button>
+              <button
+                type="button"
+                className={`purchase-mode-btn ${starsPurchaseMode === "paymee" ? "active paymee" : ""}`}
+                onClick={() => setPurchaseMode("paymee")}
+                disabled={purchaseModeLoading}
+              >
+                Paymee API
+              </button>
+            </div>
+            <p className="settings-hint">
+              {starsPurchaseMode === "paymee"
+                ? "Hozir: /paymeestars va /paymeepremium (karta + StarsPaymee Partner API)"
+                : "Hozir: /stars va /premium (karta + Fragment USDT)"}
+            </p>
+          </div>
+
+          {starsPurchaseMode === "fragment" && (
+            <div className="purchase-mode-settings">
+              <h3 className="settings-section-title">💰 Fragment to‘lov usuli</h3>
+              <p className="settings-section-desc">
+                Fragment hamyonidan stars/premium yuborish: native TON yoki USDT TON.
+              </p>
+              <div className="purchase-mode-switch purchase-mode-switch--large">
+                <button
+                  type="button"
+                  className={`purchase-mode-btn ${fragmentPaymentMethod === "ton" ? "active ton" : ""}`}
+                  onClick={() => setFragmentPayMethod("ton")}
+                  disabled={fragmentPayLoading}
+                >
+                  TON
+                </button>
+                <button
+                  type="button"
+                  className={`purchase-mode-btn ${fragmentPaymentMethod === "usdt_ton" ? "active usdt" : ""}`}
+                  onClick={() => setFragmentPayMethod("usdt_ton")}
+                  disabled={fragmentPayLoading}
+                >
+                  USDT TON
+                </button>
+              </div>
+              <p className="settings-hint">
+                Faol: <strong>{fragmentPaymentMethod === "usdt_ton" ? "USDT TON" : "TON"}</strong> — /stars va /premium uchun
+              </p>
+            </div>
+          )}
 
           <h3 className="settings-section-title">🏷️ Chegirma Paketlari</h3>
           <p className="settings-section-desc">Maxsus chegirmali Stars paketlarini boshqaring</p>
