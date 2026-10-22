@@ -416,5 +416,46 @@
       "payTitle": "Send the exact amount",
       "payDesc": "The one rule that matters: send the exact amount shown, to the last digit."
     }
+  },
+  "transfer": {
+    "screenTitle": "Payment",
+    "close": "Close",
+    "timeLeft": "Time left to pay",
+    "title": "Transfer money to this card",
+    "apps": "Via Click, Payme, Uzum or your bank app",
+    "recipient": "Recipient",
+    "copy": "Copy",
+    "copied": "Copied",
+    "amountLabel": "Amount to transfer",
+    "exactTitle": "Transfer exactly this amount",
+    "exactDesc": "If the amount differs by even 1 UZS, the payment won't be found and your order won't be completed.",
+    "item": {
+      "stars": "Stars",
+      "premium": "Premium",
+      "gift": "gift"
+    },
+    "guide": "Guide",
+    "guideTitle": "How to pay",
+    "guideSub": "From any payment app, in 5 simple steps.",
+    "step1": "Open your app",
+    "step1Sub": "Click, Payme, Uzum or your bank's app",
+    "step2": "Choose “Card transfer”",
+    "step2Sub": "The section for sending money to another card",
+    "step3": "Paste the card number",
+    "step3Sub": "Copy it from this page — the owner's name will appear",
+    "step4": "Enter {amount} as the amount",
+    "step4Sub": "Exactly this number — not even 1 UZS off",
+    "step5": "Transfer and come back here",
+    "step5Sub": "Tap “I have paid”",
+    "understood": "Got it",
+    "paid": "I have paid",
+    "confirmTitle": "Secure payment",
+    "confirmPre": "We can only identify your payment if you transfer exactly",
+    "confirmPost": "— not even 1 UZS more or less.",
+    "confirmAuto": "The system detects your payment automatically",
+    "confirmCta": "Go to payment",
+    "premiumMonths": "Premium · {n} mo.",
+    "giftLabel": "Gift",
+    "giftPrivacy": "The recipient's profile must allow messages — if they're closed, the gift can't be sent."
   }
 }

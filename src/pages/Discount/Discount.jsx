@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import WebApp from "@twa-dev/sdk";
 import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
+import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import "./Discount.css";
 
 const POLLING_DURATION = 8 * 60 * 1000;
@@ -186,12 +187,6 @@ export default function Discount() {
   // Copy handlers
   const handleCopy = () => {
     navigator.clipboard.writeText(paymentCard.number);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleCopyamount = () => {
-    navigator.clipboard.writeText(order?.amount);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -503,87 +498,24 @@ export default function Discount() {
         </button>
       </div>
 
+      {/* To'lov ma'lumotlari (to'liq ekran) */}
+      {showModal && status === "payment_info" && order && (
+        <PaymentTransfer
+          cardDisplay={CARD_NUMBER}
+          cardNumber={paymentCard.number}
+          cardName={CARD_NAME}
+          amount={order.amount}
+          countdown={countdown}
+          item="stars"
+          onClose={() => setShowModal(false)}
+          onPaid={handlePaymentDone}
+        />
+      )}
+
       {/* Modal */}
-      {showModal && (
+      {showModal && status !== "payment_info" && (
         <div className="modal-overlay">
           <div className="modal-content">
-            {/* PAYMENT INFO - To'lov ma'lumotlari */}
-            {status === "payment_info" && (
-              <div className="payment-info-section">
-                <div className="modal-header-bar">
-                  <span className="modal-header-title">💳 To'lov ma'lumotlari</span>
-                  <button className="modal-close-x" onClick={() => setShowModal(false)}>✕</button>
-                </div>
-
-                {profile && (
-                  <div className="modal-profile-card">
-                    <img
-                      src={profile.imageUrl || "../src/assets/default_image.png"}
-                      className="modal-profile-img"
-                    />
-                    <div className="modal-profile-info">
-                      <div className="modal-profile-name">{profile.fullName}</div>
-                      <div className="modal-profile-username">@{profile.username}</div>
-                    </div>
-                    <div className="modal-stars-badge">⭐ {order?.stars}</div>
-                  </div>
-                )}
-
-                <div className="modal-payment-grid">
-                  <div className="modal-pay-item">
-                    <div className="modal-pay-label">Karta raqami</div>
-                    <div className="modal-pay-row">
-                      <span className="modal-pay-value">{CARD_NUMBER}</span>
-                      <button className="modal-copy-btn" onClick={handleCopy}>
-                        {copied ? "✓" : "📋"}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="modal-pay-item">
-                    <div className="modal-pay-label">Karta egasi</div>
-                    <div className="modal-pay-row">
-                      <span className="modal-pay-value">{CARD_NAME}</span>
-                    </div>
-                  </div>
-
-                  <div className="modal-pay-item highlight">
-                    <div className="modal-pay-label">To'lov summasi</div>
-                    <div className="modal-pay-row">
-                      <span className="modal-pay-value bold">{formatAmount(order?.amount)} so'm</span>
-                      <button className="modal-copy-btn" onClick={handleCopyamount}>
-                        {copied ? "✓" : "📋"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="modal-warning-alert">
-                  <div className="warning-pulse"></div>
-                  <div className="warning-content">
-                    <span className="warning-icon-lg">⚠️</span>
-                    <div className="warning-text">
-                      <span className="warning-label">MUHIM!</span>
-                      <span className="warning-amount">Aynan {formatAmount(order?.amount)} so'm</span>
-                      <span className="warning-note">to'lang, aks holda to'lov ko'rinmaydi</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="modal-timer-bar">
-                  <div className="modal-timer">
-                    <span className="timer-icon">⏳</span>
-                    <span className="timer-text">{formatTime(countdown)}</span>
-                  </div>
-                </div>
-
-                <button className="btn-payment-done" onClick={handlePaymentDone}>
-                  ✅ To'lov qildim
-                </button>
-                <p className="modal-close-hint">To'lovni amalga oshiring va tugmani bosing</p>
-              </div>
-            )}
-
             {/* PENDING - To'lov kutilmoqda */}
             {status === "pending" && (
               <div className="pending-waiting-section">

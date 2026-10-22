@@ -7,6 +7,8 @@ import premiumSticker from "../../assets/AnimatedSticker_premium.tgs";
 import { TGSSticker } from "../../components/TGSSticker";
 import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
+import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
+import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
 import {
   getFragmentPaymentLabel,
   isCardDeliveryVariant,
@@ -65,7 +67,6 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
 
   const [loadingBuy, setLoadingBuy] = useState(false);
   const [copiedCard, setCopiedCard] = useState(false);
-  const [copiedAmount, setCopiedAmount] = useState(false);
 
   // Promocode states
   const [pramacod, setPramacod] = useState("");
@@ -475,12 +476,6 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
     setTimeout(() => setCopiedCard(false), 1500);
   };
 
-  const handleCopyAmount = () => {
-    navigator.clipboard.writeText(String(order?.amount));
-    setCopiedAmount(true);
-    setTimeout(() => setCopiedAmount(false), 1500);
-  };
-
   // "To'lov qildim" tugmasi - payment_info dan pending ga o'tish
   const handlePaymentDone = () => {
     paymentDoneClickedRef.current = true;
@@ -613,118 +608,34 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
 
 
 
-      {/* WARNING MODAL (Gift-style) */}
+      {/* XAVFSIZ TO'LOV (order yaratilgach) */}
       {showWarningModal && order && (
-        <div className="premium-warn-overlay">
-          <div className="premium-warn-panel">
-            <div className="premium-warn-header">
-              <h3 className="premium-warn-title">{t("payment.importantWarning")}</h3>
-            </div>
+        <PaymentConfirm
+          amount={order.amount}
+          product={t("transfer.premiumMonths").replace("{n}", order.muddat_oy)}
+          recipient={profile?.username || username}
+          onContinue={handleWarningUnderstood}
+        />
+      )}
 
-            <div className="premium-warn-body">
-              <div className="premium-warn-block">
-                <strong>{t("payment.amountNote")}</strong>
-                <br />
-                {t("payment.exactNoteDesc")}
-              </div>
-
-              <div className="premium-warn-amount-highlight">
-                <span className="premium-warn-label">{t("payment.amountLabel")}</span>
-                <span className="premium-warn-amount">{formatAmount(order?.amount)} {t("common.currency")}</span>
-              </div>
-            </div>
-
-            <button type="button" className="premium-warn-btn" onClick={handleWarningUnderstood}>
-              {t("payment.understoodBtn")}
-            </button>
-          </div>
-        </div>
+      {/* TO'LOV MA'LUMOTLARI (to'liq ekran) */}
+      {showModal && order && paymentStatus === "payment_info" && (
+        <PaymentTransfer
+          cardDisplay={CARD_NUMBER}
+          cardNumber={paymentCard.number}
+          cardName={CARD_NAME}
+          amount={order.amount}
+          countdown={countdown}
+          item="premium"
+          onClose={() => { stopPolling(); stopCountdown(); setShowModal(false); }}
+          onPaid={handlePaymentDone}
+        />
       )}
 
       {/* MODAL */}
-      {showModal && order && (
+      {showModal && order && paymentStatus !== "payment_info" && (
         <div className="modal-overlay">
           <div className="modal-content">
-
-            {/* PAYMENT_INFO - To'lov ma'lumotlari va "To'lov qildim" tugmasi */}
-            {paymentStatus === "payment_info" && (
-              <div className="pending-section">
-                {/* Modal Header */}
-                <div className="modal-header-bar">
-                  <span className="modal-header-title">{t("premium.modalTitle")}</span>
-                  <button type="button" className="modal-close-x" onClick={() => {
-                    stopPolling();
-                    stopCountdown();
-                    setShowModal(false);
-                  }}>✕</button>
-                </div>
-
-                {/* Profile Card */}
-                {profile && (
-                  <div className="modal-profile-card">
-                    <img
-                      src={profile.imageUrl || "../src/assets/default_image.png"}
-                      className="modal-profile-img"
-                    />
-                    <div className="modal-profile-info">
-                      <div className="modal-profile-name">{profile.fullName}</div>
-                      <div className="modal-profile-username">@{profile.username}</div>
-                    </div>
-                    <div className="modal-premium-badge">💎 {order.muddat_oy} oy</div>
-                  </div>
-                )}
-
-                {/* Payment Info Cards */}
-                <div className="modal-payment-grid">
-                  <div className="modal-pay-item">
-                    <div className="modal-pay-label">{t("payment.cardNumber")}</div>
-                    <div className="modal-pay-row">
-                      <span className="modal-pay-value">{CARD_NUMBER}</span>
-                      <button type="button" className="modal-copy-btn" onClick={handleCopyCard}>
-                        {copiedCard ? "✓" : "📋"}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="modal-pay-item">
-                    <div className="modal-pay-label">{t("payment.cardOwner")}</div>
-                    <div className="modal-pay-row">
-                      <span className="modal-pay-value">{CARD_NAME}</span>
-                    </div>
-                  </div>
-
-                  <div className="modal-pay-item highlight">
-                    <div className="modal-pay-label">{t("payment.amountLabel")}</div>
-                    <div className="modal-pay-row">
-                      <span className="modal-pay-value bold">{formatAmount(order.amount)} {t("common.currency")}</span>
-                      <button type="button" className="modal-copy-btn" onClick={handleCopyAmount}>
-                        {copiedAmount ? "✓" : "📋"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Warning */}
-                <div className="modal-warning">
-                  <span className="modal-warning-icon">⚠️</span>
-                  <span>{t("payment.sendExactPre")} <b>{formatAmount(order.amount)} {t("common.currency")}</b> {t("payment.sendExactPost")} {t("payment.wrongAmountHint")}.</span>
-                </div>
-
-                {/* Timer */}
-                <div className="modal-status-bar">
-                  <div className="modal-timer">
-                    <div className="modal-timer-icon">⏳</div>
-                    <span>{formatTime(countdown)}</span>
-                  </div>
-                </div>
-
-                {/* To'lov qildim button */}
-                <button type="button" className="btn-payment-done" onClick={handlePaymentDone}>
-                  {t("payment.paidBtn")}
-                </button>
-                <p className="modal-close-hint">{t("payment.hint")}</p>
-              </div>
-            )}
 
             {/* PENDING - To'lov kutilmoqda */}
             {paymentStatus === "pending" && (

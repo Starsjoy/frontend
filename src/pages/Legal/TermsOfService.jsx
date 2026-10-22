@@ -98,8 +98,8 @@ export default function TermsOfService() {
               <h2>8. Murojaat</h2>
               <p>
                 Savollar yoki muammolar uchun bizning qo'llab-quvvatlash xizmati bilan bog'laning: 
-                <a href="https://t.me/support" target="_blank" rel="noopener noreferrer">
-                  @support
+                <a href="https://t.me/StarsjoySupport" target="_blank" rel="noopener noreferrer">
+                  @StarsjoySupport
                 </a>
               </p>
             </section>
@@ -195,8 +195,8 @@ export default function TermsOfService() {
               <h2>8. Контакты</h2>
               <p>
                 По вопросам обратитесь в нашу службу поддержки: 
-                <a href="https://t.me/support" target="_blank" rel="noopener noreferrer">
-                  @support
+                <a href="https://t.me/StarsjoySupport" target="_blank" rel="noopener noreferrer">
+                  @StarsjoySupport
                 </a>
               </p>
             </section>
@@ -291,8 +291,8 @@ export default function TermsOfService() {
               <h2>8. Contact</h2>
               <p>
                 For questions, contact our support team: 
-                <a href="https://t.me/support" target="_blank" rel="noopener noreferrer">
-                  @support
+                <a href="https://t.me/StarsjoySupport" target="_blank" rel="noopener noreferrer">
+                  @StarsjoySupport
                 </a>
               </p>
             </section>

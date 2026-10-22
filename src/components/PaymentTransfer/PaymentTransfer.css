@@ -1,0 +1,724 @@
+/* To'lov ma'lumotlari ekrani — PaymentTransfer.jsx
+   Sahifa stillaridan mustaqil: global button stillari ta'sir qilmasligi
+   uchun ba'zi xossalar !important bilan yozilgan. */
+
+.pt-screen {
+  --pt-bg: #0e0f13;
+  --pt-surface: #17181d;
+  --pt-surface-2: #1f2026;
+  --pt-line: rgba(255, 255, 255, 0.07);
+  --pt-text: #f5f6f8;
+  --pt-muted: #8b8d98;
+  --pt-accent: #3d8bfd;
+  --pt-amount: #ffc94d;
+  --pt-ok: #34c759;
+  --pt-danger: #ff453a;
+
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  container: pt / size;
+  display: flex;
+  flex-direction: column;
+  /* Planshet/desktop'da kontent markazda, 480px dan kengaymaydi */
+  padding-top: var(--tg-safe-top, 0px);
+  padding-bottom: var(--tg-safe-bottom, 0px);
+  padding-left: max(0px, calc((100% - 480px) / 2));
+  padding-right: max(0px, calc((100% - 480px) / 2));
+  background: var(--pt-bg);
+  color: var(--pt-text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  animation: pt-fade 0.2s ease;
+}
+
+.pt-screen button {
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pt-screen--embedded {
+  position: absolute;
+  z-index: 1;
+}
+
+@keyframes pt-fade { from { opacity: 0; } }
+@keyframes pt-pop { from { transform: scale(0.94); opacity: 0; } }
+
+/* ---------- yuqori panel ---------- */
+.pt-top {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 10px;
+}
+
+.pt-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center;
+  font-size: 13px;
+  text-align: center !important;
+  color: var(--pt-muted) !important;
+  background: var(--pt-surface) !important;
+}
+
+.pt-top-title {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ---------- taymer ---------- */
+.pt-countdown {
+  --pt-tone: var(--pt-accent);
+  margin: 2px 16px 0;
+  padding: 10px 14px 12px;
+  border-radius: 14px;
+  background: var(--pt-surface);
+  transition: background 0.3s;
+}
+
+.pt-countdown.is-warn { --pt-tone: var(--pt-amount); }
+
+.pt-countdown.is-danger {
+  --pt-tone: var(--pt-danger);
+  background: rgba(255, 69, 58, 0.1);
+}
+
+.pt-countdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pt-countdown-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--pt-muted);
+}
+
+.pt-countdown-label svg { color: var(--pt-tone); }
+
+.pt-countdown-time {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--pt-tone);
+}
+
+.pt-countdown.is-danger .pt-countdown-time {
+  animation: pt-blink 1s steps(2, start) infinite;
+}
+
+@keyframes pt-blink { to { opacity: 0.45; } }
+
+.pt-countdown-track {
+  margin-top: 8px;
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pt-countdown-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--pt-tone);
+  transition: width 1s linear, background 0.3s;
+}
+
+/* ---------- kontent ---------- */
+.pt-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 20px 16px;
+}
+
+.pt-head {
+  margin: 14px 0 20px;
+  text-align: center;
+}
+
+.pt-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--pt-text);
+}
+
+.pt-muted {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--pt-muted);
+}
+
+/* Plastik karta */
+.pt-plastic {
+  display: flex !important;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 100%;
+  min-height: 176px;
+  padding: 20px !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+  color: #fff !important;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(255, 255, 255, 0.18), transparent 55%),
+    linear-gradient(140deg, #2b6ef6 0%, #1d4fd7 55%, #1a3aa8 100%) !important;
+  box-shadow: 0 18px 40px -12px rgba(43, 110, 246, 0.55);
+}
+
+.pt-plastic-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.pt-fit {
+  container-type: inline-size;
+  width: 100%;
+  min-width: 0;
+  margin-top: auto;
+}
+
+.pt-cardnum {
+  display: block;
+  white-space: nowrap;
+  font-size: clamp(13px, 8.2cqi, 28px);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.pt-plastic-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.pt-plastic-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pt-plastic-copy {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  letter-spacing: 0;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Summa */
+.pt-amount {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: 20px !important;
+  padding: 16px 16px 16px 18px !important;
+  border-radius: 18px !important;
+  background: rgba(255, 201, 77, 0.08) !important;
+  border: 1.5px solid rgba(255, 201, 77, 0.45) !important;
+}
+
+.pt-amount-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pt-amount-label {
+  font-size: 12.5px;
+  color: var(--pt-muted);
+}
+
+.pt-amount-value {
+  font-size: 23px;
+  font-weight: 700;
+  color: var(--pt-amount);
+  font-variant-numeric: tabular-nums;
+}
+
+.pt-copy {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--pt-accent);
+  background: rgba(61, 139, 253, 0.12);
+  transition: background 0.15s, color 0.15s;
+}
+
+.pt-copy.is-done {
+  color: var(--pt-ok);
+  background: rgba(52, 199, 89, 0.14);
+}
+
+/* Qat'iy ogohlantirish */
+.pt-warn {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-top: 16px;
+  padding: 14px 14px 14px 12px;
+  border-radius: 16px;
+  background: rgba(255, 69, 58, 0.1);
+  border: 1.5px solid rgba(255, 69, 58, 0.55);
+}
+
+.pt-warn-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--pt-danger);
+}
+
+.pt-warn strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ff6b61;
+}
+
+.pt-warn p {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* "? Qo'llanma" */
+.pt-help {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  align-self: center;
+  flex-shrink: 0;
+  margin-top: 14px !important;
+  min-height: 44px;
+  padding: 0 16px 0 10px !important;
+  border-radius: 999px !important;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: var(--pt-surface) !important;
+  border: 1px solid var(--pt-line) !important;
+}
+
+.pt-help-q {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--pt-accent);
+}
+
+/* ---------- pastki tugma ---------- */
+.pt-bottom {
+  padding: 12px 20px 22px;
+  border-top: 1px solid var(--pt-line);
+}
+
+.pt-cta {
+  display: block !important;
+  width: 100%;
+  min-height: 52px;
+  padding: 15px 16px !important;
+  border-radius: 14px !important;
+  text-align: center !important;
+  font-size: 16px !important;
+  font-weight: 650 !important;
+  color: #fff !important;
+  background: var(--pt-accent) !important;
+  transition: transform 0.12s, filter 0.12s;
+}
+
+.pt-cta:active {
+  transform: scale(0.98);
+  filter: brightness(0.92);
+}
+
+/* ---------- Qo'llanma oynasi ---------- */
+.pt-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(14px + var(--tg-safe-top, 0px)) 14px calc(14px + var(--tg-safe-bottom, 0px));
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: pt-fade 0.2s ease;
+}
+
+.pt-modal-panel {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 24px 20px 20px;
+  border-radius: 24px;
+  background: var(--pt-surface);
+  border: 1px solid var(--pt-line);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  animation: pt-pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.pt-modal-x {
+  position: absolute !important;
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center;
+  font-size: 12px;
+  text-align: center !important;
+  color: var(--pt-muted) !important;
+  background: var(--pt-surface-2) !important;
+}
+
+.pt-modal-title {
+  margin: 0 40px 6px 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--pt-text);
+}
+
+.pt-modal-text {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--pt-muted);
+}
+
+.pt-modal-cta {
+  margin-top: 8px !important;
+  padding: 15px !important;
+}
+
+.pt-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pt-steps li {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-bottom: 18px;
+}
+
+.pt-steps li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 34px;
+  bottom: 2px;
+  width: 2px;
+  background: var(--pt-line);
+}
+
+.pt-steps-n {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--pt-surface-2);
+}
+
+.pt-steps-title {
+  padding-top: 5px;
+  font-size: 15.5px;
+  font-weight: 600;
+}
+
+.pt-steps-sub {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--pt-muted);
+}
+
+.pt-steps li.is-key .pt-steps-n {
+  color: #1a1a1a;
+  background: var(--pt-amount);
+}
+
+.pt-steps li.is-key .pt-steps-title { color: var(--pt-amount); }
+.pt-steps li.is-key .pt-steps-sub { color: #ff6b61; }
+
+/* ---------- kichik ekranlar ---------- */
+/* Container query: haqiqiy ekranda ham, /test ramkasida ham bir xil ishlaydi */
+/* Past ekran (iPhone SE, Telegram sarlavhasi bilan): ixchamroq */
+@container pt (max-height: 700px) {
+  .pt-top { padding: 8px 16px 6px; }
+  .pt-countdown { padding: 8px 12px 10px; }
+  .pt-countdown-time { font-size: 18px; }
+  .pt-head { margin: 10px 0 14px; }
+  .pt-title { font-size: 19px; margin-bottom: 4px; }
+  .pt-plastic { min-height: 150px; padding: 16px !important; }
+  .pt-amount { margin-top: 14px !important; padding: 12px 14px !important; }
+  .pt-amount-value { font-size: 20px; }
+  .pt-warn { margin-top: 12px; padding: 12px; }
+  .pt-help { margin-top: 10px !important; }
+  .pt-bottom { padding: 10px 16px 14px; }
+  .pt-steps li { padding-bottom: 12px; }
+  .pt-modal-text { margin-bottom: 14px; }
+}
+
+/* Juda past ekran (iPhone 5/SE 1-avlod): yana ixchamroq */
+@container pt (max-height: 600px) {
+  .pt-head { margin: 6px 0 10px; }
+  .pt-title { font-size: 18px; }
+  .pt-muted { font-size: 12px; }
+  .pt-plastic { min-height: 128px; padding: 14px !important; }
+  .pt-plastic-foot { margin-top: 10px; }
+  .pt-amount { margin-top: 10px !important; }
+  .pt-amount-value { font-size: 19px; }
+  .pt-warn { margin-top: 10px; padding: 10px; }
+  .pt-warn p { font-size: 12px; }
+  .pt-countdown-track { margin-top: 6px; }
+}
+
+/* Tor ekran (320px) */
+@container pt (max-width: 350px) {
+  .pt-body { padding-left: 14px; padding-right: 14px; }
+  .pt-countdown { margin-left: 12px; margin-right: 12px; }
+  .pt-countdown-label { font-size: 12px; }
+  .pt-bottom { padding-left: 14px; padding-right: 14px; }
+  .pt-plastic-copy { padding: 0 10px; }
+}
+
+/* ================================================================
+   "Xavfsiz to'lov" oynasi — PaymentConfirm.jsx
+   ================================================================ */
+.pc-overlay {
+  --pt-surface: #17181d;
+  --pt-surface-2: #1f2026;
+  --pt-line: rgba(255, 255, 255, 0.07);
+  --pt-text: #f5f6f8;
+  --pt-muted: #8b8d98;
+  --pt-accent: #3d8bfd;
+  --pt-amount: #ffc94d;
+  --pt-ok: #34c759;
+
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  container: pc / size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Telegram sarlavhasi va pastki panel ostiga tushmasin */
+  padding: calc(16px + var(--tg-safe-top, 0px)) 16px calc(16px + var(--tg-safe-bottom, 0px));
+  background: rgba(8, 8, 14, 0.66);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--pt-text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  animation: pt-fade 0.2s ease;
+}
+
+.pc-overlay--embedded {
+  position: absolute;
+  z-index: 1;
+}
+
+.pc-panel {
+  width: 100%;
+  max-width: 400px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 26px 20px 20px;
+  border-radius: 24px;
+  text-align: center;
+  background: var(--pt-surface);
+  border: 1px solid var(--pt-line);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: pt-pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.pc-badge {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--pt-accent);
+  background: rgba(61, 139, 253, 0.14);
+}
+
+.pc-title {
+  margin: 0 0 6px;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--pt-text);
+}
+
+.pc-sub {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: var(--pt-muted);
+  overflow-wrap: anywhere;
+}
+
+.pc-message {
+  padding: 18px 16px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 201, 77, 0.07);
+  border: 1px solid rgba(255, 201, 77, 0.38);
+}
+
+.pc-amount {
+  display: block;
+  margin: 6px 0;
+  white-space: nowrap;
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--pt-amount);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-note {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.8);
+  background: var(--pt-surface-2);
+}
+
+/* Matn ikki qatorga tushsa ham belgi matn boshida qoladi */
+.pc-auto {
+  display: block;
+  margin: 16px 0 0;
+  line-height: 1.45;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.pc-auto-ic {
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  color: #fff;
+  background: var(--pt-ok);
+}
+
+.pc-cta {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  margin: 20px 0 0;
+  padding: 15px 16px;
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  color: #fff;
+  background: var(--pt-accent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s, filter 0.12s;
+}
+
+.pc-cta:active {
+  transform: scale(0.98);
+  filter: brightness(0.92);
+}
+
+/* Past ekran: ixchamroq */
+@container pc (max-height: 620px) {
+  .pc-panel { padding: 20px 16px 16px; }
+  .pc-badge { width: 46px; height: 46px; margin-bottom: 10px; }
+  .pc-title { font-size: 19px; }
+  .pc-sub { margin-bottom: 14px; }
+  .pc-message { padding: 14px; font-size: 14px; }
+  .pc-amount { font-size: 26px; }
+  .pc-auto { margin-top: 12px; }
+  .pc-cta { margin-top: 14px; }
+}
+
+/* Tor ekran (320px) */
+@container pc (max-width: 350px) {
+  .pc-amount { font-size: 26px; }
+}

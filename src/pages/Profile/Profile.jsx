@@ -152,7 +152,7 @@ export default function Profile() {
       <div className="settings-group">
         {/* 5. Yordam */}
         <div className="settings-item" onClick={() => {
-          try { WebApp.openTelegramLink("https://t.me/starsjoy_bot"); } catch { window.open("https://t.me/starsjoy_bot", "_blank"); }
+          try { WebApp.openTelegramLink("https://t.me/StarsjoySupport"); } catch { window.open("https://t.me/StarsjoySupport", "_blank"); }
         }}>
           <div className="settings-item-left">
             <div className="settings-icon icon-support">🛟</div>
@@ -162,7 +162,7 @@ export default function Profile() {
             </div>
           </div>
           <div className="settings-item-right">
-            <span className="settings-item-value">@starsjoy_bot</span>
+            <span className="settings-item-value">@StarsjoySupport</span>
             <span className="settings-arrow">›</span>
           </div>
         </div>

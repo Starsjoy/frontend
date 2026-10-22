@@ -153,8 +153,8 @@ export default function PrivacyPolicy() {
               <h2>12. Murojaat</h2>
               <p>
                 Siyosat haqida savollar bo'lsa: 
-                <a href="https://t.me/support" target="_blank" rel="noopener noreferrer">
-                  @support
+                <a href="https://t.me/StarsjoySupport" target="_blank" rel="noopener noreferrer">
+                  @StarsjoySupport
                 </a>
               </p>
             </section>
@@ -304,8 +304,8 @@ export default function PrivacyPolicy() {
               <h2>12. Контакты</h2>
               <p>
                 По вопросам о политике: 
-                <a href="https://t.me/support" target="_blank" rel="noopener noreferrer">
-                  @support
+                <a href="https://t.me/StarsjoySupport" target="_blank" rel="noopener noreferrer">
+                  @StarsjoySupport
                 </a>
               </p>
             </section>
@@ -450,8 +450,8 @@ export default function PrivacyPolicy() {
               <h2>12. Contact</h2>
               <p>
                 For questions about the policy: 
-                <a href="https://t.me/support" target="_blank" rel="noopener noreferrer">
-                  @support
+                <a href="https://t.me/StarsjoySupport" target="_blank" rel="noopener noreferrer">
+                  @StarsjoySupport
                 </a>
               </p>
             </section>

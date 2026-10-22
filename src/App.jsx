@@ -16,7 +16,7 @@ import Notifications from "./pages/Notifications/Notifications";
 import TermsOfService from "./pages/Legal/TermsOfService";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import MaintenancePage from "./pages/Maintenance/MaintenancePage";
-import TestLoaders from "./pages/Test/TestLoaders";
+import TestPaymentStates from "./pages/Test/TestPaymentStates";
 import { LanguageProvider, useTranslation } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
@@ -101,7 +101,7 @@ function App() {
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/starsadmin" element={<AdminPanel/>} />
-                <Route path="/test" element={<TestLoaders />} />
+                <Route path="/test" element={<TestPaymentStates />} />
               </Routes>
             </BrowserRouter>
             </OnboardingProvider>

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../context/LanguageContext";
 import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
+import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
+import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
 import {
   isPaymeeInsufficientError,
   paymeeInsufficientAlertMessage,
@@ -682,116 +684,35 @@ export default function Gift() {
         </div>
       )}
 
-      {/* ============== WARNING MODAL ============== */}
-      {showWarningModal && (
-        <div className="gift-modal-overlay">
-          <div className="gift-modal-content gift-warning-modal">
-            <div className="gift-warning-header">
-              <h3 className="gift-warning-title">⚠️ MUHIM DIQQAT ⚠️</h3>
-            </div>
-            
-            <div className="gift-warning-body" style={{ textAlign: "left" }}>
-              <div style={{ marginBottom: "15px" }}>
-                <strong>1️⃣ To'lov miqdori:</strong><br />
-                Faqat ko‘rsatilgan summani aniq yuboring. Ozgina farq ham to‘lovni topishga xalaqit beradi.
-              </div>
-              
-              <div style={{ marginBottom: "15px" }}>
-                <strong>2️⃣ Profil maxfiyligi:</strong><br />
-                Qabul qiluvchiga yozish va stars orqali xabar yuborish o‘chiq bo‘lsin. Yopiq bo‘lsa, gift yuborilmaydi.
-              </div>
-              
-              <div className="gift-warning-amount-highlight" style={{ marginTop: "20px" }}>
-                <span className="gift-warning-label">To&apos;lov summasi</span>
-                <span className="gift-warning-amount">{formatAmount(order?.amount)} so&apos;m</span>
-              </div>
-            </div>
-            
-            <button type="button" className="gift-warning-btn" onClick={handleWarningUnderstood} style={{ marginTop: "15px", backgroundColor: "#ff9800", color: "#fff", fontWeight: "bold" }}>
-              ✅ Shartlarni tushundim
-            </button>
-          </div>
-        </div>
+      {/* ============== XAVFSIZ TO'LOV (order yaratilgach) ============== */}
+      {showWarningModal && order && (
+        <PaymentConfirm
+          amount={order.amount}
+          product={t("transfer.giftLabel")}
+          recipient={order.recipient_username}
+          note={t("transfer.giftPrivacy")}
+          onContinue={handleWarningUnderstood}
+        />
+      )}
+
+      {/* ============== TO'LOV MA'LUMOTLARI (to'liq ekran) ============== */}
+      {showModal && status === "payment_info" && order && (
+        <PaymentTransfer
+          cardDisplay={CARD_NUMBER}
+          cardNumber={paymentCard.number}
+          cardName={CARD_NAME}
+          amount={order.amount}
+          countdown={countdown}
+          item="gift"
+          onClose={() => { setShowModal(false); stopPolling(); stopCountdown(); }}
+          onPaid={handlePaymentDone}
+        />
       )}
 
       {/* ============== PAYMENT MODAL ============== */}
-      {showModal && (
+      {showModal && status !== "payment_info" && (
         <div className="gift-modal-overlay">
           <div className="gift-modal-content">
-
-            {/* PAYMENT_INFO — karta ma'lumotlari va "To'lov qildim" tugmasi */}
-            {status === "payment_info" && (
-              <div className="gift-modal-pending">
-                <div className="gift-modal-header">
-                  <span className="gift-modal-title">💳 {t("gift.paymentTitle")}</span>
-                  <button type="button" className="gift-modal-close" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
-                </div>
-
-                {/* Gift preview */}
-                <div className="gift-modal-preview">
-                  <GiftVisual
-                    giftId={selectedGift?.id}
-                    className="gift-modal-tgs"
-                    autoplay={true}
-                  />
-                  <div>
-                    <div className="gift-modal-recipient">{t("gift.recipient")}: @{order?.recipient_username}</div>
-                    <div className="gift-modal-stars">{order?.stars} ⭐</div>
-                  </div>
-                </div>
-
-                {/* Payment cards */}
-                <div className="gift-modal-pay-grid">
-                  <div className="gift-modal-pay-item">
-                    <div className="gift-modal-pay-label">{t("stars.cardNumber")}</div>
-                    <div className="gift-modal-pay-row">
-                      <span className="gift-modal-pay-value">{CARD_NUMBER}</span>
-                      <button type="button" className="gift-modal-copy-btn" onClick={handleCopyCard}>
-                        {copiedCard ? "✓" : "📋"}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="gift-modal-pay-item">
-                    <div className="gift-modal-pay-label">{t("stars.cardName")}</div>
-                    <div className="gift-modal-pay-row">
-                      <span className="gift-modal-pay-value">{CARD_NAME}</span>
-                    </div>
-                  </div>
-
-                  <div className="gift-modal-pay-item highlight">
-                    <div className="gift-modal-pay-label">{t("stars.totalAmount")}</div>
-                    <div className="gift-modal-pay-row">
-                      <span className="gift-modal-pay-value bold">
-                        {formatAmount(order?.amount)} so'm
-                      </span>
-                      <button type="button" className="gift-modal-copy-btn" onClick={handleCopyAmount}>
-                        {copiedAmount ? "✓" : "📋"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Warning */}
-                <div className="gift-modal-warning">
-                  <span>⚠️</span>
-                  <span>{t("gift.exactAmount")} <b>{formatAmount(order?.amount)} so'm</b></span>
-                </div>
-
-                {/* Timer */}
-                <div className="gift-modal-status-bar">
-                  <div className="gift-modal-timer">
-                    <span>⏳</span> {formatTime(countdown)}
-                  </div>
-                </div>
-
-                {/* To'lov qildim button */}
-                <button type="button" className="gift-modal-action-btn payment-done" onClick={handlePaymentDone}>
-                  ✅ {t("gift.iConfirmPayment")}
-                </button>
-                <p className="gift-modal-hint">{t("gift.paymentHint")}</p>
-              </div>
-            )}
 
             {/* PENDING — To'lov kutilmoqda */}
             {status === "pending" && (

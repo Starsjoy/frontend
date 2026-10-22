@@ -417,5 +417,46 @@
       "payTitle": "Aniq summani yuboring",
       "payDesc": "Eng muhim qoida: ko'rsatilgan summani tiyinigacha aniq yuboring."
     }
+  },
+  "transfer": {
+    "screenTitle": "To'lov",
+    "close": "Yopish",
+    "timeLeft": "To'lov uchun qolgan vaqt",
+    "title": "Pulni shu kartaga o'tkazing",
+    "apps": "Click, Payme, Uzum yoki bank ilovasi orqali",
+    "recipient": "Qabul qiluvchi",
+    "copy": "Nusxalash",
+    "copied": "Nusxalandi",
+    "amountLabel": "O'tkaziladigan summa",
+    "exactTitle": "Aynan shu summani o'tkazing",
+    "exactDesc": "1 so'm ham kam yoki ko'p bo'lsa, to'lov topilmaydi va {item} yuborilmaydi.",
+    "item": {
+      "stars": "Stars",
+      "premium": "Premium",
+      "gift": "sovg'a"
+    },
+    "guide": "Qo'llanma",
+    "guideTitle": "Qanday to'lash kerak",
+    "guideSub": "Istalgan to'lov ilovasidan, 5 ta oddiy qadamda.",
+    "step1": "Ilovani oching",
+    "step1Sub": "Click, Payme, Uzum yoki bankingiz ilovasi",
+    "step2": "«Kartaga o'tkazma» ni tanlang",
+    "step2Sub": "Boshqa kartaga pul o'tkazish bo'limi",
+    "step3": "Karta raqamini qo'ying",
+    "step3Sub": "Bu sahifadan nusxalang — egasi ko'rinadi",
+    "step4": "Summaga {amount} yozing",
+    "step4Sub": "Aynan shu raqam — 1 so'm ham farq qilmasin",
+    "step5": "O'tkazing va shu yerga qayting",
+    "step5Sub": "«To'lov qildim» tugmasini bosing",
+    "understood": "Tushunarli",
+    "paid": "To'lov qildim",
+    "confirmTitle": "Xavfsiz to'lov",
+    "confirmPre": "Biz sizning to'lovingizni aynan shu",
+    "confirmPost": "summani o'tkazganingizda aniqlay olamiz.",
+    "confirmAuto": "Tizim to'lovni avtomatik aniqlaydi",
+    "confirmCta": "To'lovga o'tish",
+    "premiumMonths": "Premium · {n} oy",
+    "giftLabel": "Sovg'a",
+    "giftPrivacy": "Qabul qiluvchining profilida xabar yuborish ochiq bo'lishi kerak — yopiq bo'lsa, sovg'a yuborilmaydi."
   }
 }
