@@ -754,7 +754,7 @@
 .ps-body {
   gap: 16px;
   /* Belgi barcha holatlarda bir xil balandlikda — ekran balandligiga mos */
-  padding-top: clamp(12px, 12cqh, 100px) !important;
+  padding-top: clamp(8px, 6cqh, 52px) !important;
 }
 
 .ps-countdown-space {
@@ -1111,7 +1111,7 @@
 
 /* Past ekran: bo'sh joy va belgi ixchamroq */
 @container pt (max-height: 700px) {
-  .ps-body { padding-top: clamp(8px, 4cqh, 32px) !important; gap: 12px; }
+  .ps-body { padding-top: clamp(4px, 1.5cqh, 12px) !important; gap: 12px; }
   .ps-hero-icon { width: 72px; height: 72px; margin-bottom: 14px; }
   .ps-hero-icon > svg { transform: scale(0.8); }
   .ps-hero-bang { font-size: 34px; }
