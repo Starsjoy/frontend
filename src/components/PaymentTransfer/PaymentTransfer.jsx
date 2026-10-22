@@ -56,7 +56,7 @@ function useCopy() {
 }
 
 // Qolgan vaqt: 2 daqiqadan kam — sariq, 1 daqiqadan kam — qizil
-function Countdown({ left, label }) {
+export function Countdown({ left, label }) {
   const tone = left <= 60 ? "is-danger" : left <= 120 ? "is-warn" : "";
   const percent = Math.min(100, Math.max(0, (left / TOTAL_SECONDS) * 100));
   return (

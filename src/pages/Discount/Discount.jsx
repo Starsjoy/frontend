@@ -6,6 +6,8 @@ import WebApp from "@twa-dev/sdk";
 import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
+import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
+import { toStage } from "../../components/PaymentTransfer/paymentStage";
 import "./Discount.css";
 
 const POLLING_DURATION = 8 * 60 * 1000;
@@ -27,7 +29,6 @@ export default function Discount() {
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("payment_info");
   const [txId, setTxId] = useState(null);
-  const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [timer, setTimer] = useState(20);
   const [profile, setProfile] = useState(null);
@@ -183,13 +184,6 @@ export default function Discount() {
 
     return () => clearTimeout(timeout);
   }, [username]);
-
-  // Copy handlers
-  const handleCopy = () => {
-    navigator.clipboard.writeText(paymentCard.number);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   // Polling functions
   useEffect(() => {
@@ -371,12 +365,6 @@ export default function Discount() {
     }
   };
 
-  const formatTime = (sec) => {
-    const min = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${min.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
-
   // To'lov qildim bosilganda
   const handlePaymentDone = () => {
     setStatus("pending");
@@ -512,181 +500,24 @@ export default function Discount() {
         />
       )}
 
-      {/* Modal */}
-      {showModal && status !== "payment_info" && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            {/* PENDING - To'lov kutilmoqda */}
-            {status === "pending" && (
-              <div className="pending-waiting-section">
-                <div className="modal-header-bar">
-                  <span className="modal-header-title">⏳ To'lov kutilmoqda</span>
-                  <button className="modal-close-x" onClick={() => setShowModal(false)}>✕</button>
-                </div>
-
-                <div className="waiting-animation-wrap">
-                  <div className="waiting-circle-outer">
-                    <div className="waiting-circle-inner">
-                      <div className="waiting-icon">🔍</div>
-                    </div>
-                  </div>
-                  <div className="waiting-dots">
-                    <span></span><span></span><span></span>
-                  </div>
-                </div>
-
-                <h3 className="waiting-title">To'lov qidirilmoqda...</h3>
-                <p className="waiting-subtitle">To'lovingiz avtomatik aniqlanadi</p>
-
-                <div className="waiting-payment-info">
-                  <div className="waiting-info-row">
-                    <span className="waiting-label">Karta:</span>
-                    <span className="waiting-value">{CARD_NUMBER}</span>
-                    <button className="modal-copy-btn-sm" onClick={handleCopy}>
-                      {copied ? "✓" : "📋"}
-                    </button>
-                  </div>
-                  <div className="waiting-info-row highlight">
-                    <span className="waiting-label">Summa:</span>
-                    <span className="waiting-value bold">{formatAmount(order?.amount)} so'm</span>
-                  </div>
-                </div>
-
-                <div className="waiting-timer">
-                  <span className="timer-icon-sm">⏱️</span>
-                  <span>{formatTime(countdown)}</span>
-                </div>
-
-                <p className="modal-close-hint">Oyna yopilsa ham to'lov kuzatiladi</p>
-              </div>
-            )}
-
-            {/* PAYMENT RECEIVED */}
-            {status === "payment_received" && (
-              <div className="modal-sending-section">
-                <div className="sending-anim-wrap">
-                  <div className="sending-pulse-ring"></div>
-                  <div className="sending-pulse-ring delay"></div>
-                  <div className="sending-center-icon">💫</div>
-                </div>
-                <h3 className="sending-title">To'lov qabul qilindi!</h3>
-                <p className="sending-subtitle">Stars yuborilmoqda...</p>
-
-                {profile && (
-                  <div className="sending-recipient">
-                    <img src={profile.imageUrl || "../src/assets/default_image.png"} className="sending-avatar" />
-                    <div className="sending-info">
-                      <span className="sending-name">{profile.fullName}</span>
-                      <span className="sending-user">@{profile.username}</span>
-                    </div>
-                    <div className="sending-stars-count">⭐ {order?.stars}</div>
-                  </div>
-                )}
-
-                <div className="sending-progress-bar">
-                  <div className="sending-progress-fill"></div>
-                </div>
-                <p className="sending-hint">Biroz kuting, jarayon avtomatik...</p>
-              </div>
-            )}
-
-            {/* COMPLETED */}
-            {status === "completed" && (
-              <div className="modal-sending-section">
-                <div className="sending-anim-wrap">
-                  <div className="sending-pulse-ring"></div>
-                  <div className="sending-pulse-ring delay"></div>
-                  <div className="sending-center-icon">🚀</div>
-                </div>
-                <h3 className="sending-title">To'lov tasdiqlandi!</h3>
-                <p className="sending-subtitle">Stars yuborilmoqda...</p>
-
-                {profile && (
-                  <div className="sending-recipient">
-                    <img src={profile.imageUrl || "../src/assets/default_image.png"} className="sending-avatar" />
-                    <div className="sending-info">
-                      <span className="sending-name">{profile.fullName}</span>
-                      <span className="sending-user">@{profile.username}</span>
-                    </div>
-                    <div className="sending-stars-count">⭐ {order?.stars}</div>
-                  </div>
-                )}
-
-                <div className="sending-progress-bar">
-                  <div className="sending-progress-fill"></div>
-                </div>
-                <p className="sending-hint">Biroz kuting, jarayon avtomatik...</p>
-              </div>
-            )}
-
-            {/* STARS SENT */}
-            {status === "stars_sent" && (
-              <div className="modal-success-section">
-                <div className="success-confetti">
-                  <span></span><span></span><span></span><span></span><span></span><span></span>
-                </div>
-
-                <div className="success-check-wrap">
-                  <svg className="success-check-svg" viewBox="0 0 52 52">
-                    <circle className="success-check-circle" cx="26" cy="26" r="25" fill="none" />
-                    <path className="success-check-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-                  </svg>
-                </div>
-
-                <h3 className="success-title">Muvaffaqiyatli! 🎉</h3>
-                <p className="success-amount">{order?.stars} ⭐ yuborildi</p>
-
-                {profile && (
-                  <div className="success-recipient-card">
-                    <img src={profile.imageUrl || "../src/assets/default_image.png"} className="success-avatar" />
-                    <div className="success-user-info">
-                      <span className="success-user-name">{profile.fullName}</span>
-                      <span className="success-user-handle">@{profile.username}</span>
-                    </div>
-                    <div className="success-delivered-badge">✓ Yetkazildi</div>
-                  </div>
-                )}
-
-                <div className="success-details">
-                  <div className="success-detail-row">
-                    <span className="success-detail-label">Stars</span>
-                    <span className="success-detail-value">{order?.stars} ⭐</span>
-                  </div>
-                  <div className="success-detail-row">
-                    <span className="success-detail-label">To'lov</span>
-                    <span className="success-detail-value">{formatAmount(order?.amount)} so'm</span>
-                  </div>
-                </div>
-
-                {txId && (
-                  <div className="modal-txid">
-                    <span className="modal-txid-label">Tranzaksiya ID</span>
-                    <div className="modal-txid-row">
-                      <code>{txId}</code>
-                      <button className="modal-copy-btn" onClick={() => navigator.clipboard.writeText(txId)}>
-                        📋
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <p className="modal-auto-close">Oyna {timer}s da yopiladi</p>
-                <button className="modal-close-btn success-close" onClick={() => setShowModal(false)}>Yopish</button>
-              </div>
-            )}
-
-            {/* EXPIRED */}
-            {status === "expired" && (
-              <div className="modal-result-section">
-                <button className="modal-close-x expired-x" onClick={() => setShowModal(false)}>✕</button>
-                <div className="modal-result-icon expired-bg">⏰</div>
-                <h3 className="modal-result-title">Vaqt tugadi</h3>
-                <p className="modal-result-desc">To'lov muddati o'tib ketdi. Qaytadan urinib ko'ring.</p>
-                <button className="btn-go-home" onClick={goToHome}>🏠 Bosh sahifaga qaytish</button>
-              </div>
-            )}
-          </div>
-        </div>
+      {/* To'lovdan keyingi holatlar */}
+      {showModal && order && toStage(status) && (
+        <PaymentStatus
+          stage={toStage(status)}
+          item="stars"
+          product={`${order.stars} Stars`}
+          productName="Stars"
+          badge={`${order.stars} ⭐`}
+          recipient={profile?.username}
+          amount={order.amount}
+          countdown={countdown}
+          txId={txId}
+          orderId={order.id}
+          autoClose={timer}
+          onClose={() => setShowModal(false)}
+          onDone={() => setShowModal(false)}
+          onRetry={goToHome}
+        />
       )}
     </div>
   );

@@ -5,6 +5,8 @@ import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
+import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
+import { toStage } from "../../components/PaymentTransfer/paymentStage";
 import {
   isPaymeeInsufficientError,
   paymeeInsufficientAlertMessage,
@@ -83,12 +85,6 @@ function GiftVisual({ giftId, className, autoplay, loop }) {
 const MAX_COMMENT_LENGTH = 128;
 
 const formatAmount = (num) => Number(num || 0).toLocaleString("ru-RU");
-const formatTime = (sec) => {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-};
-
 export default function Gift() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -120,8 +116,6 @@ export default function Gift() {
   const [showModal, setShowModal] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [countdown, setCountdown] = useState(480);
-  const [copiedCard, setCopiedCard] = useState(false);
-  const [copiedAmount, setCopiedAmount] = useState(false);
   const [sending, setSending] = useState(false);
   const [paymeeStockModal, setPaymeeStockModal] = useState(null);
 
@@ -417,19 +411,6 @@ export default function Gift() {
     }
   };
 
-  // === Copy handlers ===
-  const handleCopyCard = () => {
-    navigator.clipboard.writeText(paymentCard.number);
-    setCopiedCard(true);
-    setTimeout(() => setCopiedCard(false), 1500);
-  };
-
-  const handleCopyAmount = () => {
-    navigator.clipboard.writeText(String(order?.amount));
-    setCopiedAmount(true);
-    setTimeout(() => setCopiedAmount(false), 1500);
-  };
-
   // === Reset ===
   const resetAll = () => {
     setOrder(null);
@@ -710,141 +691,28 @@ export default function Gift() {
       )}
 
       {/* ============== PAYMENT MODAL ============== */}
-      {showModal && status !== "payment_info" && (
-        <div className="gift-modal-overlay">
-          <div className="gift-modal-content">
-
-            {/* PENDING — To'lov kutilmoqda */}
-            {status === "pending" && (
-              <div className="gift-modal-pending">
-                <div className="gift-modal-header">
-                  <span className="gift-modal-title">⏳ {t("gift.paymentSearching")}</span>
-                  <button type="button" className="gift-modal-close" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
-                </div>
-
-                {/* Gift preview */}
-                <div className="gift-modal-preview">
-                  <GiftVisual
-                    giftId={selectedGift?.id}
-                    className="gift-modal-tgs"
-                    autoplay={true}
-                  />
-                  <div>
-                    <div className="gift-modal-recipient">{t("gift.recipient")}: @{order?.recipient_username}</div>
-                    <div className="gift-modal-stars">{order?.stars} ⭐</div>
-                  </div>
-                </div>
-
-                {/* Payment info - karta va summa */}
-                <div className="gift-modal-pay-grid compact">
-                  <div className="gift-modal-pay-item">
-                    <div className="gift-modal-pay-label">{t("stars.cardNumber")}</div>
-                    <div className="gift-modal-pay-row">
-                      <span className="gift-modal-pay-value">{CARD_NUMBER}</span>
-                      <button type="button" className="gift-modal-copy-btn" onClick={handleCopyCard}>
-                        {copiedCard ? "✓" : "📋"}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="gift-modal-pay-item highlight">
-                    <div className="gift-modal-pay-label">{t("stars.totalAmount")}</div>
-                    <div className="gift-modal-pay-row">
-                      <span className="gift-modal-pay-value bold">
-                        {formatAmount(order?.amount)} so'm
-                      </span>
-                      <button type="button" className="gift-modal-copy-btn" onClick={handleCopyAmount}>
-                        {copiedAmount ? "✓" : "📋"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Searching animation */}
-                <div className="gift-modal-searching">
-                  <div className="gift-modal-spinner"></div>
-                  <h3>{t("gift.paymentSearching")}</h3>
-                  <p>{t("gift.paymentAutoDetect")}</p>
-                </div>
-
-                {/* Timer */}
-                <div className="gift-modal-status-bar">
-                  <div className="gift-modal-timer">
-                    <span>⏳</span> {formatTime(countdown)}
-                  </div>
-                </div>
-
-                <button type="button" className="gift-modal-close-btn" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>
-                  {t("common.close")}
-                </button>
-                <p className="gift-modal-hint">{t("gift.modalHint")}</p>
-              </div>
-            )}
-
-            {/* COMPLETED — gift yuborilmoqda */}
-            {status === "completed" && (
-              <div className="gift-modal-sending">
-                <GiftVisual
-                  giftId={selectedGift?.id}
-                  className="gift-modal-tgs-large"
-                  autoplay={true}
-                />
-                <h3>{t("gift.paymentConfirmed")}</h3>
-                <p>{t("gift.giftSending")}</p>
-                <div className="gift-sending-bar">
-                  <div className="gift-sending-bar-fill"></div>
-                </div>
-              </div>
-            )}
-
-            {/* GIFT_SENT — muvaffaqiyat */}
-            {status === "gift_sent" && (
-              <div className="gift-modal-success">
-                <GiftVisual
-                  giftId={selectedGift?.id}
-                  className="gift-modal-tgs-large"
-                  autoplay={true}
-                />
-                <h3>✅ {t("gift.giftDelivered")}</h3>
-                <p className="gift-success-detail">
-                  → @{order?.recipient_username}
-                </p>
-                <button type="button" className="gift-modal-action-btn" onClick={resetAll}>
-                  {t("gift.sendAnother")}
-                </button>
-              </div>
-            )}
-
-            {/* EXPIRED / FAILED */}
-            {["expired", "failed", "error"].includes(status) && (
-              <div className="gift-modal-error">
-                <div className="gift-error-icon">❌</div>
-                <h3>
-                  {status === "expired" ? t("stars.expired") : t("gift.error")}
-                </h3>
-                {["failed", "error"].includes(status) && (
-                  <div style={{ marginTop: '10px', marginBottom: '20px' }}>
-                    <p style={{ color: '#fff', marginBottom: '10px', fontSize: '14px' }}>
-                      {errorMessage || "Gift yuborishda xatolik yuz berdi. Bu ehtimol qabul qiluvchining profil maxfiyligi yopiqligi tufaylidir."}
-                    </p>
-                    <button
-                      type="button"
-                      className="gift-modal-action-btn"
-                      style={{ backgroundColor: '#2b2d31', color: '#fff', border: '1px solid #444' }}
-                      onClick={() => window.open("https://t.me/StarsjoySupport", "_blank")}
-                    >
-                      👨🏻‍💻 Admin bilan bog'lanish
-                    </button>
-                  </div>
-                )}
-                <button type="button" className="gift-modal-action-btn" onClick={resetAll}>
-                  {t("gift.tryAgain")}
-                </button>
-              </div>
-            )}
-
-          </div>
-        </div>
+      {/* ============== TO'LOVDAN KEYINGI HOLATLAR ============== */}
+      {showModal && order && toStage(status) && (
+        <PaymentStatus
+          stage={toStage(status)}
+          item="gift"
+          product={t("status.giftName")}
+          productName={t("status.giftName")}
+          badge="🎁"
+          recipient={order.recipient_username}
+          amount={order.amount}
+          countdown={countdown}
+          orderId={order.id}
+          extraNote={toStage(status) === "failed" ? errorMessage || t("transfer.giftPrivacy") : ""}
+          onClose={() => {
+            setShowModal(false);
+            stopPolling();
+            stopCountdown();
+            if (["failed", "error", "expired"].includes(status)) resetAll();
+          }}
+          onDone={resetAll}
+          onRetry={resetAll}
+        />
       )}
 
       {paymeeStockModal && (

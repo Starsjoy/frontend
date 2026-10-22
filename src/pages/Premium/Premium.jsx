@@ -9,6 +9,8 @@ import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
+import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
+import { toStage } from "../../components/PaymentTransfer/paymentStage";
 import {
   getFragmentPaymentLabel,
   isCardDeliveryVariant,
@@ -66,7 +68,6 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
   const [countdown, setCountdown] = useState(0);
 
   const [loadingBuy, setLoadingBuy] = useState(false);
-  const [copiedCard, setCopiedCard] = useState(false);
 
   // Promocode states
   const [pramacod, setPramacod] = useState("");
@@ -469,13 +470,6 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
     };
   }, []);
 
-  // Copy handlers - alohida animatsiyalar
-  const handleCopyCard = () => {
-    navigator.clipboard.writeText(paymentCard.number);
-    setCopiedCard(true);
-    setTimeout(() => setCopiedCard(false), 1500);
-  };
-
   // "To'lov qildim" tugmasi - payment_info dan pending ga o'tish
   const handlePaymentDone = () => {
     paymentDoneClickedRef.current = true;
@@ -487,9 +481,6 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
     setShowWarningModal(false);
     setShowModal(true);
   };
-
-  const formatTime = (s) =>
-    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   // ================================
   // UI
@@ -633,197 +624,34 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
       )}
 
       {/* MODAL */}
-      {showModal && order && paymentStatus !== "payment_info" && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-
-            {/* PENDING - To'lov kutilmoqda */}
-            {paymentStatus === "pending" && (
-              <div className="pending-section">
-                {/* Modal Header */}
-                <div className="modal-header-bar">
-                  <span className="modal-header-title">{t("payment.pendingTitle")}</span>
-                  <button type="button" className="modal-close-x" onClick={() => {
-                    stopPolling();
-                    stopCountdown();
-                    setShowModal(false);
-                  }}>✕</button>
-                </div>
-
-                {/* Waiting Animation */}
-                <div className="waiting-animation-wrap">
-                  <div className="waiting-circle-outer">
-                    <div className="waiting-circle-inner">
-                      <div className="waiting-icon">🔍</div>
-                    </div>
-                  </div>
-                  <div className="waiting-dots">
-                    <span></span><span></span><span></span>
-                  </div>
-                </div>
-
-                <h3 className="waiting-title">{t("payment.searching")}</h3>
-                <p className="waiting-subtitle">{t("payment.autoDetect")}</p>
-
-                {/* Payment Info */}
-                <div className="waiting-payment-info">
-                  <div className="waiting-info-row">
-                    <span className="waiting-label">{t("payment.cardLabel")}</span>
-                    <span className="waiting-value">{CARD_NUMBER}</span>
-                    <button type="button" className="modal-copy-btn-sm" onClick={handleCopyCard}>
-                      {copiedCard ? "✓" : "📋"}
-                    </button>
-                  </div>
-                  <div className="waiting-info-row highlight">
-                    <span className="waiting-label">{t("payment.amountShortLabel")}</span>
-                    <span className="waiting-value bold">{formatAmount(order.amount)} {t("common.currency")}</span>
-                  </div>
-                </div>
-
-                {/* Timer */}
-                <div className="waiting-timer">
-                  <span className="timer-icon-sm">⏱️</span>
-                  <span>{formatTime(countdown)}</span>
-                </div>
-
-                {cardLast4 && (
-                  <div className="modal-card-detected">
-                    <span>{t("premium.cardDetected").replace("{last4}", cardLast4)}</span>
-                  </div>
-                )}
-
-                <p className="modal-close-hint">{t("payment.tracked")}</p>
-              </div>
-            )}
-
-            {/* PAYMENT RECEIVED / PROCESSING — to'lov topildi, premium yuborilmoqda (backend: processing) */}
-            {["payment_received", "processing"].includes(paymentStatus) && (
-              <div className="modal-sending-section">
-                <div className="sending-anim-wrap">
-                  <div className="sending-pulse-ring"></div>
-                  <div className="sending-pulse-ring delay"></div>
-                  <div className="sending-center-icon">💎</div>
-                </div>
-                <h3 className="sending-title">
-                  {paymentStatus === "payment_received" ? t("payment.received") : t("premium.sending")}
-                </h3>
-                <p className="sending-subtitle">
-                  {paymentStatus === "payment_received"
-                    ? t("premium.sending")
-                    : t("premium.processing")}
-                </p>
-
-                {profile && (
-                  <div className="sending-recipient">
-                    <img src={profile.imageUrl || "../src/assets/default_image.png"} className="sending-avatar" />
-                    <div className="sending-info">
-                      <span className="sending-name">{profile.fullName}</span>
-                      <span className="sending-user">@{profile.username}</span>
-                    </div>
-                    <div className="sending-premium-badge">💎 {order.muddat_oy} oy</div>
-                  </div>
-                )}
-
-                <div className="sending-progress-bar">
-                  <div className="sending-progress-fill premium"></div>
-                </div>
-                <p className="sending-hint">{t("premium.waitAuto")}</p>
-              </div>
-            )}
-
-            {/* PREMIUM SENT - Muvaffaqiyatli */}
-            {paymentStatus === "premium_sent" && (
-              <div className="modal-success-section">
-                <div className="success-confetti">
-                  <span></span><span></span><span></span><span></span><span></span><span></span>
-                </div>
-
-                <div className="success-check-wrap">
-                  <svg className="success-check-svg" viewBox="0 0 52 52">
-                    <circle className="success-check-circle" cx="26" cy="26" r="25" fill="none" />
-                    <path className="success-check-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-                  </svg>
-                </div>
-
-                <h3 className="success-title">{t("payment.successTitle")}</h3>
-                <p className="success-amount">{t("premium.monthsSent").replace("{months}", order.muddat_oy)}</p>
-
-                {profile && (
-                  <div className="success-recipient-card">
-                    <img src={profile.imageUrl || "../src/assets/default_image.png"} className="success-avatar" />
-                    <div className="success-user-info">
-                      <span className="success-user-name">{profile.fullName}</span>
-                      <span className="success-user-handle">@{profile.username}</span>
-                    </div>
-                    <div className="success-delivered-badge">{t("payment.deliveredBadge")}</div>
-                  </div>
-                )}
-
-                <div className="success-details">
-                  <div className="success-detail-row">
-                    <span className="success-detail-label">Premium</span>
-                    <span className="success-detail-value">💎 {order.muddat_oy} {t("premium.months")}</span>
-                  </div>
-                  <div className="success-detail-row">
-                    <span className="success-detail-label">{t("payment.payLabel")}</span>
-                    <span className="success-detail-value">{formatAmount(order.amount)} {t("common.currency")}</span>
-                  </div>
-                </div>
-
-                <button type="button" className="modal-close-btn success-close" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>
-                  {t("common.close")}
-                </button>
-              </div>
-            )}
-
-            {/* FAILED / ERROR */}
-            {["failed", "error"].includes(paymentStatus) && (
-              <div className="modal-error-section">
-                <div className="error-icon-wrap" style={{background: 'rgba(255, 59, 48, 0.15)', color: '#ff3b30', fontSize: '40px'}}>
-                  <span className="error-icon">❌</span>
-                </div>
-                <h3 className="error-title">{t("payment.errorTitle")}</h3>
-                <p className="error-desc">{errorMessage || t("premium.errorDesc")}</p>
-
-                <div style={{display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 20px', paddingBottom: '20px'}}>
-                  <button type="button" className="modal-close-btn" onClick={() => {
-                    setShowModal(false);
-                    setPaymentStatus("idle");
-                  }}>
-                    {t("common.close")}
-                  </button>
-                  <button
-                    type="button"
-                    className="modal-close-btn"
-                    style={{ background: '#2b2d31', color: '#fff', border: '1px solid #444', marginTop: 0 }}
-                    onClick={() => window.open("https://t.me/StarsjoySupport", "_blank")}
-                  >
-                    {t("payment.contactAdmin")}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* EXPIRED */}
-            {paymentStatus === "expired" && (
-              <div className="modal-error-section">
-                <div className="error-icon-wrap">
-                  <span className="error-icon">⏰</span>
-                </div>
-                <h3 className="error-title">{t("payment.expiredTitle")}</h3>
-                <p className="error-desc">{t("payment.expiredDesc")}</p>
-
-                <button type="button" className="modal-close-btn" onClick={() => {
-                  setShowModal(false);
-                  setPaymentStatus("idle");
-                }}>
-                  {t("common.close")}
-                </button>
-              </div>
-            )}
-
-          </div>
-        </div>
+      {/* TO'LOVDAN KEYINGI HOLATLAR */}
+      {showModal && order && toStage(paymentStatus) && (
+        <PaymentStatus
+          stage={toStage(paymentStatus)}
+          item="premium"
+          product={t("transfer.premiumMonths").replace("{n}", order.muddat_oy)}
+          productName="Premium"
+          badge={`💎 ${order.muddat_oy}`}
+          recipient={profile?.username || username}
+          amount={order.amount}
+          countdown={countdown}
+          orderId={order.id}
+          extraNote={
+            toStage(paymentStatus) === "failed"
+              ? errorMessage
+              : toStage(paymentStatus) === "pending" && cardLast4
+                ? t("status.cardDetected").replace("{last4}", cardLast4)
+                : ""
+          }
+          onClose={() => {
+            stopPolling();
+            stopCountdown();
+            setShowModal(false);
+            if (["failed", "error", "expired"].includes(paymentStatus)) setPaymentStatus("idle");
+          }}
+          onDone={() => { setShowModal(false); stopPolling(); stopCountdown(); }}
+          onRetry={() => { setShowModal(false); setPaymentStatus("idle"); }}
+        />
       )}
 
       {/* NAVIGATION */}

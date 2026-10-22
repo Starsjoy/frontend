@@ -6,6 +6,8 @@ import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
+import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
+import { toStage } from "../../components/PaymentTransfer/paymentStage";
 import {
   getPremiumPurchasePath,
   isCardDeliveryVariant,
@@ -75,7 +77,6 @@ export function StarsPurchasePage({ variant = "fragment" }) {
   const [status, setStatus] = useState("pending");
   const [errorMessage, setErrorMessage] = useState("");
   const [txId, setTxId] = useState(null);
-  const [copiedCard, setCopiedCard] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [timer, setTimer] = useState(20);
@@ -107,11 +108,6 @@ export function StarsPurchasePage({ variant = "fragment" }) {
         isPaymee ? "/paymeepremium" : "/premium"
       );
     }
-  };
-
-  const goToHome = () => {
-    setShowModal(false);
-    navigate("/");
   };
 
   // 🔹 Telegramdan username olish
@@ -292,13 +288,6 @@ export function StarsPurchasePage({ variant = "fragment" }) {
 
     return () => clearTimeout(timeout);
   }, [username, isFragment, isPaymee, stars, starsApi]);
-
-  // Copy card
-  const handleCopy = () => {
-    navigator.clipboard.writeText(paymentCard.number);
-    setCopiedCard(true);
-    setTimeout(() => setCopiedCard(false), 2000);
-  };
 
   // Check promocode
   const handleCheckPromo = async () => {
@@ -579,12 +568,6 @@ export function StarsPurchasePage({ variant = "fragment" }) {
     setShowModal(true);
   };
 
-  const formatTime = (sec) => {
-    const min = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${min.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
-
   return (
     <div className="stars-container">
       <div className="stars-header-container">
@@ -812,163 +795,25 @@ export function StarsPurchasePage({ variant = "fragment" }) {
         />
       )}
 
-      {/* ---------------- MODAL ---------------- */}
-      {showModal && status !== "payment_info" && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-
-            {/* PENDING - To'lov kutilmoqda */}
-            {status === "pending" && (
-              <div className="pending-waiting-section">
-                <div className="modal-header-bar">
-                  <span className="modal-header-title">{t("payment.pendingTitle")}</span>
-                  <button type="button" className="modal-close-x" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
-                </div>
-
-                <div className="waiting-animation-wrap">
-                  <div className="waiting-circle-outer">
-                    <div className="waiting-circle-inner">
-                      <div className="waiting-icon">🔍</div>
-                    </div>
-                  </div>
-                  <div className="waiting-dots">
-                    <span></span><span></span><span></span>
-                  </div>
-                </div>
-
-                <h3 className="waiting-title">{t("payment.searching")}</h3>
-                <p className="waiting-subtitle">{t("payment.autoDetect")}</p>
-
-                <div className="waiting-payment-info">
-                  <div className="waiting-info-row">
-                    <span className="waiting-label">{t("payment.cardLabel")}</span>
-                    <span className="waiting-value">{CARD_NUMBER}</span>
-                    <button type="button" className="modal-copy-btn-sm" onClick={handleCopy}>
-                      {copiedCard ? "✓" : "📋"}
-                    </button>
-                  </div>
-                  <div className="waiting-info-row highlight">
-                    <span className="waiting-label">{t("payment.amountShortLabel")}</span>
-                    <span className="waiting-value bold">{formatAmount(order?.amount)} {t("common.currency")}</span>
-                  </div>
-                </div>
-
-                <div className="waiting-timer">
-                  <span className="timer-icon-sm">⏱️</span>
-                  <span>{formatTime(countdown)}</span>
-                </div>
-
-                <p className="modal-close-hint">{t("payment.tracked")}</p>
-              </div>
-            )}
-
-            {/* PAYMENT RECEIVED */}
-            {status === "payment_received" && (
-              <div className="modal-sending-section">
-                <div className="sending-anim-wrap">
-                  <div className="sending-pulse-ring"></div>
-                  <div className="sending-pulse-ring delay"></div>
-                  <div className="sending-center-icon">💫</div>
-                </div>
-                <h3 className="sending-title">{t("payment.received")}</h3>
-                <p className="sending-subtitle">{t("payment.sendingStars")}</p>
-
-                {profile && (
-                  <div className="sending-recipient">
-                    <img src={profile.imageUrl || "../src/assets/default_image.png"} className="sending-avatar" />
-                    <div className="sending-info">
-                      <span className="sending-name">{profile.fullName}</span>
-                      <span className="sending-user">@{profile.username}</span>
-                    </div>
-                    <div className="sending-stars-count">⭐ {order?.stars}</div>
-                  </div>
-                )}
-
-                <div className="sending-progress-bar">
-                  <div className="sending-progress-fill"></div>
-                </div>
-                <p className="sending-hint">{t("payment.waitAuto")}</p>
-              </div>
-            )}
-
-            {/* STARS SENT - SUCCESS */}
-            {status === "stars_sent" && (
-              <div className="modal-success-section">
-                <div className="success-confetti">
-                  <span></span><span></span><span></span><span></span><span></span><span></span>
-                </div>
-
-                <div className="success-check-wrap">
-                  <svg className="success-check-svg" viewBox="0 0 52 52">
-                    <circle className="success-check-circle" cx="26" cy="26" r="25" fill="none" />
-                    <path className="success-check-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-                  </svg>
-                </div>
-
-                <h3 className="success-title">{t("payment.successTitle")}</h3>
-                <p className="success-amount">{t("stars.starsSent").replace("{count}", order?.stars)}</p>
-
-                {profile && (
-                  <div className="success-recipient-card">
-                    <img src={profile.imageUrl || "../src/assets/default_image.png"} className="success-avatar" />
-                    <div className="success-user-info">
-                      <span className="success-user-name">{profile.fullName}</span>
-                      <span className="success-user-handle">@{profile.username}</span>
-                    </div>
-                    <div className="success-delivered-badge">{t("payment.deliveredBadge")}</div>
-                  </div>
-                )}
-
-                <div className="success-details">
-                  <div className="success-detail-row">
-                    <span className="success-detail-label">Stars</span>
-                    <span className="success-detail-value">{order?.stars} ⭐</span>
-                  </div>
-                  <div className="success-detail-row">
-                    <span className="success-detail-label">{t("payment.payLabel")}</span>
-                    <span className="success-detail-value">{formatAmount(order?.amount)} {t("common.currency")}</span>
-                  </div>
-                </div>
-
-                {txId && (
-                  <div className="modal-txid">
-                    <span className="modal-txid-label">{t("payment.txIdLabel")}</span>
-                    <div className="modal-txid-row">
-                      <code>{txId}</code>
-                      <button type="button" className="modal-copy-btn" onClick={() => navigator.clipboard.writeText(txId)}>
-                        📋
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <p className="modal-auto-close">{t("stars.autoClose").replace("{timer}", timer)}</p>
-              </div>
-            )}
-
-            {/* EXPIRED */}
-            {status === "expired" && (
-              <div className="modal-result-section">
-                <button type="button" className="modal-close-x expired-x" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
-                <div className="modal-result-icon expired-bg">⏰</div>
-                <h3 className="modal-result-title">{t("payment.expiredTitle")}</h3>
-                <p className="modal-result-desc">{t("payment.expiredDesc")}</p>
-                <button type="button" className="btn-go-home" onClick={goToHome}>{t("payment.goHome")}</button>
-              </div>
-            )}
-
-            {/* FAILED / ERROR */}
-            {["failed", "error"].includes(status) && (
-              <div className="modal-result-section">
-                <button type="button" className="modal-close-x expired-x" onClick={() => { setShowModal(false); stopPolling(); stopCountdown(); }}>✕</button>
-                <div className="modal-result-icon expired-bg" style={{background: 'rgba(255, 59, 48, 0.15)', color: '#ff3b30'}}>❌</div>
-                <h3 className="modal-result-title">{t("payment.errorTitle")}</h3>
-                <p className="modal-result-desc">{errorMessage || t("stars.starsError")}</p>
-                <button type="button" className="btn-go-home" onClick={() => window.open("https://t.me/StarsjoySupport", "_blank")}>{t("payment.contactAdmin")}</button>
-              </div>
-            )}
-          </div>
-        </div>
+      {/* ---------------- TO'LOVDAN KEYINGI HOLATLAR ---------------- */}
+      {showModal && order && toStage(status) && (
+        <PaymentStatus
+          stage={toStage(status)}
+          item="stars"
+          product={`${order.stars} Stars`}
+          productName="Stars"
+          badge={`${order.stars} ⭐`}
+          recipient={profile?.username || username}
+          amount={order.amount}
+          countdown={countdown}
+          txId={txId}
+          orderId={order.id}
+          autoClose={timer}
+          extraNote={toStage(status) === "failed" ? errorMessage : ""}
+          onClose={() => { setShowModal(false); stopPolling(); stopCountdown(); }}
+          onDone={() => setShowModal(false)}
+          onRetry={() => setShowModal(false)}
+        />
       )}
     </div>
   );

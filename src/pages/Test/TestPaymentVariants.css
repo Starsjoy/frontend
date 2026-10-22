@@ -82,3 +82,56 @@
 .pv-grid--two {
   max-width: 880px;
 }
+
+.pv-grid--three {
+  max-width: 1300px;
+}
+
+.pv-row-title {
+  max-width: 1300px;
+  margin: 28px auto 12px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #c4b5fd;
+}
+
+.pv-grid--four {
+  max-width: 1720px;
+}
+
+/* ---------- test: animatsiya toggle ---------- */
+.pv-toggle {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pv-toggle button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #b8b3d1;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pv-toggle button.is-on {
+  color: #fff;
+  background: #3d8bfd;
+}
+
+.pv-toggle .pv-toggle-replay {
+  font-size: 14px;
+  color: #f1f5f9;
+}
+
+.pv-grid--five {
+  max-width: 2150px;
+}
