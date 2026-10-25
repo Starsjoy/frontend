@@ -334,8 +334,8 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
       <section className={`bv-card ${tab === "home" ? "" : "is-compact"}`}>
         <div className="bv-card-shine" aria-hidden="true" />
         <div className="bv-card-top">
-          <span className="bv-card-brand">✦ {tr("cardBrand")}</span>
           <span className="bv-card-label">{tr("balanceLabel")}</span>
+          <span className="bv-card-brand">✦ {tr("cardBrand")}</span>
         </div>
         <div className="bv-card-balance">
           <span ref={balanceIconRef} key={`i${bump}`} className={`bv-card-star ${bump ? "is-bump" : ""}`}>
@@ -462,14 +462,17 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
                     <span className="bv-gift-cost">
                       <StarIcon size={13} /> {item.cost}
                     </span>
-                    <button
-                      type="button"
-                      className="bv-btn bv-btn--gold bv-gift-btn"
-                      disabled={!ready || busy}
-                      onClick={() => openConfirm(item)}
-                    >
-                      {tr("get")}
-                    </button>
+                    {/* Balans yetmasa — tugma umuman ko'rinmaydi */}
+                    {ready && (
+                      <button
+                        type="button"
+                        className="bv-btn bv-btn--gold bv-gift-btn"
+                        disabled={busy}
+                        onClick={() => openConfirm(item)}
+                      >
+                        {tr("get")}
+                      </button>
+                    )}
                   </div>
                 </li>
               );

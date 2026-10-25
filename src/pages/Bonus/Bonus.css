@@ -493,7 +493,7 @@
 /* Balans yetmaydigan sovg'a — butun kartochka (sticker/emoji ham) 50% */
 .bv-gift:not(.is-ready) { opacity: 0.5; }
 /* Ichidagi o'chiq tugma ikki marta xiralashmasin */
-.bv-gift:not(.is-ready) .bv-gift-btn:disabled { opacity: 1; }
+
 
 .bv-visual {
   flex-shrink: 0;
