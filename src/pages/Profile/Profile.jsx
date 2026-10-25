@@ -117,23 +117,8 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* 3. Referral Balans */}
-        <div className="settings-item" onClick={() => navigate("/referral")}>
-          <div className="settings-item-left">
-            <div className="settings-icon icon-balance">💰</div>
-            <div className="settings-item-text">
-              <span className="settings-item-title">{t("referral.balance") || "Referral Balans"}</span>
-              <span className="settings-item-desc">{t("referral.rewardStars") || "Yulduzlar"}</span>
-            </div>
-          </div>
-          <div className="settings-item-right">
-            <span className="settings-item-value">{user.balance} ⭐</span>
-            <span className="settings-arrow">›</span>
-          </div>
-        </div>
-
-        {/* 4. Do'stlar soni */}
-        <div className="settings-item" onClick={() => navigate("/referral")}>
+        {/* 3. Do'stlar soni — eski referal balans olib tashlandi, bonuslar "Bonuslar" bo'limida */}
+        <div className="settings-item">
           <div className="settings-item-left">
             <div className="settings-icon icon-friends">👥</div>
             <div className="settings-item-text">

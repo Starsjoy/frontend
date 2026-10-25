@@ -26,7 +26,7 @@ import referalSticker from "../../assets/AnimatedSticker_ref.tgs";
 import ordersIcon from "../../assets/orders_icon.png";
 import profileIcon from "../../assets/profile_icon.png";
 import menuIcon from "../../assets/main_icon.png";
-import discountIcon from "../../assets/discount_icon.png";
+import bonusIcon from "../../assets/bonus_icon.svg";
 
 
 // ================== UTILS ==================
@@ -555,14 +555,14 @@ export default function Dashboard() {
         </button>
 
         <button
-          className={`nav-btn_dashboard ${tab === "discount" ? "active" : ""}`}
-          onClick={() => handleNavClick("discount")}
-          title={t("dashboard.discount")}
+          className={`nav-btn_dashboard ${tab === "bonus" ? "active" : ""}`}
+          onClick={() => handleNavClick("bonus")}
+          title={t("rewards.title")}
         >
           <div className="nav-icon">
-            <img src={discountIcon} alt="Discount" />
+            <img src={bonusIcon} alt="" />
           </div>
-          <span className="nav-label">{t("dashboard.discount")}</span>
+          <span className="nav-label">{t("rewards.title")}</span>
         </button>
 
         <button
@@ -618,12 +618,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {tab === "discount" && (
+      {tab === "bonus" && (
         <div className="overlay-modal_dashboard">
           <iframe
-            src="/discount"
+            src="/bonus"
             className="iframe-modal_dashboard"
-            title="Discount"
+            title="Bonus"
             style={iframeStyle}
             onLoad={handleIframeLoad}
           ></iframe>

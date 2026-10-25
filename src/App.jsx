@@ -17,6 +17,8 @@ import TermsOfService from "./pages/Legal/TermsOfService";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import MaintenancePage from "./pages/Maintenance/MaintenancePage";
 import TestPaymentStates from "./pages/Test/TestPaymentStates";
+import TestBonus from "./pages/Test/TestBonus";
+import Bonus from "./pages/Bonus/Bonus";
 import { LanguageProvider, useTranslation } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
@@ -30,8 +32,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 // Yangi foydalanuvchilar uchun til tanlashni ta'minlaydi
 function LanguageGate({ children }) {
   const { languageChosen } = useTranslation();
-  // /test — loader variantlarini ko'rish uchun til tanlashni chetlab o'tadi
-  if (window.location.pathname === "/test") return children;
+  // /test, /test/* — dizayn sahifalari: til tanlashni chetlab o'tadi
+  if (window.location.pathname.startsWith("/test")) return children;
   if (!languageChosen) return <LanguageSetup />;
   return children;
 }
@@ -67,7 +69,7 @@ function App() {
 
   // Admin panel va admin foydalanuvchilar uchun maintenance ko'rsatilmaydi
   const isAdminRoute = window.location.pathname === "/starsadmin";
-  const isTestRoute = window.location.pathname === "/test";
+  const isTestRoute = window.location.pathname.startsWith("/test");
 
   if (loaded && maintenance && !isAdminRoute && !isTestRoute && !isAdmin) {
     return <MaintenancePage />;
@@ -102,6 +104,8 @@ function App() {
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/starsadmin" element={<AdminPanel/>} />
                 <Route path="/test" element={<TestPaymentStates />} />
+                <Route path="/test/bonus" element={<TestBonus />} />
+                <Route path="/bonus" element={<Bonus />} />
               </Routes>
             </BrowserRouter>
             </OnboardingProvider>

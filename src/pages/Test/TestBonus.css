@@ -1,0 +1,28 @@
+/* /test/bonus — telefonda to'liq ekran, kompyuterda telefon ramkasi */
+.tb-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+@media (min-width: 600px) {
+  .tb-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: #0d0e17;
+  }
+
+  .tb-phone {
+    width: 390px;
+    height: min(844px, calc(100vh - 48px));
+    overflow-y: auto;
+    border: 8px solid #262838;
+    border-radius: 40px;
+    background: var(--bg-primary);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    scrollbar-width: none;
+  }
+
+  .tb-phone::-webkit-scrollbar { display: none; }
+}
