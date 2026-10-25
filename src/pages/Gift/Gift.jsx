@@ -6,7 +6,7 @@ import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
-import { toStage } from "../../components/PaymentTransfer/paymentStage";
+import { toStage, resolvePolledStatus } from "../../components/PaymentTransfer/paymentStage";
 import {
   isPaymeeInsufficientError,
   paymeeInsufficientAlertMessage,
@@ -112,6 +112,9 @@ export default function Gift() {
   // Step 4: Payment
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("idle"); // idle | payment_info | pending | completed | gift_sent | expired | failed | error
+  // Polling interval ichida eski closure emas, joriy status kerak
+  const statusRef = useRef(status);
+  statusRef.current = status;
   const [errorMessage, setErrorMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
@@ -242,12 +245,14 @@ export default function Gift() {
         const res = await apiFetch(`/api/gift/status/${orderData.id}`);
         const data = await res.json();
 
-        if (data.status !== status) {
-          setStatus(data.status);
+        const nextStatus = resolvePolledStatus(statusRef.current, data.status);
+        if (nextStatus !== statusRef.current) {
+          statusRef.current = nextStatus;
+          setStatus(nextStatus);
           const saved = localStorage.getItem("pendingGiftOrder");
           if (saved) {
             const p = JSON.parse(saved);
-            p.status = data.status;
+            p.status = nextStatus;
             localStorage.setItem("pendingGiftOrder", JSON.stringify(p));
           }
         }

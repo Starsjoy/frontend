@@ -7,7 +7,7 @@ import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
-import { toStage } from "../../components/PaymentTransfer/paymentStage";
+import { toStage, resolvePolledStatus } from "../../components/PaymentTransfer/paymentStage";
 import {
   getPremiumPurchasePath,
   isCardDeliveryVariant,
@@ -75,6 +75,9 @@ export function StarsPurchasePage({ variant = "fragment" }) {
 
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("pending");
+  // Polling interval ichida eski closure emas, joriy status kerak
+  const statusRef = useRef(status);
+  statusRef.current = status;
   const [errorMessage, setErrorMessage] = useState("");
   const [txId, setTxId] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -385,14 +388,16 @@ export function StarsPurchasePage({ variant = "fragment" }) {
         const res = await apiFetch(`/api/transactions/${orderData.id}`);
         const data = await res.json();
 
-        if (data.status !== status) {
-          setStatus(data.status);
+        const nextStatus = resolvePolledStatus(statusRef.current, data.status);
+        if (nextStatus !== statusRef.current) {
+          statusRef.current = nextStatus;
+          setStatus(nextStatus);
 
           // LocalStorage ni yangilaymiz
           const saved = localStorage.getItem("pendingStarsOrder");
           if (saved) {
             const parsed = JSON.parse(saved);
-            parsed.status = data.status;
+            parsed.status = nextStatus;
             localStorage.setItem("pendingStarsOrder", JSON.stringify(parsed));
           }
         }

@@ -7,7 +7,7 @@ import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
-import { toStage } from "../../components/PaymentTransfer/paymentStage";
+import { toStage, resolvePolledStatus } from "../../components/PaymentTransfer/paymentStage";
 import "./Discount.css";
 
 const POLLING_DURATION = 8 * 60 * 1000;
@@ -28,6 +28,9 @@ export default function Discount() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState("payment_info");
+  // Polling interval ichida eski closure emas, joriy status kerak
+  const statusRef = useRef(status);
+  statusRef.current = status;
   const [txId, setTxId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [timer, setTimer] = useState(20);
@@ -234,13 +237,15 @@ export default function Discount() {
         const res = await apiFetch(`/api/transactions/${orderData.id}`);
         const data = await res.json();
 
-        if (data.status !== status) {
-          setStatus(data.status);
+        const nextStatus = resolvePolledStatus(statusRef.current, data.status);
+        if (nextStatus !== statusRef.current) {
+          statusRef.current = nextStatus;
+          setStatus(nextStatus);
 
           const saved = localStorage.getItem("pendingDiscountOrder");
           if (saved) {
             const parsed = JSON.parse(saved);
-            parsed.status = data.status;
+            parsed.status = nextStatus;
             localStorage.setItem("pendingDiscountOrder", JSON.stringify(parsed));
           }
         }

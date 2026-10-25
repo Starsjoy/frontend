@@ -13,3 +13,10 @@ const STAGE_BY_STATUS = {
 };
 
 export const toStage = (status) => STAGE_BY_STATUS[status] || null;
+
+// Polling javobini sahifa statusiga qo'llash. Backend "pending" = to'lov hali
+// kelmagan: karta ekrani (payment_info) foydalanuvchi "To'lov qildim" bosmaguncha
+// ochiq qoladi, vaqt tugagan (expired) holat ham qaytib ochilmaydi. Tekshiruv
+// ekraniga faqat "To'lov qildim" yoki backend to'lovni aniqlaganda o'tiladi.
+export const resolvePolledStatus = (current, polled) =>
+  polled === "pending" && current !== "pending" ? current : polled;
