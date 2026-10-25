@@ -11,7 +11,6 @@ import {
 } from "../../utils/starsPurchaseRoute";
 import { BookOpen, Headset } from "lucide-react";
 import { TGSSticker } from "../../components/TGSSticker";
-import BonusModal from "../../components/BonusModal";
 import StarsJoyLogoStatic from "../../components/Loaders/StarsJoyLogoStatic";
 import LogoWordmark from "../../components/Loaders/LogoWordmark";
 import StarOutlineLoader from "../../components/Loaders/StarOutlineLoader";
@@ -76,7 +75,6 @@ export default function Dashboard() {
   const [premiumPurchasePath, setPremiumPurchasePath] = useState("/premium");
 
   /* ================= BONUS MISSIYA ================= */
-  const [showBonus, setShowBonus] = useState(false);
 
   /* ================= CHALLENGE ================= */
   const [myTotal, setMyTotal] = useState(0);
@@ -490,19 +488,9 @@ export default function Dashboard() {
               <BookOpen size={14} strokeWidth={2.5} />
               <span>{t("onboarding.guideBtn")}</span>
             </button>
-            <button
-              className="bonus-btn-dashboard"
-              onClick={() => setShowBonus(true)}
-              title={t("bonus.openTitle")}
-              aria-label={t("bonus.openTitle")}
-            >
-              <span className="bonus-btn-dashboard__icon" role="img" aria-hidden="true">🎁</span>
-            </button>
           </div>
         </div>
       </header>
-
-      <BonusModal open={showBonus} onClose={() => setShowBonus(false)} />
 
       <main className="dash-main_dashboard" style={{display: tab === 'home' ? 'flex' : 'none'}}>
         {/* QO'LLANMA CTA — faqat yangi foydalanuvchiga */}
