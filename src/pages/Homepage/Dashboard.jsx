@@ -9,7 +9,7 @@ import {
   getStarsPurchasePath,
   getPremiumPurchasePath,
 } from "../../utils/starsPurchaseRoute";
-import { BookOpen, Headset } from "lucide-react";
+import { BookOpen, Globe, Headset } from "lucide-react";
 import { TGSSticker } from "../../components/TGSSticker";
 import StarsJoyLogoStatic from "../../components/Loaders/StarsJoyLogoStatic";
 import LogoWordmark from "../../components/Loaders/LogoWordmark";
@@ -58,6 +58,9 @@ export default function Dashboard() {
   // Dashboard init birinchi marta tugadimi — qo'llanma CTA'si tarix kelmasdan chiqib-yo'qolmasin
   const [dashboardReady, setDashboardReady] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
+  // Tepadagi til tugmasi: bosilganda uz/ru/en menyusi
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const langMenuRef = useRef(null);
   // Pastki menyudagi "Bonuslar" belgisi: hali "Olish" bosilmagan bonuslar soni
   const [bonusUnseen, setBonusUnseen] = useState(0);
   // Iframe bo'lim (Profil, Chegirma, Tarix) yuklanib bo'lganmi — tayyor bo'lguncha
@@ -267,6 +270,27 @@ export default function Dashboard() {
 
     loadDashboard();
   }, [username]);
+
+  /* ================= TIL MENYUSI =================
+     Tashqariga bosilsa yoki Escape — yopiladi. */
+  useEffect(() => {
+    if (!langMenuOpen) return undefined;
+    const onDown = (e) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target)) setLangMenuOpen(false);
+    };
+    const onKey = (e) => e.key === "Escape" && setLangMenuOpen(false);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [langMenuOpen]);
+
+  const chooseLanguage = (code) => {
+    if (code !== language) setLanguage(code); // localStorage + /api/user/language
+    setLangMenuOpen(false);
+  };
 
   /* ================= BONUSLAR BELGISI =================
      Ochilganda, har 30 soniyada va bo'lim almashganda yangilanadi. Bonuslar iframe'i
@@ -488,6 +512,40 @@ export default function Dashboard() {
               <BookOpen size={14} strokeWidth={2.5} />
               <span>{t("onboarding.guideBtn")}</span>
             </button>
+            <div className="lang-switch_dashboard" ref={langMenuRef}>
+              <button
+                type="button"
+                className={`lang-btn-dashboard ${langMenuOpen ? "is-open" : ""}`}
+                onClick={() => setLangMenuOpen((v) => !v)}
+                aria-label={t("common.selectLanguage") || "Tilni tanlang"}
+                aria-haspopup="menu"
+                aria-expanded={langMenuOpen}
+              >
+                <Globe size={20} strokeWidth={2.2} />
+              </button>
+              {langMenuOpen && (
+                <div className="lang-menu_dashboard" role="menu">
+                  {[
+                    { code: "uz", flag: "🇺🇿", label: "O'zbekcha" },
+                    { code: "ru", flag: "🇷🇺", label: "Русский" },
+                    { code: "en", flag: "🇬🇧", label: "English" },
+                  ].map((l) => (
+                    <button
+                      key={l.code}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={language === l.code}
+                      className={`lang-menu_dashboard__item ${language === l.code ? "is-active" : ""}`}
+                      onClick={() => chooseLanguage(l.code)}
+                    >
+                      <span className="lang-menu_dashboard__flag" aria-hidden="true">{l.flag}</span>
+                      <span className="lang-menu_dashboard__label">{l.label}</span>
+                      {language === l.code && <span className="lang-menu_dashboard__check" aria-hidden="true">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>

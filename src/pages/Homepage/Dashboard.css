@@ -158,7 +158,10 @@
 .help-btn-dashboard:hover { border-color: #6366f1; color: #6366f1; transform: scale(1.05); }
 .help-btn-dashboard:active { transform: scale(0.95); }
 
-.bonus-btn-dashboard {
+/* Tepadagi til tugmasi (globus) + menyu */
+.lang-switch_dashboard { position: relative; }
+
+.lang-btn-dashboard {
   width: 42px;
   height: 42px;
   flex-shrink: 0;
@@ -168,23 +171,61 @@
   padding: 0;
   cursor: pointer;
   border-radius: 50%;
-  border: 2px solid rgba(255, 218, 3, 0.45);
+  border: 2px solid var(--border-primary);
   background: var(--bg-tertiary);
-  transition: transform 0.2s, border-color 0.2s;
-  animation: bonus-btn-pulse 2.2s ease-in-out infinite;
+  color: var(--text-secondary);
+  transition: transform 0.2s, border-color 0.2s, color 0.2s;
 }
-.bonus-btn-dashboard:hover { border-color: #ffda03; transform: scale(1.05); }
-.bonus-btn-dashboard:active { transform: scale(0.95); }
+.lang-btn-dashboard:hover,
+.lang-btn-dashboard.is-open { border-color: #6366f1; color: #a5b4fc; }
+.lang-btn-dashboard:active { transform: scale(0.94); }
 
-.bonus-btn-dashboard__icon {
-  font-size: 22px;
-  line-height: 1;
-  pointer-events: none;
+.lang-menu_dashboard {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 150;
+  min-width: 176px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 14px;
+  background: #22233a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  transform-origin: top right;
+  animation: langMenuIn 0.18s ease both;
 }
 
-@keyframes bonus-btn-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 218, 3, 0.35); }
-  50%      { box-shadow: 0 0 0 7px rgba(255, 218, 3, 0); }
+.lang-menu_dashboard__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.lang-menu_dashboard__item:hover { background: rgba(255, 255, 255, 0.06); }
+.lang-menu_dashboard__item.is-active { background: rgba(99, 102, 241, 0.18); }
+.lang-menu_dashboard__flag { font-size: 18px; line-height: 1; }
+.lang-menu_dashboard__label { flex: 1; }
+.lang-menu_dashboard__check { color: #a5b4fc; font-weight: 800; }
+
+@keyframes langMenuIn {
+  from { opacity: 0; transform: scale(0.94) translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lang-menu_dashboard { animation: none; }
 }
 
 /* LANGUAGE BUTTON */

@@ -87,6 +87,9 @@ export function StarsPurchasePage({ variant = "fragment" }) {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [countdown, setCountdown] = useState(480); // 8 daqiqa
   const [showMorePlans, setShowMorePlans] = useState(false);
+  // Asosiy "Stars olish" tugmasi ekranda ko'rinmasa — pastda qotgan panel chiqadi
+  const buyBtnRef = useRef(null);
+  const [buyBtnVisible, setBuyBtnVisible] = useState(true);
 
   // Promocode state
   const [pramacod, setPramacod] = useState("");
@@ -573,8 +576,33 @@ export function StarsPurchasePage({ variant = "fragment" }) {
     setShowModal(true);
   };
 
+  // Asosiy tugmani kuzatish: ro'yxat ochilib tugma ekrandan chiqsa, pastki panel ko'rinadi
+  useEffect(() => {
+    const el = buyBtnRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return undefined;
+    const io = new IntersectionObserver(([entry]) => setBuyBtnVisible(entry.isIntersecting), { threshold: 0.6 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Yig'iq ro'yxat: dastlabki 3 ta + (tanlangan bo'lsa) tanlangan paket — tanlov ko'rinib tursin
+  const visiblePlans = showMorePlans
+    ? STARS_OPTIONS
+    : STARS_OPTIONS.slice(0, 3).concat(
+        STARS_OPTIONS.slice(3).filter((a) => String(a) === String(stars))
+      );
+
+  // Paket tanlash — ro'yxat ochiq qoladi; asosiy tugma ekrandan chiqib ketsa pastki panel ko'rinadi
+  const selectPlan = (starAmount) => setStars(String(starAmount));
+
+  const finalPrice = appliedPromo ? appliedPromo.newPrice : price;
+  const starsNum = parseInt(stars, 10);
+  // Narxga emas, miqdorga bog'liq: narx kechiksa/kelmasa ham panel chiqadi
+  const stickyAmountOk = Number.isFinite(starsNum) && starsNum >= 50 && starsNum <= 10000;
+  const showStickyBuy = stickyAmountOk && !buyBtnVisible && !showModal && !showWarningModal;
+
   return (
-    <div className="stars-container">
+    <div className={`stars-container ${showStickyBuy ? "has-sticky-buy" : ""}`}>
       <div className="stars-header-container">
         <TGSSticker stickerPath={starsSticker} className="stars-header-sticker" />
       </div>
@@ -641,7 +669,7 @@ export function StarsPurchasePage({ variant = "fragment" }) {
       <div className="preset-options-section">
         <h3 style={{color: '#fff', margin: '24px 0 12px 0', fontSize: '16px', fontWeight: '600'}}>{t("stars.orSelectPack")}</h3>
         <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px'}}>
-          {(showMorePlans ? STARS_OPTIONS : STARS_OPTIONS.slice(0, 3)).map((starAmount, idx) => {
+          {visiblePlans.map((starAmount, idx) => {
             const maxPrice = starAmount * NARX;
             const discountPkg = discountMap[starAmount];
 
@@ -699,7 +727,7 @@ export function StarsPurchasePage({ variant = "fragment" }) {
             return (
               <div
                 key={idx}
-                onClick={() => setStars(String(starAmount))}
+                onClick={() => selectPlan(starAmount)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -744,6 +772,7 @@ export function StarsPurchasePage({ variant = "fragment" }) {
 
       <div className="actions" style={{ marginBottom: '20px' }}>
         <button
+          ref={buyBtnRef}
           type="button"
           className="tg-button"
           data-tour-id="tour-stars-submit"
@@ -752,6 +781,25 @@ export function StarsPurchasePage({ variant = "fragment" }) {
           {t("stars.buyBtn")} {price > 0 && `- ${formatAmount(appliedPromo ? appliedPromo.newPrice : price)} ${t("common.currency")}`}
         </button>
       </div>
+
+      {/* Pastda qotgan sotib olish paneli — asosiy tugma ekrandan chiqib ketganda */}
+      {showStickyBuy && (
+        <div className="stars-sticky-buy" role="region" aria-label={t("stars.buyBtn")}>
+          <div className="stars-sticky-buy__info">
+            <span className="stars-sticky-buy__amount">
+              <StarIcon /> {starsNum.toLocaleString("ru-RU")} Stars
+            </span>
+            {finalPrice > 0 && (
+              <span className="stars-sticky-buy__price">
+                {formatAmount(finalPrice)} {t("common.currency")}
+              </span>
+            )}
+          </div>
+          <button type="button" className="stars-sticky-buy__btn" onClick={handlePayment}>
+            {t("stars.buyBtn")}
+          </button>
+        </div>
+      )}
 
       <div className="pramacod" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', gap: '10px' }}>
