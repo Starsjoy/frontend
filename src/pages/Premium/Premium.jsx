@@ -554,16 +554,14 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
 
             <div className="narx">
               <span>{t(p.labelKey)}</span>
-              <span>
-                {isCardFlow && selectedPlan.id === p.id
-                  ? fragmentPriceLoading
-                    ? "..."
-                    : fragmentPlanPrice != null
-                      ? `${formatAmount(fragmentPlanPrice)} ${t("common.currency")}`
-                      : fragmentSlotsFull
-                        ? t("premium.soldOut")
-                        : "—"
-                  : `${formatAmount(p.price)} ${t("common.currency")}`}
+              <span style={{ opacity: isCardFlow && selectedPlan.id === p.id && fragmentPriceLoading ? 0.55 : 1, transition: "opacity 0.2s ease" }}>
+                {/* Server narxi kelmasa (tarmoq/limit xatosi) — "—" emas, tarifning odatdagi narxi.
+                    Aniq to'lov summasi baribir buyurtma ochilganda beriladi. */}
+                {isCardFlow && selectedPlan.id === p.id && fragmentSlotsFull
+                  ? t("premium.soldOut")
+                  : isCardFlow && selectedPlan.id === p.id && fragmentPlanPrice != null
+                    ? `${formatAmount(fragmentPlanPrice)} ${t("common.currency")}`
+                    : `${formatAmount(p.price)} ${t("common.currency")}`}
               </span>
             </div>
             <span style={{ marginLeft: "auto", fontSize: "13px", color: "#0088cc", fontWeight: "600" }}>({t("premium.auto").replace(":", "")})</span>
