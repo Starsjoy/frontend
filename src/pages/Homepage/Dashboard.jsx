@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WebApp from "@twa-dev/sdk";
 import { useTranslation } from "../../context/LanguageContext";
@@ -56,6 +56,10 @@ export default function Dashboard() {
   const [statsTab, setStatsTab] = useState("sales");
   const [loading, setLoading] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
+  // Iframe bo'lim (Profil, Chegirma, Tarix) yuklanib bo'lganmi — tayyor bo'lguncha
+  // iframe ko'rinmaydi (oq chaqnash bo'lmasin)
+  const [iframeReady, setIframeReady] = useState(false);
+  const navLoaderTimers = useRef({ show: null, max: null });
   const [splashVisible, setSplashVisible] = useState(() => !sessionStorage.getItem("splashShown"));
   const [splashFading, setSplashFading] = useState(false);
   const [showChannelBanner, setShowChannelBanner] = useState(false);
@@ -298,20 +302,43 @@ export default function Dashboard() {
     }
   };
 
-  // Smooth Navigation Handler
+  // Loader faqat haqiqiy yuklanishda: iframe 300ms ichida yuklanmasa ko'rinadi,
+  // yuklanishi bilan (onLoad) yo'qoladi. Asosiy'ga qaytishda loader yo'q.
+  const NAV_LOADER_DELAY_MS = 300;
+  const NAV_LOADER_MAX_MS = 10000; // onLoad kelmay qolsa ham loader osilib qolmasin
+
+  const clearNavLoaderTimers = () => {
+    clearTimeout(navLoaderTimers.current.show);
+    clearTimeout(navLoaderTimers.current.max);
+  };
+
+  const finishNavLoading = () => {
+    clearNavLoaderTimers();
+    setNavLoading(false);
+    setIframeReady(true);
+  };
+
+  useEffect(() => clearNavLoaderTimers, []);
+
   const handleNavClick = (targetTab) => {
     if (tab === targetTab) return;
 
-    // Barcha bo'limlar (Asosiy'ga qaytish ham) uchun bir xil loader —
-    // vizual izchillik uchun.
-    setNavLoading(true);
+    clearNavLoaderTimers();
+    setNavLoading(false);
     setTab(targetTab);
+    if (targetTab === "home") return;
 
-    // Silliq animatsiya uchun delay (white flashni yopish)
-    setTimeout(() => {
-      setNavLoading(false);
-    }, 1500);
+    setIframeReady(false);
+    navLoaderTimers.current.show = setTimeout(() => setNavLoading(true), NAV_LOADER_DELAY_MS);
+    navLoaderTimers.current.max = setTimeout(finishNavLoading, NAV_LOADER_MAX_MS);
   };
+
+  const handleIframeLoad = (e) => {
+    broadcastSafeAreaTo(e.currentTarget);
+    finishNavLoading();
+  };
+
+  const iframeStyle = { opacity: iframeReady ? 1 : 0, transition: "opacity 0.2s ease" };
 
   // Back Button Logic
   useEffect(() => {
@@ -320,7 +347,7 @@ export default function Dashboard() {
       if (showLanguageModal) {
         setShowLanguageModal(false);
       } else if (tab !== "home") {
-        setTab("home");
+        handleNavClick("home");
       }
     };
 
@@ -521,7 +548,8 @@ export default function Dashboard() {
             src="/history"
             className="iframe-modal_dashboard"
             title="History"
-            onLoad={(e) => broadcastSafeAreaTo(e.currentTarget)}
+            style={iframeStyle}
+            onLoad={handleIframeLoad}
           ></iframe>
         </div>
       )}
@@ -534,7 +562,8 @@ export default function Dashboard() {
             src="/profile"
             className="iframe-modal_dashboard"
             title="Profile"
-            onLoad={(e) => broadcastSafeAreaTo(e.currentTarget)}
+            style={iframeStyle}
+            onLoad={handleIframeLoad}
           ></iframe>
         </div>
       )}
@@ -545,7 +574,8 @@ export default function Dashboard() {
             src="/discount"
             className="iframe-modal_dashboard"
             title="Discount"
-            onLoad={(e) => broadcastSafeAreaTo(e.currentTarget)}
+            style={iframeStyle}
+            onLoad={handleIframeLoad}
           ></iframe>
         </div>
       )}
