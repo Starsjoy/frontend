@@ -279,7 +279,9 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
     setTimeout(() => setCopied(false), 1600);
   };
   const shareLink = () => {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(tr("shareText"))}`;
+    // Avval matn, keyin havola: Telegram "url" ni matndan oldin qo'yadi, shuning uchun
+    // butun xabar bitta "url" parametrida beriladi
+    const url = `https://t.me/share/url?url=${encodeURIComponent(`${tr("shareText")}\n\n${link}`)}`;
     openTelegramLink(url);
   };
 
