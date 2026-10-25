@@ -270,6 +270,19 @@ export default function Dashboard() {
     loadDashboard();
   }, [username]);
 
+  /* ================= KANAL OBUNASI (ixtiyoriy) =================
+     Botda obuna majburiy emas. Sessiyada bir marta jimgina tekshiramiz — kanalga
+     keyinroq qo'shilgan user missiya/referal hisobida sanalsin. Natija UI'ga ta'sir qilmaydi. */
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("subCheckDone")) return;
+      sessionStorage.setItem("subCheckDone", "1");
+    } catch {
+      return;
+    }
+    apiFetch("/api/user/subscribe-check", { method: "POST" }).catch(() => {});
+  }, []);
+
   /* ================= REFRESH UNREAD NOTIFICATIONS (30s interval) ================= */
   useEffect(() => {
     const fetchUnreadCount = async () => {

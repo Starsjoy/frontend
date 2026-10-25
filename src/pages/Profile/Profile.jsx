@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
+import { openTelegramLink } from "../../utils/telegramLink";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import { useTranslation } from "../../context/LanguageContext";
@@ -117,27 +118,13 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* 3. Do'stlar soni — eski referal balans olib tashlandi, bonuslar "Bonuslar" bo'limida */}
-        <div className="settings-item">
-          <div className="settings-item-left">
-            <div className="settings-icon icon-friends">👥</div>
-            <div className="settings-item-text">
-              <span className="settings-item-title">{t("profile.friendsCount") || "Do'stlar soni"}</span>
-              <span className="settings-item-desc">{t("profile.friendsCountDesc") || "Referral dasturi"}</span>
-            </div>
-          </div>
-          <div className="settings-item-right">
-            <span className="settings-item-value">{user.friends}</span>
-            <span className="settings-arrow">›</span>
-          </div>
-        </div>
       </div>
 
       {/* Support & Channel */}
       <div className="settings-group">
         {/* 5. Yordam */}
         <div className="settings-item" onClick={() => {
-          try { WebApp.openTelegramLink("https://t.me/StarsjoySupport"); } catch { window.open("https://t.me/StarsjoySupport", "_blank"); }
+          openTelegramLink("https://t.me/StarsjoySupport");
         }}>
           <div className="settings-item-left">
             <div className="settings-icon icon-support">🛟</div>
@@ -154,7 +141,7 @@ export default function Profile() {
 
         {/* 6. Yangiliklar kanali */}
         <div className="settings-item" onClick={() => {
-          try { WebApp.openTelegramLink("https://t.me/starsjoy"); } catch { window.open("https://t.me/starsjoy", "_blank"); }
+          openTelegramLink("https://t.me/starsjoy");
         }}>
           <div className="settings-item-left">
             <div className="settings-icon icon-channel">📢</div>

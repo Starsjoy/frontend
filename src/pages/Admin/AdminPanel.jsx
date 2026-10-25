@@ -1642,15 +1642,7 @@ export default function AdminPanel() {
     }
   };
 
-  // Admin: Adjust user balance
-  const openBalanceModal = (user) => {
-    setBalanceModal({
-      username: user.username,
-      currentBalance: user.referral_balance || 0
-    });
-    setBalanceAmount("");
-  };
-
+  // Admin: referal balansini o'zgartirish (eski tizim — ochish tugmasi olib tashlangan)
   const adjustBalance = async (action) => {
     if (!balanceModal || !balanceAmount) return;
     
@@ -2775,6 +2767,9 @@ export default function AdminPanel() {
             <span>Jami: <b>{userStats.total}</b></span>
             <span>Bugun: <b>{userStats.today}</b></span>
             <span>Referrals: <b>{userStats.totalReferrals}</b></span>
+            {userStats.bonusTotal != null && (
+              <span>Bonus: <b>{userStats.bonusTotal} ⭐</b> ({userStats.bonusUsers} user)</span>
+            )}
           </div>
 
           {/* Search */}
@@ -2873,8 +2868,12 @@ export default function AdminPanel() {
                         gap: '6px'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>Yulduzlar:</span>
-                          <span style={{fontSize: '14px', fontWeight: 'bold', color: '#ffd700'}}>{u.referral_balance || 0}</span>
+                          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>Bonus:</span>
+                          <span style={{fontSize: '14px', fontWeight: 'bold', color: '#ffd700'}}>{u.bonus_balance || 0} ⭐</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>Xarid:</span>
+                          <span style={{fontSize: '13px', fontWeight: '600', color: '#64b5f6'}}>{u.orders_count || 0} ta</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                           <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>Do'stlar:</span>
@@ -3983,13 +3982,40 @@ export default function AdminPanel() {
                   </div>
                 )}
                 <div className="user-detail-row">
-                  <span className="detail-label">Ref Balance:</span>
-                  <span className="detail-value highlight">💰 {userModal.referral_balance || 0} ⭐</span>
+                  <span className="detail-label">Bonus balans:</span>
+                  <span className="detail-value highlight">🎁 {userModal.bonus_balance || 0} ⭐</span>
                 </div>
                 <div className="user-detail-row">
-                  <span className="detail-label">Total Earnings:</span>
-                  <span className="detail-value">{userModal.total_earnings || 0} ⭐</span>
+                  <span className="detail-label">Bonus yig'gan:</span>
+                  <span className="detail-value">
+                    {userModal.bonus_earned || 0} ⭐
+                    {userModal.bonus_from_referrals > 0 && ` (referaldan ${userModal.bonus_from_referrals} ⭐)`}
+                  </span>
                 </div>
+                <div className="user-detail-row">
+                  <span className="detail-label">Bonus sarflagan:</span>
+                  <span className="detail-value">{userModal.bonus_spent || 0} ⭐</span>
+                </div>
+                <div className="user-detail-row">
+                  <span className="detail-label">Xaridlar:</span>
+                  <span className="detail-value">🛒 {userModal.orders_count || 0} ta</span>
+                </div>
+                <div className="user-detail-row">
+                  <span className="detail-label">Sotib olgan:</span>
+                  <span className="detail-value">
+                    ⭐ {(userModal.stars_bought || 0).toLocaleString()} Stars · 💎 {userModal.premium_months || 0} oy · 🎁 {userModal.gifts_count || 0} gift
+                  </span>
+                </div>
+                <div className="user-detail-row">
+                  <span className="detail-label">Jami to'lagan:</span>
+                  <span className="detail-value highlight">{(userModal.total_spent || 0).toLocaleString()} so'm</span>
+                </div>
+                {userModal.last_order_at && (
+                  <div className="user-detail-row">
+                    <span className="detail-label">Oxirgi xarid:</span>
+                    <span className="detail-value">{new Date(userModal.last_order_at).toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="user-detail-row">
                   <span className="detail-label">Total Referrals:</span>
                   <span className="detail-value">👥 {userModal.total_referrals || 0}</span>
@@ -4008,18 +4034,7 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              <div className="user-detail-actions">
-                <button
-                  className="balance-btn add"
-                  onClick={() => {
-                    setUserModal(null);
-                    setUserDetailsModalType(null);
-                    openBalanceModal(userModal);
-                  }}
-                >
-                  ➕➖ Referral balansni o'zgartirish
-                </button>
-              </div>
+              {/* Eski "referral balansni o'zgartirish" olib tashlandi — referal balansi to'xtatilgan, bonuslar bonus_balance'da */}
             </div>
           </div>
         </div>

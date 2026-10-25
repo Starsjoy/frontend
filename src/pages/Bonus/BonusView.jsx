@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import WebApp from "@twa-dev/sdk";
+import { openTelegramLink } from "../../utils/telegramLink";
 import { useTranslation } from "../../context/LanguageContext";
 import { TGSSticker } from "../../components/TGSSticker";
 import starsGif from "../../assets/stars.gif";
@@ -30,6 +30,8 @@ const MAX_PARTICLES = 12;
 const FLY_MS = 720;
 const STAGGER_MS = 65;
 const TABS = ["home", "catalog", "history"];
+const ROW_LEAVE_MS = 420;
+const FADE_OUT_MS = 200;
 
 const StarIcon = ({ size = 18 }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true">
@@ -94,6 +96,15 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
 
   const [tab, setTab] = useState(TABS.includes(initialTab) ? initialTab : "home");
   const [showHow, setShowHow] = useState(false);
+  const [closingModal, setClosingModal] = useState(null); // "how" | "confirm"
+  const closeModal = (which) => {
+    setClosingModal(which);
+    setTimeout(() => {
+      if (which === "how") setShowHow(false);
+      else setConfirmItem(null);
+      setClosingModal(null);
+    }, FADE_OUT_MS);
+  };
 
   const balance = data?.balance ?? 0;
   const catalog = data?.catalog || [];
@@ -110,6 +121,7 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
   const [claimedIds, setClaimedIds] = useState(() => new Set());
   const [claimingId, setClaimingId] = useState(null);
   const [hiddenIds, setHiddenIds] = useState(() => new Set());
+  const [leavingIds, setLeavingIds] = useState(() => new Set());
   const lockedSum = unseen.reduce((s, e) => (claimedIds.has(e.id) ? s : s + e.delta), 0);
   const target = balance - lockedSum;
 
@@ -179,7 +191,9 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
       setClaimingId(null);
       animatingRef.current = false;
       onSeen?.(entry.id);
-      setTimeout(() => setHiddenIds((cur) => new Set(cur).add(entry.id)), 900);
+      // "✓ Olindi" ko'rinib turadi, so'ng qator silliq so'nadi va yig'iladi
+      setTimeout(() => setLeavingIds((cur) => new Set(cur).add(entry.id)), 750);
+      setTimeout(() => setHiddenIds((cur) => new Set(cur).add(entry.id)), 750 + ROW_LEAVE_MS);
     },
     [flyStars, onSeen]
   );
@@ -210,10 +224,14 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
   const [confirmItem, setConfirmItem] = useState(null);
   const [toast, setToast] = useState(null); // { tone: info|success|error, text }
   const toastTimer = useRef(null);
+  const hideToast = () => {
+    setToast((cur) => (cur ? { ...cur, leaving: true } : cur));
+    toastTimer.current = setTimeout(() => setToast(null), FADE_OUT_MS);
+  };
   const showToast = (tone, text, ms = 3500) => {
     clearTimeout(toastTimer.current);
     setToast({ tone, text });
-    if (ms) toastTimer.current = setTimeout(() => setToast(null), ms);
+    if (ms) toastTimer.current = setTimeout(hideToast, ms);
   };
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
@@ -237,7 +255,7 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
   const startRedeem = async () => {
     const item = confirmItem;
     const recipient = recipientMode === "self" ? "" : otherRecipient;
-    setConfirmItem(null);
+    closeModal("confirm");
     setSending(true);
     showToast("info", tr("sending"), 0);
     const res = await onRedeem(item.id, recipient);
@@ -262,11 +280,7 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
   };
   const shareLink = () => {
     const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(tr("shareText"))}`;
-    try {
-      WebApp.openTelegramLink(url);
-    } catch {
-      window.open(url, "_blank");
-    }
+    openTelegramLink(url);
   };
 
   const visual = (item, size = "md") => {
@@ -307,9 +321,12 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
         ))}
       </nav>
 
-      {statusText && <div className={`bv-toast bv-toast--${statusTone}`}>{statusText}</div>}
+      {statusText && (
+        <div className={`bv-toast bv-toast--${statusTone} ${toast?.leaving ? "is-leaving" : ""}`}>{statusText}</div>
+      )}
       {!enabled && <div className="bv-toast bv-toast--info">{tr("disabled")}</div>}
 
+      <div key={tab} className="bv-pane">
       {/* ===== Karta (hamma tabda — balans doim ko'rinsin) ===== */}
       <section className={`bv-card ${tab === "home" ? "" : "is-compact"}`}>
         <div className="bv-card-shine" aria-hidden="true" />
@@ -369,7 +386,7 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
                     <li
                       key={e.id}
                       ref={(el) => (rowRefs.current[e.id] = el)}
-                      className={`bv-row bv-row--pending ${claimed ? "is-claimed" : ""}`}
+                      className={`bv-row bv-row--pending ${claimed ? "is-claimed" : ""} ${leavingIds.has(e.id) ? "is-leaving" : ""}`}
                     >
                       <span className="bv-row-ic">{entryIcon(e)}</span>
                       <div className="bv-row-main">
@@ -489,6 +506,8 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
         </section>
       )}
 
+      </div>
+
       {/* Uchayotgan yulduzchalar — body'ga, hech qanday konteyner kesmasin */}
       {typeof document !== "undefined" &&
         createPortal(
@@ -511,9 +530,9 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
 
       {/* ===== Qanday ishlaydi (faqat ✕ bilan yopiladi) ===== */}
       {showHow && (
-        <div className="bv-overlay">
+        <div className={`bv-overlay ${closingModal === "how" ? "is-closing" : ""}`}>
           <div className="bv-modal" role="dialog" aria-modal="true" aria-labelledby="bv-how-title">
-            <button type="button" className="bv-modal-x" onClick={() => setShowHow(false)} aria-label={tr("close")}>✕</button>
+            <button type="button" className="bv-modal-x" onClick={() => closeModal("how")} aria-label={tr("close")}>✕</button>
             <span className="bv-modal-badge" aria-hidden="true">⭐</span>
             <h3 id="bv-how-title" className="bv-modal-title">{tr("howTitle")}</h3>
             <p className="bv-modal-text">{tr("howDesc")}</p>
@@ -530,9 +549,9 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
 
       {/* ===== Tasdiqlash (✕ yoki "Bekor qilish" bilan yopiladi) ===== */}
       {confirmItem && (
-        <div className="bv-overlay">
+        <div className={`bv-overlay ${closingModal === "confirm" ? "is-closing" : ""}`}>
           <div className="bv-modal" role="dialog" aria-modal="true" aria-labelledby="bv-confirm-title">
-            <button type="button" className="bv-modal-x" onClick={() => setConfirmItem(null)} aria-label={tr("close")}>✕</button>
+            <button type="button" className="bv-modal-x" onClick={() => closeModal("confirm")} aria-label={tr("close")}>✕</button>
             {visual(confirmItem, "lg")}
             <h3 id="bv-confirm-title" className="bv-modal-title">{tr("confirmTitle")}</h3>
             <p className="bv-modal-text">
@@ -587,7 +606,7 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
             <button type="button" className="bv-btn bv-btn--gold bv-modal-btn" disabled={!recipientReady} onClick={startRedeem}>
               {tr("confirmCta")}
             </button>
-            <button type="button" className="bv-btn bv-btn--plain bv-modal-btn" onClick={() => setConfirmItem(null)}>
+            <button type="button" className="bv-btn bv-btn--plain bv-modal-btn" onClick={() => closeModal("confirm")}>
               {tr("cancel")}
             </button>
           </div>
