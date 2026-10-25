@@ -366,6 +366,8 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
       {/* ===== ASOSIY ===== */}
       {tab === "home" && (
         <>
+          {/* Olinadigan bonus bo'lmasa — bo'lim umuman ko'rinmaydi */}
+          {pending.length > 0 && (
           <section className="bv-section">
             <div className="bv-section-head">
               <h2 className="bv-h">{tr("pendingTitle")}</h2>
@@ -375,13 +377,7 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
                 </button>
               )}
             </div>
-            {pending.length === 0 ? (
-              <div className="bv-empty">
-                <span className="bv-empty-ic" aria-hidden="true">✨</span>
-                {tr("pendingEmpty")}
-              </div>
-            ) : (
-              <ul className="bv-list">
+            <ul className="bv-list">
                 {pending.map((e) => {
                   const claimed = claimedIds.has(e.id);
                   const claiming = claimingId === e.id;
@@ -412,8 +408,8 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
                   );
                 })}
               </ul>
-            )}
           </section>
+          )}
 
           {link && (
             <section className="bv-invite">
