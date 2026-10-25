@@ -4,6 +4,7 @@ import WebApp from "@twa-dev/sdk";
 import { useTranslation } from "../../context/LanguageContext";
 import { useOnboarding } from "../../context/OnboardingContext";
 import apiFetch from "../../utils/apiFetch";
+import { APP_BG, applyTelegramChrome } from "../../utils/telegramChrome";
 import {
   getStarsPurchasePath,
   getPremiumPurchasePath,
@@ -58,6 +59,8 @@ export default function Dashboard() {
   // Dashboard init birinchi marta tugadimi — qo'llanma CTA'si tarix kelmasdan chiqib-yo'qolmasin
   const [dashboardReady, setDashboardReady] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
+  // Pastki menyudagi "Bonuslar" belgisi: hali "Olish" bosilmagan bonuslar soni
+  const [bonusUnseen, setBonusUnseen] = useState(0);
   // Iframe bo'lim (Profil, Chegirma, Tarix) yuklanib bo'lganmi — tayyor bo'lguncha
   // iframe ko'rinmaydi (oq chaqnash bo'lmasin)
   const [iframeReady, setIframeReady] = useState(false);
@@ -146,12 +149,9 @@ export default function Dashboard() {
     try {
       WebApp.ready();
 
-      // Ko'k rang o'rnatish (Telegram header va bottom bar uchun)
-      const blueColor = "#1a1a2e"; // Dark blue
-
-      WebApp.setHeaderColor(blueColor);
-      WebApp.setBackgroundColor(blueColor);
-      document.body.style.backgroundColor = blueColor;
+      // Telegram fon/sarlavha/pastki panel — bitta rang (overscroll'da oq ko'rinmasin)
+      applyTelegramChrome();
+      document.body.style.backgroundColor = APP_BG;
 
       // Telegram expand qilish
       WebApp.expand();
@@ -269,6 +269,30 @@ export default function Dashboard() {
 
     loadDashboard();
   }, [username]);
+
+  /* ================= BONUSLAR BELGISI =================
+     Ochilganda, har 30 soniyada va bo'lim almashganda yangilanadi. Bonuslar iframe'i
+     "Olish" bosilganda postMessage yuboradi — belgi darhol kamayadi. */
+  useEffect(() => {
+    let alive = true;
+    const load = () =>
+      apiFetch("/api/rewards/unseen")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => alive && d && setBonusUnseen(Number(d.count) || 0))
+        .catch(() => {});
+    load();
+    const timer = setInterval(load, 30000);
+    const onMessage = (e) => {
+      if (e.origin !== window.location.origin || e.data?.channel !== "starsjoy-bonus") return;
+      setBonusUnseen(Math.max(0, Number(e.data.unseen) || 0));
+    };
+    window.addEventListener("message", onMessage);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+      window.removeEventListener("message", onMessage);
+    };
+  }, [tab]);
 
   /* ================= KANAL OBUNASI (ixtiyoriy) =================
      Botda obuna majburiy emas. Sessiyada bir marta jimgina tekshiramiz — kanalga
@@ -574,6 +598,9 @@ export default function Dashboard() {
         >
           <div className="nav-icon">
             <img src={bonusIcon} alt="" />
+            {bonusUnseen > 0 && (
+              <span className="nav-badge_dashboard">{bonusUnseen > 99 ? "99+" : bonusUnseen}</span>
+            )}
           </div>
           <span className="nav-label">{t("rewards.title")}</span>
         </button>

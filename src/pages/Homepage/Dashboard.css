@@ -1009,6 +1009,7 @@
   height: 100%;
   border: none;
   overflow: auto;
+  background: #1a1a2e; /* iframe yuklanguncha / chegaradan tortilganda oq ko'rinmasin */
 }
 
 /* =====================
@@ -2747,4 +2748,37 @@
   .guide-cta_dashboard::after,
   .guide-cta_dashboard__wave,
   .guide-cta_dashboard__play { animation: none; }
+}
+
+/* "Bonuslar" tugmasidagi olinmagan bonuslar soni */
+.nav-icon { position: relative; }
+
+.nav-badge_dashboard {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd45c, #f5b301);
+  color: #241a00;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 0 0 2px #1a1a2e, 0 2px 8px rgba(245, 179, 1, 0.45);
+  animation: navBadgeIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+  pointer-events: none;
+}
+
+@keyframes navBadgeIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-badge_dashboard { animation: none; }
 }

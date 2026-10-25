@@ -11,6 +11,21 @@ export default function Bonus() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
   const pollRef = useRef(null);
+  const seenIdsRef = useRef(new Set());
+  const dataRef = useRef(null);
+  dataRef.current = data;
+
+  // Dashboard'dagi "Bonuslar" belgisini yangilash (Bonuslar shu iframe ichida ochiladi)
+  const postUnseen = useCallback((ledger) => {
+    const n = (ledger || []).filter((e) => !e.seen && e.delta > 0 && !seenIdsRef.current.has(e.id)).length;
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ channel: "starsjoy-bonus", unseen: n }, window.location.origin);
+      }
+    } catch {
+      /* ota oyna yo'q — e'tiborsiz */
+    }
+  }, []);
 
   const username = String(window?.Telegram?.WebApp?.initDataUnsafe?.user?.username || "");
 
@@ -18,12 +33,14 @@ export default function Bonus() {
     try {
       const res = await apiFetch("/api/rewards/status");
       if (!res.ok) throw new Error(String(res.status));
-      setData(await res.json());
+      const json = await res.json();
+      setData(json);
+      postUnseen(json.ledger);
       setError(false);
     } catch {
       setError(true);
     }
-  }, []);
+  }, [postUnseen]);
 
   useEffect(() => {
     load();
@@ -37,6 +54,8 @@ export default function Bonus() {
   }, [data?.active_redemption, load]);
 
   const onSeen = useCallback(async (ledgerId) => {
+    seenIdsRef.current.add(ledgerId);
+    postUnseen(dataRef.current?.ledger);
     try {
       await apiFetch("/api/rewards/seen", {
         method: "POST",
@@ -46,7 +65,7 @@ export default function Bonus() {
     } catch {
       /* keyingi ochilishda qayta ko'rsatiladi — zarari yo'q */
     }
-  }, []);
+  }, [postUnseen]);
 
   const onRedeem = useCallback(async (itemId, recipientUsername = "") => {
     try {

@@ -10,3 +10,6 @@ html, body, #root {
   color: var(--text-primary) !important;
 }
 
+/* Brauzerga "qorong'i sahifa" — overscroll/yuklanish paytidagi kanvas ham qorong'i */
+:root { color-scheme: dark; }
+

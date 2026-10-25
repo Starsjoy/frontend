@@ -5,6 +5,7 @@ import './theme.css'
 import './index.css'
 import { initVersionCheck } from './utils/versionCheck.js'
 import { listenForSafeAreaFromParent } from './utils/tgSafeAreaBridge.js'
+import { applyTelegramChrome } from './utils/telegramChrome.js'
 
 // Telegram Mini App SDK
 import WebApp from '@twa-dev/sdk'
@@ -22,19 +23,9 @@ initVersionCheck()
 // ota oynadan (Dashboard) postMessage orqali oladi.
 listenForSafeAreaFromParent()
 
-// Boshlang'ich rangni o'rnatish (tema ThemeContext'da boshqariladi)
-// Dark mode ni tekshirish
-const savedTheme = localStorage.getItem("theme");
-const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-const isDark = savedTheme ? savedTheme === "dark" : prefersDark;
-
-if (isDark) {
-  WebApp.setBackgroundColor("#000000");
-  WebApp.setHeaderColor("#000000");
-} else {
-  WebApp.setBackgroundColor("#ffffff");
-  WebApp.setHeaderColor("#ffffff");
-}
+// Telegram oynasi ranglari — ilova doim qorong'i. Avval telefon yorug' rejimda
+// bo'lsa fon OQ qilinardi va sahifa chegaradan tortilganda oq ko'rinardi.
+applyTelegramChrome();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
