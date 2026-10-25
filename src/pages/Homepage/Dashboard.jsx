@@ -36,7 +36,7 @@ const formatAmount = (num) =>
 // ================== COMPONENT ==================
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { t, language, setLanguage, onboardingCompleted } = useTranslation();
+  const { t, language, setLanguage, onboardingCompleted, markOnboardingComplete, prefsReady } = useTranslation();
   const { startTour, tourActive } = useOnboarding();
 
   /* ================= USER ================= */
@@ -55,6 +55,8 @@ export default function Dashboard() {
   const [tab, setTab] = useState("home"); // home | referral | profile | history
   const [statsTab, setStatsTab] = useState("sales");
   const [loading, setLoading] = useState(false);
+  // Dashboard init birinchi marta tugadimi — qo'llanma CTA'si tarix kelmasdan chiqib-yo'qolmasin
+  const [dashboardReady, setDashboardReady] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
   // Iframe bo'lim (Profil, Chegirma, Tarix) yuklanib bo'lganmi — tayyor bo'lguncha
   // iframe ko'rinmaydi (oq chaqnash bo'lmasin)
@@ -261,6 +263,7 @@ export default function Dashboard() {
         setError("Ma'lumotlarni yuklashda xatolik");
       } finally {
         setLoading(false);
+        setDashboardReady(true);
       }
     };
 
@@ -391,15 +394,28 @@ export default function Dashboard() {
     };
   }, []);
 
-  /* ================= O'RGATUVCHI TUR AVTO-START =================
-     Yangi foydalanuvchiga splash tugagach turni ochamiz. */
-  useEffect(() => {
-    if (splashVisible) return;
-    if (onboardingCompleted) return;
+  /* ================= QO'LLANMA CTA =================
+     Tur avtomatik ochilmaydi — yangi foydalanuvchiga taklif kartochkasi ko'rsatiladi.
+     Yo'qoladi: tur ko'rilganda yoki ✕ bosilganda (onboardingCompleted, bazada saqlanadi)
+     yoki birinchi xariddan keyin. */
+  const hasPurchased = history.some((o) =>
+    ["stars_sent", "premium_sent", "gift_sent", "completed", "delivered"].includes(o.status)
+  );
+  // Server javoblari kelmaguncha ko'rsatilmaydi: prefs (boshqa qurilmada tur ko'rilgan bo'lishi
+  // mumkin) va dashboard tarixi (xato bo'lsa tarix bo'sh — xaridorga ham chiqib qolmasin)
+  const showGuideCta =
+    prefsReady &&
+    dashboardReady &&
+    (!error || import.meta.env.DEV) && // lokal dev'da API 401 — dizaynni ko'rish uchun
+    !onboardingCompleted &&
+    !hasPurchased &&
+    !tourActive;
 
-    const timer = setTimeout(() => startTour(), 600);
-    return () => clearTimeout(timer);
-  }, [splashVisible, startTour, onboardingCompleted]);
+  // Tur boshlanishi bilan "ko'rildi" deb belgilanadi — o'rtada ilova yopilsa ham CTA qaytmaydi
+  const openGuideFromCta = () => {
+    markOnboardingComplete();
+    startTour();
+  };
 
 
   /* ================= UI ================= */
@@ -452,6 +468,40 @@ export default function Dashboard() {
       <BonusModal open={showBonus} onClose={() => setShowBonus(false)} />
 
       <main className="dash-main_dashboard" style={{display: tab === 'home' ? 'flex' : 'none'}}>
+        {/* QO'LLANMA CTA — faqat yangi foydalanuvchiga */}
+        {showGuideCta && (
+          <div
+            className="guide-cta_dashboard"
+            role="button"
+            tabIndex={0}
+            onClick={openGuideFromCta}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openGuideFromCta()}
+          >
+            <span className="guide-cta_dashboard__wave" aria-hidden="true">👋</span>
+            <span className="guide-cta_dashboard__text">
+              <span className="guide-cta_dashboard__title">{t("onboarding.ctaTitle")}</span>
+              <span className="guide-cta_dashboard__desc">{t("onboarding.ctaDesc")}</span>
+            </span>
+            <span className="guide-cta_dashboard__play">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+                <path d="M8 5.5v13l10.5-6.5z" />
+              </svg>
+              <span className="guide-cta_dashboard__play-label">{t("onboarding.ctaAction")}</span>
+            </span>
+            <button
+              type="button"
+              className="guide-cta_dashboard__close"
+              aria-label={t("onboarding.ctaClose")}
+              onClick={(e) => {
+                e.stopPropagation();
+                markOnboardingComplete();
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* ACTION CARDS - Stars wide, Gift & Premium side by side */}
         <div className="dashboard-actions-container">
           {/* Stars - Full Width */}

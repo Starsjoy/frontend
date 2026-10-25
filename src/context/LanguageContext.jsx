@@ -27,6 +27,9 @@ export function LanguageProvider({ children }) {
     localStorage.getItem("spmBonusAdShown") === "1"
   );
   const [prefsLoading, setPrefsLoading] = useState(false);
+  // /api/user/preferences javobi keldimi (yoki xato bilan tugadimi) — server qiymatlari
+  // kelmasdan localStorage asosida UI qaror qilmasin (masalan qo'llanma CTA)
+  const [prefsReady, setPrefsReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,6 +73,8 @@ export function LanguageProvider({ children }) {
         }
       } catch {
         // API ishlamasa — localStorage dagi qiymatlar bilan davom etamiz
+      } finally {
+        if (!cancelled) setPrefsReady(true);
       }
     })();
 
@@ -142,6 +147,7 @@ export function LanguageProvider({ children }) {
         markOnboardingComplete,
         bonusAdShown,
         markBonusAdShown,
+        prefsReady,
       }}
     >
       {children}
@@ -159,6 +165,7 @@ export function useTranslation() {
     markOnboardingComplete,
     bonusAdShown,
     markBonusAdShown,
+    prefsReady,
   } = useContext(LanguageContext);
 
   const t = (key) => {
@@ -211,5 +218,6 @@ export function useTranslation() {
     markOnboardingComplete,
     bonusAdShown,
     markBonusAdShown,
+    prefsReady,
   };
 }
