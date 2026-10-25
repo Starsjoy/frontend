@@ -798,6 +798,10 @@ html, body {
 
 .tabs-primary .tab {
   flex: 1;
+  min-width: 0; /* 5 ta tab tor ekranda ham bir qatorda */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   padding: 10px 6px;
   font-size: 0.8rem;
   min-height: 44px;

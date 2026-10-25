@@ -151,7 +151,6 @@ export default function AdminPanel() {
     { id: "settings", icon: "⚙️", label: "Sozlama" },
     { id: "promocodes", icon: "➕", label: "Promo" },
     { id: "referrals", icon: "🤝", label: "Ref" },
-    { id: "bonus", icon: "🎁", label: "Bonus" },
   ];
 
   const SECONDARY_NAV_HEADER = [
@@ -160,7 +159,6 @@ export default function AdminPanel() {
     { id: "settings", icon: "⚙️", label: "Sozlamalar" },
     { id: "promocodes", icon: "➕", label: "Promokod" },
     { id: "referrals", icon: "🤝", label: "Referral" },
-    { id: "bonus", icon: "🎁", label: "Bonuslar" },
   ];
   const [userStats, setUserStats] = useState({
     total: 0,
@@ -1985,6 +1983,13 @@ export default function AdminPanel() {
           onClick={() => goToTab("users")}
         >
           👥 Users
+        </button>
+        <button
+          type="button"
+          className={`tab ${activeTab === "bonus" ? "active" : ""}`}
+          onClick={() => goToTab("bonus")}
+        >
+          🎁 Bonus
         </button>
       </div>
 

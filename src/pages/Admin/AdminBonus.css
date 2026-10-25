@@ -203,3 +203,104 @@
 @media (prefers-reduced-motion: reduce) {
   .ab-row { animation: none; }
 }
+
+/* ===== Bo'limlar (Asosiy / Foydalanuvchilar / Profil) ===== */
+.ab-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--ab-card);
+  border: 1px solid var(--ab-line);
+}
+.ab-tabs button {
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ab-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.ab-tabs button.is-active { background: var(--ab-gold); color: #241a00; }
+.ab-tabs button:disabled { opacity: 0.4; cursor: default; }
+
+.ab-pane, .ab-view { display: flex; flex-direction: column; gap: 14px; }
+.ab-pane { animation: abIn 0.28s ease both; }
+
+.ab-link {
+  border: 0; background: none; padding: 0;
+  color: #a5b4fc; font-weight: 700; font-size: 13.5px; cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.ab-back { align-self: flex-start; border: 0; background: none; color: var(--ab-muted); font-size: 13px; cursor: pointer; padding: 2px 0; }
+.ab-gold { color: var(--ab-gold-2); }
+.ab-list.is-loading, .ab-users.is-loading { opacity: 0.5; transition: opacity 0.2s ease; }
+
+/* Foydalanuvchilar ro'yxati */
+.ab-users { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ab-users li + li { border-top: 1px solid var(--ab-line); }
+.ab-user {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 2px;
+  border: 0;
+  background: none;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.ab-user:hover { background: rgba(255, 255, 255, 0.03); }
+.ab-user-rank {
+  width: 26px; height: 26px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: rgba(255, 255, 255, 0.08); font-size: 12px; font-weight: 700;
+}
+.ab-user-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ab-user-main b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ab-user-main small { font-size: 11.5px; color: var(--ab-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ab-user-bal { color: var(--ab-gold-2); font-size: 14.5px; white-space: nowrap; }
+.ab-user-arrow { color: var(--ab-muted); font-size: 18px; }
+
+/* Sahifalash */
+.ab-pager { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; padding-top: 4px; }
+.ab-pager button {
+  min-width: 34px; height: 34px; padding: 0 8px;
+  border: 1px solid var(--ab-line); border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.ab-pager button.is-active { background: var(--ab-gold); border-color: var(--ab-gold); color: #241a00; }
+.ab-pager button:disabled { opacity: 0.35; cursor: default; }
+.ab-pager-dots { color: var(--ab-muted); padding: 0 2px; }
+
+/* Profil */
+.ab-profile { flex-direction: row; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ab-avatar {
+  width: 52px; height: 52px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 16px; background: linear-gradient(150deg, #6366f1, #f5b301);
+  font-size: 22px; font-weight: 800; color: #fff;
+}
+.ab-profile-main { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 3px; }
+.ab-profile-name { font-size: 17px; }
+.ab-profile-sub { font-size: 12px; color: var(--ab-muted); }
+.ab-profile-bal { display: flex; flex-direction: column; align-items: flex-end; }
+.ab-profile-bal span { font-size: 11.5px; color: var(--ab-muted); }
+.ab-profile-bal b { font-size: 24px; color: var(--ab-gold-2); }
+
+.ab-kv { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 13.5px; }
+.ab-kv span { color: var(--ab-muted); }
+.ab-kv b { text-align: right; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-pane { animation: none; }
+}
