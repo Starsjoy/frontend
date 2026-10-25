@@ -297,6 +297,7 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
 
   return (
     <div className="bv-root">
+      <div className="bv-topcover" aria-hidden="true" />
       {/* ===== Sarlavha ===== */}
       <header className="bv-head">
         <h1 className="bv-title">{tr("title")}</h1>

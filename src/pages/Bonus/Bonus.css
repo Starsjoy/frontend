@@ -122,15 +122,17 @@
   font-weight: 800;
 }
 
-/* Qotgan tablar tepasidagi joy (Telegram tugmalari zonasi) — ostidan kontent ko'rinmasin */
-.bv-tabs::before {
-  content: "";
-  position: absolute;
-  left: -16px;
-  right: -16px;
-  bottom: 100%;
-  height: calc(8px + var(--tg-safe-top, 0px));
+/* Telegram tugmalari zonasi (fullscreen'da --tg-safe-top): ekran tepasiga qotgan fon —
+   aylantirilganda kontent tugmalar ostidan ko'rinmasin. Sarlavha bu zonadan PASTDA
+   boshlanadi (.bv-root padding-top), shuning uchun hech narsani yopmaydi. */
+.bv-topcover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--tg-safe-top, 0px);
   background: var(--bg-primary);
+  z-index: 6;
   pointer-events: none;
 }
 
