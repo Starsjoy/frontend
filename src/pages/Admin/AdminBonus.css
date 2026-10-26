@@ -304,3 +304,84 @@
 @media (prefers-reduced-motion: reduce) {
   .ab-pane { animation: none; }
 }
+
+/* ===== Admin bonus berish ===== */
+.ab-grant-btn {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--ab-gold-2), var(--ab-gold));
+  color: #241a00;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ab-notice {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(52, 211, 153, 0.13);
+  color: var(--ab-green);
+  font-size: 13px;
+  font-weight: 600;
+  animation: abIn 0.25s ease both;
+}
+.ab-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5, 6, 15, 0.6);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: abIn 0.2s ease both;
+}
+.ab-modal {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 18px 16px;
+  border-radius: 18px;
+  background: #1f2033;
+  border: 1px solid var(--ab-line);
+  color: #fff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.ab-modal-x {
+  position: absolute; top: 10px; right: 10px;
+  width: 30px; height: 30px; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08); color: var(--ab-muted); cursor: pointer;
+}
+.ab-modal-title { margin: 0; font-size: 17px; }
+.ab-modal-sub { margin: 0; font-size: 12.5px; color: var(--ab-muted); }
+.ab-field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--ab-muted); }
+.ab-field input, .ab-field textarea {
+  padding: 11px 12px;
+  border: 1px solid var(--ab-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+}
+.ab-field input:focus, .ab-field textarea:focus { outline: none; border-color: var(--ab-gold); }
+.ab-modal-err { margin: 0; font-size: 12.5px; color: var(--ab-red); }
+.ab-modal-cta {
+  padding: 12px 0;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--ab-gold-2), var(--ab-gold));
+  color: #241a00;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ab-modal-cta:disabled { opacity: 0.45; cursor: default; }
+.ab-modal-cancel { padding: 8px 0; border: 0; background: none; color: var(--ab-muted); font-size: 13px; cursor: pointer; }

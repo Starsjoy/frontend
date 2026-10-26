@@ -55,6 +55,7 @@ function entryIcon(e) {
   if (e.kind === "referral") return "👥";
   if (e.kind === "redeem") return "🎁";
   if (e.kind === "refund") return "↩️";
+  if (e.kind === "admin") return "🎁";
   if (type === "gift") return "🎁";
   if (type.includes("premium")) return "💎";
   return "⭐";
@@ -81,6 +82,8 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
         return tr(`item_${m.item}`);
       case "refund":
         return tr("src_refund");
+      case "admin":
+        return m.reason ? `${tr("src_admin")}: ${m.reason}` : tr("src_admin");
       default:
         return tr("src_admin");
     }
