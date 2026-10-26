@@ -474,7 +474,7 @@
 .bv-catalog { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 
 .bv-gift {
-  transition: opacity 0.35s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: filter 0.35s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -491,8 +491,10 @@
 }
 
 /* Balans yetmaydigan sovg'a — butun kartochka (sticker/emoji ham) 50% */
-.bv-gift:not(.is-ready) { opacity: 0.5; }
-/* Ichidagi o'chiq tugma ikki marta xiralashmasin */
+/* Balans yetmaydigan sovg'a — butun kartochka (sticker/emoji ham) 50%.
+   opacity emas, filter: kirish animatsiyasi (bvRise, fill both) opacity:1 ni ushlab qolib
+   opacity qoidasini bosib ketardi. */
+.bv-gift:not(.is-ready) { filter: opacity(0.5); }
 
 
 .bv-visual {
