@@ -317,6 +317,13 @@
   font-weight: 800;
   cursor: pointer;
 }
+.ab-deduct-btn {
+  margin-top: 6px;
+  background: transparent;
+  border: 1px solid #6b2226;
+  color: #ff8a8a;
+}
+.ab-deduct-btn:disabled { opacity: 0.4; cursor: default; }
 .ab-notice {
   padding: 10px 12px;
   border-radius: 10px;
@@ -384,4 +391,5 @@
   cursor: pointer;
 }
 .ab-modal-cta:disabled { opacity: 0.45; cursor: default; }
+.ab-modal-cta--danger { background: #3a1416; color: #ff8a8a; border: 1px solid #6b2226; }
 .ab-modal-cancel { padding: 8px 0; border: 0; background: none; color: var(--ab-muted); font-size: 13px; cursor: pointer; }

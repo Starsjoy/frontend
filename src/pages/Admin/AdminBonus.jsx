@@ -26,6 +26,7 @@ const KIND_FILTERS = [
   ["redeem", "🎁 Sarflangan"],
   ["refund", "↩️ Qaytarilgan"],
   ["admin", "🛠 Admin"],
+  ["deduct", "➖ Ayirilgan"],
 ];
 
 const SEEN_FILTERS = [
@@ -40,6 +41,7 @@ const KIND_META = {
   redeem: { icon: "🎁", label: "Sarflandi" },
   refund: { icon: "↩️", label: "Qaytarildi" },
   admin: { icon: "🛠", label: "Admin bonusi" },
+  deduct: { icon: "➖", label: "Admin ayirdi" },
 };
 
 const fmt = (n) => Number(n || 0).toLocaleString("ru-RU");
@@ -73,6 +75,8 @@ function describe(e) {
       return `Yetkazilmadi, balansga qaytarildi${order}`;
     case "admin":
       return `Admin ${e.admin_username ? `@${e.admin_username}` : ""} berdi${e.reason ? `: ${e.reason}` : ""}`;
+    case "deduct":
+      return `Admin ${e.admin_username ? `@${e.admin_username}` : ""} ayirdi (userga ko'rinmaydi)${e.reason ? `: ${e.reason}` : ""}`;
     default:
       return "Admin tomonidan";
   }
@@ -263,7 +267,10 @@ function HomeView({ onOpenUser, onShowUsers, refreshKey }) {
         <div className="ab-stat">
           <span className="ab-stat-label">Yig'ilgan</span>
           <b className="ab-stat-value ab-plus">+{fmt((t.earned_purchase || 0) + (t.earned_referral || 0) + (t.earned_admin || 0))} ⭐</b>
-          <span className="ab-stat-sub">xarid {fmt(t.earned_purchase)} · referal {fmt(t.earned_referral)} · admin {fmt(t.earned_admin)}</span>
+          <span className="ab-stat-sub">
+            xarid {fmt(t.earned_purchase)} · referal {fmt(t.earned_referral)} · admin {fmt(t.earned_admin)}
+            {t.deducted > 0 && ` · ayirilgan −${fmt(t.deducted)}`}
+          </span>
         </div>
         <div className="ab-stat">
           <span className="ab-stat-label">Sarflangan</span>
@@ -488,10 +495,86 @@ function GrantModal({ user, onClose, onDone }) {
   );
 }
 
+/** Admin bonusni ayirish / nolga tushirish oynasi — userga xabar bormaydi */
+function DeductModal({ user, onClose, onDone }) {
+  const balance = Number(user.bonus_balance) || 0;
+  const [amount, setAmount] = useState("");
+  const [reason, setReason] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  const n = Number(amount);
+  const valid = Number.isInteger(n) && n >= 1 && n <= balance;
+
+  const submit = async (all) => {
+    if (sending || (!all && !valid)) return;
+    if (all && !window.confirm(`@${user.username || user.user_id} balansi (${balance} ⭐) butunlay 0 ga tushirilsinmi?`)) return;
+    setSending(true);
+    setError("");
+    try {
+      const res = await apiFetch(`/api/admin/rewards/user/${encodeURIComponent(user.user_id)}/deduct`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(all ? { all: true, reason: reason.trim() } : { amount: n, reason: reason.trim() }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || !d.success) throw new Error(d.error || "xato");
+      onDone(d.deducted, d.balance);
+    } catch (e) {
+      setError(e.message);
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="ab-overlay">
+      <div className="ab-modal" role="dialog" aria-modal="true">
+        <button type="button" className="ab-modal-x" onClick={onClose} aria-label="Yopish">✕</button>
+        <h4 className="ab-modal-title">➖ Bonusni ayirish</h4>
+        <p className="ab-modal-sub">
+          @{user.username || user.user_id} balansi: <b>{fmt(balance)} ⭐</b>. Userga xabar bormaydi va uning tarixida ko'rinmaydi
+        </p>
+        <label className="ab-field">
+          <span>Ayiriladigan miqdor (⭐)</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min="1"
+            max={balance}
+            placeholder="Masalan, 10"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
+            autoFocus
+          />
+        </label>
+        <label className="ab-field">
+          <span>Sabab (ixtiyoriy, faqat adminlarga ko'rinadi)</span>
+          <textarea
+            rows={2}
+            maxLength={200}
+            placeholder="Masalan: noto'g'ri berilgan bonus"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </label>
+        {amount && !valid && <p className="ab-modal-err">Miqdor 1 dan {balance} gacha bo'lishi kerak</p>}
+        {error && <p className="ab-modal-err">{error}</p>}
+        <button type="button" className="ab-modal-cta" disabled={!valid || sending} onClick={() => submit(false)}>
+          {sending ? "Bajarilmoqda…" : valid ? `−${n} ⭐ ayirish` : "Ayirish"}
+        </button>
+        <button type="button" className="ab-modal-cta ab-modal-cta--danger" disabled={balance <= 0 || sending} onClick={() => submit(true)}>
+          🗑 Hammasini 0 ga tushirish
+        </button>
+        <button type="button" className="ab-modal-cancel" onClick={onClose}>Bekor qilish</button>
+      </div>
+    </div>
+  );
+}
+
 function ProfileView({ userId, onBack, onOpenUser, refreshKey }) {
   const [p, setP] = useState(null);
   const [error, setError] = useState("");
   const [grantOpen, setGrantOpen] = useState(false);
+  const [deductOpen, setDeductOpen] = useState(false);
   const [grantKey, setGrantKey] = useState(0);
   const [notice, setNotice] = useState("");
 
@@ -545,6 +628,14 @@ function ProfileView({ userId, onBack, onOpenUser, refreshKey }) {
               <span>Balans</span>
               <b>{fmt(p.user.bonus_balance)} ⭐</b>
               <button type="button" className="ab-grant-btn" onClick={() => setGrantOpen(true)}>🎁 Bonus berish</button>
+              <button
+                type="button"
+                className="ab-grant-btn ab-deduct-btn"
+                disabled={!p.user.bonus_balance}
+                onClick={() => setDeductOpen(true)}
+              >
+                ➖ Ayirish
+              </button>
             </div>
           </section>
           {notice && <div className="ab-notice">{notice}</div>}
@@ -553,7 +644,10 @@ function ProfileView({ userId, onBack, onOpenUser, refreshKey }) {
             <div className="ab-stat">
               <span className="ab-stat-label">Yig'gan</span>
               <b className="ab-stat-value ab-plus">+{fmt((b.earned_purchase || 0) + (b.earned_referral || 0) + (b.earned_admin || 0))} ⭐</b>
-              <span className="ab-stat-sub">xarid {fmt(b.earned_purchase)} · referal {fmt(b.earned_referral)} · admin {fmt(b.earned_admin)}</span>
+              <span className="ab-stat-sub">
+                xarid {fmt(b.earned_purchase)} · referal {fmt(b.earned_referral)} · admin {fmt(b.earned_admin)}
+                {b.deducted > 0 && ` · ayirilgan −${fmt(b.deducted)}`}
+              </span>
             </div>
             <div className="ab-stat">
               <span className="ab-stat-label">Sarflagan</span>
@@ -594,6 +688,18 @@ function ProfileView({ userId, onBack, onOpenUser, refreshKey }) {
           onDone={(n) => {
             setGrantOpen(false);
             setNotice(`✅ +${n} ⭐ bonus berildi, userga xabar yuborildi`);
+            setTimeout(() => setNotice(""), 4000);
+            setGrantKey((k) => k + 1);
+          }}
+        />
+      )}
+      {deductOpen && p && (
+        <DeductModal
+          user={p.user}
+          onClose={() => setDeductOpen(false)}
+          onDone={(n, bal) => {
+            setDeductOpen(false);
+            setNotice(`✅ −${n} ⭐ ayirildi (yangi balans ${bal} ⭐), userga xabar yuborilmadi`);
             setTimeout(() => setNotice(""), 4000);
             setGrantKey((k) => k + 1);
           }}
