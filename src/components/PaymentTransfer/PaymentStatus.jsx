@@ -89,7 +89,7 @@ function HeroIcon({ stage }) {
       </div>
     );
   }
-  if (stage === "failed") {
+  if (stage === "failed" || stage === "delayed") {
     return (
       <div className="ps-hero-icon ps-hero-icon--failed">
         <span className="ps-signal" />
@@ -132,6 +132,7 @@ const CALLOUT_ICON = {
   received: <span className="ps-callout-send"><SendIcon /></span>,
   success: <CheckIcon />,
   failed: <b className="ps-callout-bang">!</b>,
+  delayed: <b className="ps-callout-bang">!</b>,
   expired: <ClockIcon />,
 };
 
@@ -189,6 +190,7 @@ export default function PaymentStatus({
       note: autoClose != null ? fill("status.successNote") : "",
     },
     failed: { title: fill("status.failedTitle"), callout: fill("status.failedText"), note: orderId ? fill("status.failedNote") : "" },
+    delayed: { title: fill("status.delayedTitle"), callout: fill("status.delayedText"), note: fill("status.delayedNote") },
     expired: { title: fill("status.expiredTitle"), callout: fill("status.expiredText"), note: fill("status.expiredNote") },
   }[stage];
 
@@ -200,6 +202,12 @@ export default function PaymentStatus({
   const footer = {
     success: <button type="button" className="pt-cta" onClick={onDone || onClose}>{t("status.done")}</button>,
     failed: (
+      <>
+        <button type="button" className="pt-cta" onClick={openSupport}>{t("status.support")}</button>
+        <button type="button" className="ps-ghost ps-ghost--spaced" onClick={onClose}>{t("status.close")}</button>
+      </>
+    ),
+    delayed: (
       <>
         <button type="button" className="pt-cta" onClick={openSupport}>{t("status.support")}</button>
         <button type="button" className="ps-ghost ps-ghost--spaced" onClick={onClose}>{t("status.close")}</button>
@@ -247,7 +255,7 @@ export default function PaymentStatus({
             <span className="ps-summary-label">
               {amountLabel}
               {/* Xatoda tranzaksiya ID kelmaydi — buyurtma raqami shu yerda */}
-              {stage === "failed" && orderId && <> · {t("status.orderNo")} #{orderId}</>}
+              {(stage === "failed" || stage === "delayed") && orderId && <> · {t("status.orderNo")} #{orderId}</>}
             </span>
             <span className="ps-summary-amount">{amountText}</span>
           </div>

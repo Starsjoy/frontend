@@ -6,7 +6,7 @@ import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
-import { toStage, resolvePolledStatus } from "../../components/PaymentTransfer/paymentStage";
+import { toStage, resolvePolledStatus, polledStatusOf, isPaidStatus } from "../../components/PaymentTransfer/paymentStage";
 import {
   isPaymeeInsufficientError,
   paymeeInsufficientAlertMessage,
@@ -227,8 +227,9 @@ export default function Gift() {
         const remaining = Math.max(0, 480 - Math.floor(elapsed / 1000));
         setCountdown(remaining);
         startPolling(parsed.order);
-        startCountdownTimer(remaining);
-        if (parsed.status === "pending" || parsed.status === "payment_info") {
+        // Pul kelgan buyurtmada taymer qayta boshlanmaydi ("vaqt tugadi" chiqmasin)
+        if (!isPaidStatus(parsed.status)) startCountdownTimer(remaining);
+        if (["pending", "payment_info", "processing", "completed", "delayed"].includes(parsed.status)) {
           setShowModal(true);
         }
       } else {
@@ -245,7 +246,10 @@ export default function Gift() {
         const res = await apiFetch(`/api/gift/status/${orderData.id}`);
         const data = await res.json();
 
-        const nextStatus = resolvePolledStatus(statusRef.current, data.status);
+        const polled = polledStatusOf(data); // yetkazish kechiksa — "delayed"
+        // Pul kelgan bo'lsa 8 daqiqalik taymer to'xtaydi — to'lagan userga "vaqt tugadi" chiqmasin
+        if (isPaidStatus(polled)) stopCountdown();
+        const nextStatus = resolvePolledStatus(statusRef.current, polled);
         if (nextStatus !== statusRef.current) {
           statusRef.current = nextStatus;
           setStatus(nextStatus);

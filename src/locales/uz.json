@@ -493,7 +493,10 @@
     "retry": "Qaytadan buyurtma berish",
     "iPaid": "Pul o'tkazgandim",
     "giftName": "Sovg'a",
-    "cardDetected": "Karta aniqlandi: •••• {last4}"
+    "cardDetected": "Karta aniqlandi: •••• {last4}",
+    "delayedTitle": "To'lov qabul qilindi",
+    "delayedText": "**{productName}** yuborishda kechikish bo'ldi. Admin buyurtmani **tez orada qo'lda yuboradi**, yuborilgach Telegram'da xabar keladi.",
+    "delayedNote": "Pulingiz xavfsiz, qayta to'lov qilish shart emas"
   },
   "rewards": {
     "title": "Bonuslar",

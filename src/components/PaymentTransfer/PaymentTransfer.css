@@ -920,7 +920,8 @@
 }
 
 .ps-callout--received,
-.ps-callout--failed {
+.ps-callout--failed,
+.ps-callout--delayed {
   --ps-tone: var(--pt-amount);
   --ps-tone-bg: rgba(255, 201, 77, 0.09);
   --ps-tone-line: rgba(255, 201, 77, 0.45);
@@ -950,7 +951,8 @@
 }
 
 .ps-callout--received .ps-callout-ic,
-.ps-callout--failed .ps-callout-ic {
+.ps-callout--failed .ps-callout-ic,
+.ps-callout--delayed .ps-callout-ic {
   color: #1a1a1a;
 }
 

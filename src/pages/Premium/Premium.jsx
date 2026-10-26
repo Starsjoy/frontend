@@ -10,7 +10,7 @@ import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
-import { toStage } from "../../components/PaymentTransfer/paymentStage";
+import { toStage, polledStatusOf } from "../../components/PaymentTransfer/paymentStage";
 import {
   getFragmentPaymentLabel,
   isCardDeliveryVariant,
@@ -375,7 +375,8 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
 
         if (!res.ok) return;
 
-        let serverStatus = normalizePremiumPollStatus(data.status);
+        // Yetkazish kechiksa (delayed) — "admin tez orada yuboradi" ekrani
+        let serverStatus = normalizePremiumPollStatus(polledStatusOf(data));
 
         setCardLast4(data.card_last4 || "");
 
@@ -391,6 +392,7 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
           "premium_sent",
           "payment_received",
           "processing",
+          "delayed",
           "failed",
           "error",
           "expired",
@@ -405,6 +407,7 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
           [
             "processing",
             "payment_received",
+            "delayed",
             "premium_sent",
             "failed",
             "error",

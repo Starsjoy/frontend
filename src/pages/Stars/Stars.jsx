@@ -7,7 +7,7 @@ import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentConfirm from "../../components/PaymentTransfer/PaymentConfirm";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
-import { toStage, resolvePolledStatus } from "../../components/PaymentTransfer/paymentStage";
+import { toStage, resolvePolledStatus, polledStatusOf, isPaidStatus } from "../../components/PaymentTransfer/paymentStage";
 import {
   getPremiumPurchasePath,
   isCardDeliveryVariant,
@@ -358,10 +358,11 @@ export function StarsPurchasePage({ variant = "fragment" }) {
 
           // Polling davom ettiramiz
           startPolling(parsed.order);
-          startCountdownTimer(remainingSec);
+          // Pul kelgan buyurtmada taymer qayta boshlanmaydi ("vaqt tugadi" chiqmasin)
+          if (!isPaidStatus(parsed.status)) startCountdownTimer(remainingSec);
 
           // Agar status pending/payment_info bo'lsa, modalni ochamiz
-          if (parsed.status === "payment_info" || parsed.status === "pending" || parsed.status === "payment_received") {
+          if (["payment_info", "pending", "payment_received", "processing", "delayed"].includes(parsed.status)) {
             setShowModal(true);
           }
 
@@ -391,7 +392,10 @@ export function StarsPurchasePage({ variant = "fragment" }) {
         const res = await apiFetch(`/api/transactions/${orderData.id}`);
         const data = await res.json();
 
-        const nextStatus = resolvePolledStatus(statusRef.current, data.status);
+        const polled = polledStatusOf(data); // yetkazish kechiksa — "delayed"
+        // Pul kelgan bo'lsa 8 daqiqalik taymer to'xtaydi — to'lagan userga "vaqt tugadi" chiqmasin
+        if (isPaidStatus(polled)) stopCountdown();
+        const nextStatus = resolvePolledStatus(statusRef.current, polled);
         if (nextStatus !== statusRef.current) {
           statusRef.current = nextStatus;
           setStatus(nextStatus);

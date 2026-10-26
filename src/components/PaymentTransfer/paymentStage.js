@@ -10,7 +10,20 @@ const STAGE_BY_STATUS = {
   failed: "failed",
   error: "failed",
   expired: "expired",
+  delayed: "delayed", // to'lov qabul qilindi, yetkazish kechikdi — admin qo'lda yuboradi
 };
+
+// Pul kelgandan keyingi holatlar — bularda 8 daqiqalik taymer to'xtatiladi
+// (aks holda to'lagan userga "vaqt tugadi" chiqib qolardi)
+const PAID_STATUSES = [
+  "payment_received", "processing", "delayed", "completed",
+  "stars_sent", "premium_sent", "gift_sent", "failed", "error",
+];
+export const isPaidStatus = (status) => PAID_STATUSES.includes(status);
+
+// Backend javobidan sahifa statusi: yetkazish kechikkan (delayed=true) bo'lsa — "delayed"
+export const polledStatusOf = (data) =>
+  data?.delayed && ["payment_received", "processing"].includes(data?.status) ? "delayed" : data?.status;
 
 export const toStage = (status) => STAGE_BY_STATUS[status] || null;
 

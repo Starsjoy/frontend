@@ -492,7 +492,10 @@
     "retry": "Order again",
     "iPaid": "I already paid",
     "giftName": "Gift",
-    "cardDetected": "Card detected: •••• {last4}"
+    "cardDetected": "Card detected: •••• {last4}",
+    "delayedTitle": "Payment received",
+    "delayedText": "Delivery of **{productName}** is delayed. The admin will **send it manually shortly**, and you'll get a Telegram notification.",
+    "delayedNote": "Your money is safe, no need to pay again"
   },
   "rewards": {
     "title": "Rewards",

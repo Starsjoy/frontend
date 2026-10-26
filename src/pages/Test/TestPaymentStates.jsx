@@ -337,6 +337,7 @@ const NEW_STAGES = [
   ["received", "2 · Qabul qilindi"],
   ["success", "3 · Muvaffaqiyatli"],
   ["failed", "Xato · Yuborilmadi"],
+  ["delayed", "Kechikdi · Admin yuboradi"],
   ["expired", "Vaqt · To'lov kelmadi"],
 ];
 

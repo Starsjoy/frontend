@@ -7,7 +7,7 @@ import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
-import { toStage, resolvePolledStatus } from "../../components/PaymentTransfer/paymentStage";
+import { toStage, resolvePolledStatus, polledStatusOf, isPaidStatus } from "../../components/PaymentTransfer/paymentStage";
 import "./Discount.css";
 
 const POLLING_DURATION = 8 * 60 * 1000;
@@ -207,12 +207,13 @@ export default function Discount() {
           setCountdown(remainingSec);
 
           // Only start polling if status is pending (not payment_info)
-          if (parsed.status === "pending" || parsed.status === "payment_received") {
+          if (["pending", "payment_received", "processing", "delayed"].includes(parsed.status)) {
             startPolling(parsed.order);
           }
-          startCountdownTimer(remainingSec);
+          // Pul kelgan buyurtmada taymer qayta boshlanmaydi ("vaqt tugadi" chiqmasin)
+          if (!isPaidStatus(parsed.status)) startCountdownTimer(remainingSec);
 
-          if (parsed.status === "payment_info" || parsed.status === "pending" || parsed.status === "payment_received") {
+          if (["payment_info", "pending", "payment_received", "processing", "delayed"].includes(parsed.status)) {
             setShowModal(true);
           }
         } else {
@@ -237,7 +238,10 @@ export default function Discount() {
         const res = await apiFetch(`/api/transactions/${orderData.id}`);
         const data = await res.json();
 
-        const nextStatus = resolvePolledStatus(statusRef.current, data.status);
+        const polled = polledStatusOf(data); // yetkazish kechiksa — "delayed"
+        // Pul kelgan bo'lsa 8 daqiqalik taymer to'xtaydi — to'lagan userga "vaqt tugadi" chiqmasin
+        if (isPaidStatus(polled)) stopCountdown();
+        const nextStatus = resolvePolledStatus(statusRef.current, polled);
         if (nextStatus !== statusRef.current) {
           statusRef.current = nextStatus;
           setStatus(nextStatus);
