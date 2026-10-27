@@ -416,9 +416,16 @@ function HomeView({ onOpenUser, onShowUsers, refreshKey }) {
 }
 
 /* ================= FOYDALANUVCHILAR ================= */
+const USER_SORTS = [
+  ["balance", "⭐ Eng ko'p bonus"],
+  ["newest", "🆕 Eng yangilari"],
+  ["oldest", "🕰 Eng eskilari"],
+];
+
 function UsersView({ onOpenUser, refreshKey }) {
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("balance");
   const [page, setPage] = useState(1);
   const [data, setData] = useState({ users: [], total: 0 });
   const [loading, setLoading] = useState(false);
@@ -429,12 +436,12 @@ function UsersView({ onOpenUser, refreshKey }) {
     return () => clearTimeout(t);
   }, [search]);
 
-  useEffect(() => setPage(1), [query]);
+  useEffect(() => setPage(1), [query, sort]);
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), limit: String(PAGE) });
+    const params = new URLSearchParams({ page: String(page), limit: String(PAGE), sort });
     if (query) params.set("search", query);
     apiFetch(`/api/admin/rewards/users?${params}`)
       .then((r) => r.json().then((d) => ({ ok: r.ok, d })))
@@ -449,7 +456,7 @@ function UsersView({ onOpenUser, refreshKey }) {
     return () => {
       alive = false;
     };
-  }, [query, page, refreshKey]);
+  }, [query, sort, page, refreshKey]);
 
   return (
     <div className="ab-view">
@@ -466,6 +473,13 @@ function UsersView({ onOpenUser, refreshKey }) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <div className="ab-chips">
+          {USER_SORTS.map(([key, label]) => (
+            <button key={key} type="button" className={`ab-chip ${sort === key ? "is-active" : ""}`} onClick={() => setSort(key)}>
+              {label}
+            </button>
+          ))}
+        </div>
         {error && <div className="ab-error">{error}</div>}
         {data.users.length === 0 && !loading ? (
           <p className="ab-empty">Foydalanuvchi topilmadi</p>
@@ -478,7 +492,11 @@ function UsersView({ onOpenUser, refreshKey }) {
                   <span className="ab-user-main">
                     <b>@{x.username || x.user_id}</b>
                     <small>
-                      yig'gan +{fmt((x.earned_purchase || 0) + (x.earned_referral || 0))} · sarflagan −{fmt(x.spent)} · {fmtDate(x.last_at)}
+                      yig'gan +{fmt((x.earned_purchase || 0) + (x.earned_referral || 0))} · sarflagan −{fmt(x.spent)}
+                    </small>
+                    <small>
+                      🛒 Oxirgi xarid: {x.last_order_at ? fmtDate(x.last_order_at) : "yo'q"}
+                      {sort !== "balance" && ` · ro'yxatdan: ${fmtDate(x.registered_at)}`}
                     </small>
                   </span>
                   {x.unseen_count > 0 && <span className="ab-pill ab-pill--wait">{x.unseen_count} olinmagan</span>}
