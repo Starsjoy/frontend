@@ -576,6 +576,6 @@
     "err_bad_recipient": "Неверный username (5–32 символа: буквы, цифры, _)",
     "err_need_username": "Введите username получателя",
     "ruleReferralPremium": "Друг купил Premium",
-    "ruleReferralNote": "Только новые пользователи по вашей ссылке"
+    "ruleReferralNote": "Только первая покупка нового друга по вашей ссылке"
   }
 }

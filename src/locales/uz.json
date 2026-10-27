@@ -577,6 +577,6 @@
     "err_bad_recipient": "Username noto'g'ri (5–32 belgi: harf, raqam, _)",
     "err_need_username": "Qabul qiluvchi username'ini kiriting",
     "ruleReferralPremium": "Do'stingiz Premium olsa",
-    "ruleReferralNote": "Faqat havolangiz orqali kelgan yangi foydalanuvchilar"
+    "ruleReferralNote": "Havolangiz orqali kelgan yangi do'stning faqat birinchi xaridi"
   }
 }

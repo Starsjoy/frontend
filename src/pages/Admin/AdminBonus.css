@@ -393,3 +393,8 @@
 .ab-modal-cta:disabled { opacity: 0.45; cursor: default; }
 .ab-modal-cta--danger { background: #3a1416; color: #ff8a8a; border: 1px solid #6b2226; }
 .ab-modal-cancel { padding: 8px 0; border: 0; background: none; color: var(--ab-muted); font-size: 13px; cursor: pointer; }
+
+/* Qotgan bonuslar */
+.ab-stuck { margin-bottom: 14px; border-color: rgba(245, 158, 11, 0.5); }
+.ab-stuck .ab-items li.ab-stuck-row { flex-wrap: wrap; gap: 8px; }
+.ab-stuck-actions { display: flex; gap: 6px; }

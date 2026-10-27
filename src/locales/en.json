@@ -576,6 +576,6 @@
     "err_bad_recipient": "Invalid username (5–32 chars: letters, digits, _)",
     "err_need_username": "Enter the recipient's username",
     "ruleReferralPremium": "Friend buys Premium",
-    "ruleReferralNote": "Only new users who join via your link"
+    "ruleReferralNote": "Only the first purchase of a new friend who joins via your link"
   }
 }

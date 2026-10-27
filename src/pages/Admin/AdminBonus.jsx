@@ -230,6 +230,83 @@ function LedgerList({ userId = null, onOpenUser, refreshKey }) {
   );
 }
 
+/* ================= QOTGAN BONUSLAR ================= */
+/** processing'da qotgan bonus buyurtmalari — provayderda tekshirib, qaytarish yoki yetkazildi deb belgilash */
+function StuckList({ onOpenUser, refreshKey }) {
+  const [rows, setRows] = useState([]);
+  const [busyId, setBusyId] = useState(null);
+  const [error, setError] = useState("");
+
+  const load = useCallback(() => {
+    apiFetch("/api/admin/rewards/stuck")
+      .then((r) => r.json())
+      .then((d) => setRows(d.success ? d.orders : []))
+      .catch(() => setRows([]));
+  }, []);
+
+  useEffect(load, [load, refreshKey]);
+
+  const resolve = async (row, action) => {
+    const text =
+      action === "refund"
+        ? `#${row.id}: yetkazilmagan — ${row.type_amount}⭐ userga qaytarilsinmi?`
+        : `#${row.id}: provayderda yetkazilgani tasdiqlandimi?`;
+    if (!window.confirm(text)) return;
+    setBusyId(row.id);
+    setError("");
+    try {
+      const res = await apiFetch(`/api/admin/rewards/order/${row.id}/resolve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || !d.success) throw new Error(d.error || "xato");
+      load();
+    } catch (e) {
+      setError(`#${row.id}: ${e.message}`);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  if (!rows.length) return null;
+
+  return (
+    <section className="ab-card ab-stuck">
+      <h4 className="ab-card-title">⏳ Qotgan bonuslar ({rows.length})</h4>
+      <p className="ab-empty">Yetkazilgani noma'lum. Provayderda tekshiring — hal qilinmaguncha user yangi bonus ololmaydi.</p>
+      {error && <div className="ab-error">{error}</div>}
+      <ul className="ab-items">
+        {rows.map((row) => (
+          <li key={row.id} className="ab-stuck-row">
+            <span>
+              #{row.id} · {row.order_type === "gift" ? `Gift ${row.type_amount}⭐` : `${row.type_amount} Stars`} →{" "}
+              <button type="button" className="ab-link" onClick={() => onOpenUser(row.owner_user_id)}>
+                @{row.recipient_username}
+              </button>{" "}
+              · {fmtDate(row.created_at)}
+            </span>
+            <span className="ab-stuck-actions">
+              <button type="button" className="ab-grant-btn" disabled={busyId === row.id} onClick={() => resolve(row, "delivered")}>
+                ✅ Yetkazilgan
+              </button>
+              <button
+                type="button"
+                className="ab-grant-btn ab-deduct-btn"
+                disabled={busyId === row.id}
+                onClick={() => resolve(row, "refund")}
+              >
+                ↩️ Qaytarish
+              </button>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /* ================= ASOSIY ================= */
 function HomeView({ onOpenUser, onShowUsers, refreshKey }) {
   const [o, setO] = useState(null);
@@ -258,6 +335,7 @@ function HomeView({ onOpenUser, onShowUsers, refreshKey }) {
   return (
     <div className="ab-view">
       {error && <div className="ab-error">{error}</div>}
+      <StuckList onOpenUser={onOpenUser} refreshKey={refreshKey} />
       <div className="ab-stats">
         <div className="ab-stat ab-stat--gold">
           <span className="ab-stat-label">Jami balans</span>
