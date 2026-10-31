@@ -28,13 +28,14 @@ import "./gift.css";
 // Qaytarish uchun `hidden: true` ni olib tashlash kifoya.
 const GIFTS_RAW = [
   { id: "5170145012310081615", stars: 15 },
-  { id: "5170233102089322756", stars: 15 },
+  { id: "5170233102089322756", stars: 15, hidden: true }, // 🧸 Telegram katalogidan olib tashlangan
   { id: "5170250947678437525", stars: 25 },
   { id: "5168103777563050263", stars: 25 },
   { id: "5170144170496491616", stars: 50 },
   { id: "5170314324215857265", stars: 50 },
   { id: "5170564780938756245", stars: 50 },
   { id: "6028601630662853006", stars: 50 },
+  { id: "5992502615223568003", stars: 50 }, // 🧸
   { id: "5922558454332916696", stars: 50, hidden: true }, // 🏆 G'olib kubogi
   { id: "5801108895304779062", stars: 50, hidden: true }, // 💍 Uzuk
   { id: "5800655655995968830", stars: 50, hidden: true }, // 🐻 Sevimli ayiqcha
