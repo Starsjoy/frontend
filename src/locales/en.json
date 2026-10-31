@@ -512,6 +512,7 @@
     "src_admin": "Bonus from admin",
     "catalogTitle": "What you can get",
     "item_gift15": "Teddy bear",
+    "item_gift15heart": "Heart",
     "item_gift25": "Gift box",
     "item_stars50": "50 Stars",
     "item_stars100": "100 Stars",
@@ -543,6 +544,7 @@
     "needUsername": "Set a Telegram username to claim rewards",
     "disabled": "Rewards are coming soon",
     "err_generic": "Something went wrong, please try again",
+    "err_unavailable": "This gift is temporarily unavailable",
     "err_insufficient": "Not enough balance",
     "err_user_daily_limit": "Daily limit reached, try again tomorrow",
     "err_global_daily_cap": "Rewards are temporarily paused, please try later",
@@ -576,6 +578,7 @@
     "err_bad_recipient": "Invalid username (5–32 chars: letters, digits, _)",
     "err_need_username": "Enter the recipient's username",
     "ruleReferralPremium": "Friend buys Premium",
-    "ruleReferralNote": "Only the first purchase of a new friend who joins via your link"
+    "ruleReferralNote": "Only the first purchase of a new friend who joins via your link",
+    "unavailable": "Temporarily unavailable"
   }
 }

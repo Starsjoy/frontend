@@ -513,6 +513,7 @@
     "src_admin": "Admin bonusi",
     "catalogTitle": "Nimaga almashtirish mumkin",
     "item_gift15": "Ayiqcha",
+    "item_gift15heart": "Yurakcha",
     "item_gift25": "Sovg'a",
     "item_stars50": "50 Stars",
     "item_stars100": "100 Stars",
@@ -544,6 +545,7 @@
     "needUsername": "Bonus olish uchun Telegram'da username o'rnating",
     "disabled": "Bonuslar tez orada ishga tushadi",
     "err_generic": "Xatolik yuz berdi, qayta urinib ko'ring",
+    "err_unavailable": "Bu sovg'a vaqtincha mavjud emas",
     "err_insufficient": "Balans yetarli emas",
     "err_user_daily_limit": "Bugungi limit tugadi, ertaga urinib ko'ring",
     "err_global_daily_cap": "Bonus berish vaqtincha to'xtatilgan, keyinroq urinib ko'ring",
@@ -577,6 +579,7 @@
     "err_bad_recipient": "Username noto'g'ri (5–32 belgi: harf, raqam, _)",
     "err_need_username": "Qabul qiluvchi username'ini kiriting",
     "ruleReferralPremium": "Do'stingiz Premium olsa",
-    "ruleReferralNote": "Havolangiz orqali kelgan yangi do'stning faqat birinchi xaridi"
+    "ruleReferralNote": "Havolangiz orqali kelgan yangi do'stning faqat birinchi xaridi",
+    "unavailable": "Vaqtincha mavjud emas"
   }
 }

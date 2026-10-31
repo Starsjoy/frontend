@@ -14,6 +14,7 @@ const PAGE = 10;
 
 const ITEM_LABEL = {
   gift15: "🧸 Ayiqcha (15⭐)",
+  gift15heart: "❤️ Yurakcha (15⭐)",
   gift25: "🎁 Sovg'a (25⭐)",
   stars50: "⭐ 50 Stars",
   stars100: "⭐ 100 Stars",

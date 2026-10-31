@@ -10,7 +10,8 @@ import "./TestBonus.css";
 const minsAgo = (m) => new Date(Date.now() - m * 60000).toISOString();
 
 const CATALOG = [
-  { id: "gift15", kind: "gift", cost: 15, stars: 15 },
+  { id: "gift15", kind: "gift", cost: 15, stars: 15, available: false },
+  { id: "gift15heart", kind: "gift", cost: 15, stars: 15 },
   { id: "gift25", kind: "gift", cost: 25, stars: 25 },
   { id: "stars50", kind: "stars", cost: 50, stars: 50 },
   { id: "stars100", kind: "stars", cost: 100, stars: 100 },

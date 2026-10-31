@@ -5,6 +5,7 @@ import { useTranslation } from "../../context/LanguageContext";
 import { TGSSticker } from "../../components/TGSSticker";
 import starsGif from "../../assets/stars.gif";
 import gift15Sticker from "../../assets/5170233102089322756.tgs";
+import gift15HeartSticker from "../../assets/5170145012310081615.tgs";
 import gift25Sticker from "../../assets/5168103777563050263.tgs";
 import "./Bonus.css";
 
@@ -21,6 +22,7 @@ import "./Bonus.css";
 
 const ITEM_VISUAL = {
   gift15: { sticker: gift15Sticker },
+  gift15heart: { sticker: gift15HeartSticker },
   gift25: { sticker: gift25Sticker },
   stars50: { gif: starsGif },
   stars100: { gif: starsGif },
@@ -217,8 +219,9 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
 
   // ===== Keyingi sovg'a (kartadagi progress) =====
   const sortedCatalog = [...catalog].sort((a, b) => a.cost - b.cost);
-  const nextItem = sortedCatalog.find((i) => i.cost > display);
-  const prevCost = [...sortedCatalog].reverse().find((i) => i.cost <= display)?.cost ?? 0;
+  const openCatalog = sortedCatalog.filter((i) => i.available !== false);
+  const nextItem = openCatalog.find((i) => i.cost > display);
+  const prevCost = [...openCatalog].reverse().find((i) => i.cost <= display)?.cost ?? 0;
   const nextProgress = nextItem
     ? Math.min(100, Math.round(((display - prevCost) / (nextItem.cost - prevCost)) * 100))
     : 100;
@@ -442,15 +445,18 @@ export default function BonusView({ data, username, onRedeem, onSeen, onRefresh,
           <p className="bv-hint">{tr("catalogHint")}</p>
           <ul className="bv-catalog">
             {sortedCatalog.map((item) => {
-              const ready = canRedeem(item);
+              const closed = item.available === false;
+              const ready = !closed && canRedeem(item);
               const progress = Math.min(100, Math.round((display / item.cost) * 100));
               return (
-                <li key={item.id} className={`bv-gift ${ready ? "is-ready" : ""}`}>
+                <li key={item.id} className={`bv-gift ${ready ? "is-ready" : ""} ${closed ? "is-closed" : ""}`}>
                   {visual(item)}
                   <div className="bv-gift-main">
                     <span className="bv-gift-kind">{tr(`kind_${item.kind}`)}</span>
                     <span className="bv-gift-name">{tr(`item_${item.id}`)}</span>
-                    {ready ? (
+                    {closed ? (
+                      <span className="bv-gift-status">{tr("unavailable")}</span>
+                    ) : ready ? (
                       <span className="bv-gift-status is-ready">{tr("readyLabel")}</span>
                     ) : (
                       <>
