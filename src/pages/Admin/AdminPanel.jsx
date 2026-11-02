@@ -9,6 +9,13 @@ import { queued } from "../../utils/apiQueue";
 import AdminCustomSelect from "../../components/AdminCustomSelect";
 import AdminBonus from "./AdminBonus";
 
+const WARNING_FILTER_OPTIONS = [
+  { value: "all", label: "Hammasi", icon: "📋" },
+  { value: "failed", label: "Failed", icon: "⚠️" },
+  { value: "error", label: "Error", icon: "🔴" },
+  { value: "processing", label: "Processing 10+", icon: "🔄" },
+];
+
 // ============================================================
 // 📄 Pagination — har bir tab boshida 8 ta yuklanadi,
 //    "Yana 8 ta ko'rsatish" tugmasi bosilganda LOAD_STEP tadan
@@ -87,6 +94,15 @@ const orderRoute = (from, to) => {
 
 const isPaymeeOrder = (tx) =>
   tx?.order_type === "stars_paymee" || tx?.order_type === "premium_paymee";
+
+const warningKind = (tx) =>
+  tx.order_type === "gift" ? "gift" : tx.order_type?.startsWith("premium") ? "premium" : "stars";
+
+const warningAmountLabel = (tx) => {
+  const kind = warningKind(tx);
+  if (kind === "premium") return `${tx.type_amount || 1} oy 💎`;
+  return kind === "gift" ? `${tx.type_amount} ⭐ 🎁` : `${tx.type_amount} ⭐`;
+};
 
 const isFragmentOrder = (tx) =>
   tx?.order_type === "stars_usdt" ||
@@ -173,7 +189,13 @@ export default function AdminPanel() {
   
   // Users state
   const [users, setUsers] = useState([]);
-  const [activeTab, setActiveTab] = useState("transactions");
+  const [activeTab, setActiveTab] = useState("warnings");
+  const [warnings, setWarnings] = useState([]);
+  const [warningsTotal, setWarningsTotal] = useState(0);
+  const [warningStats, setWarningStats] = useState({ total: 0, failed: 0, error: 0, processing: 0 });
+  const [warningFilter, setWarningFilter] = useState("all");
+  const [warningExpandedId, setWarningExpandedId] = useState(null);
+  const [warningsLoadingMore, setWarningsLoadingMore] = useState(false);
 
   const goToTab = (tab) => {
     setActiveTab(tab);
@@ -186,7 +208,7 @@ export default function AdminPanel() {
     // Fragment to'lov usuli ham shu yerda — shuning uchun "Sozlama".
     { id: "settings", icon: "⚙️", label: "Sozlama" },
     { id: "promocodes", icon: "➕", label: "Promo" },
-    { id: "referrals", icon: "🤝", label: "Ref" },
+    { id: "bonus", icon: "💰", label: "Bonus" },
   ];
 
   const SECONDARY_NAV_HEADER = [
@@ -194,7 +216,7 @@ export default function AdminPanel() {
     { id: "notifications", icon: "📣", label: "Xabar" },
     { id: "settings", icon: "⚙️", label: "Sozlamalar" },
     { id: "promocodes", icon: "➕", label: "Promokod" },
-    { id: "referrals", icon: "🤝", label: "Referral" },
+    { id: "bonus", icon: "💰", label: "Bonus" },
   ];
   const [userStats, setUserStats] = useState({
     total: 0,
@@ -805,6 +827,30 @@ export default function AdminPanel() {
   }, [search]);
   const searchQuery = debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : "";
 
+  const fetchWarnings = async ({ append = false, offset = 0, silent = false, limit = LOAD_STEP } = {}) => {
+    if (!isAuthenticated) return;
+    return queued("admin:warnings", async () => {
+      if (append) setWarningsLoadingMore(true);
+      else if (!silent) setLoading(true);
+      try {
+        const res = await apiFetch(
+          `/api/admin/warnings?filter=${warningFilter}&limit=${limit}&offset=${offset}${searchQuery}`
+        );
+        const data = await res.json();
+        if (data.success) {
+          setWarnings((prev) => (append ? [...prev, ...data.items] : data.items));
+          setWarningsTotal(data.total);
+          setWarningStats(data.stats);
+        }
+      } catch (err) {
+        console.error("❌ Warnings fetch error:", err);
+      } finally {
+        if (append) setWarningsLoadingMore(false);
+        else if (!silent) setLoading(false);
+      }
+    });
+  };
+
   const fetchTransactions = async ({ append = false, offset = 0, silent = false, limit = LOAD_STEP } = {}) => {
     if (!isAuthenticated) return;
     return queued("admin:transactions", async () => {
@@ -1272,7 +1318,9 @@ export default function AdminPanel() {
   // Fetch data based on active tab
   useEffect(() => {
     if (!isAuthenticated) return;
-    if (activeTab === "transactions") {
+    if (activeTab === "warnings") {
+      fetchWarnings();
+    } else if (activeTab === "transactions") {
       fetchTransactions();
     } else if (activeTab === "users") {
       fetchUsers();
@@ -1289,7 +1337,16 @@ export default function AdminPanel() {
     } else if (activeTab === "promocodes") {
       fetchPromocodes();
     }
-  }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter, referralFilter, debouncedSearch]);
+  }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter, referralFilter, debouncedSearch, warningFilter]);
+
+  // Warning soni va ro'yxati ochiq panelda yangilanib turadi
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const refresh = () => refreshWarnings();
+    const timer = setInterval(refresh, 30000);
+    if (activeTab !== "warnings") refresh();
+    return () => clearInterval(timer);
+  }, [isAuthenticated, activeTab, warningFilter, debouncedSearch, warnings.length]);
 
   // Auto refresh - disabled
   useEffect(() => {
@@ -1338,6 +1395,7 @@ export default function AdminPanel() {
 
   // Amaldan keyin ro'yxat joyida yangilanadi: spinner yo'q, yuklanganlar qoladi, ekran siljimaydi
   const refreshLimit = (loaded) => Math.min(500, Math.max(LOAD_STEP, loaded));
+  const refreshWarnings = () => fetchWarnings({ silent: true, limit: refreshLimit(warnings.length) });
   const refreshTransactions = () => fetchTransactions({ silent: true, limit: refreshLimit(transactions.length) });
   const refreshPremiumOrders = () => fetchPremiumOrders({ silent: true, limit: refreshLimit(premiumOrders.length) });
   const refreshGiftOrders = () => fetchGiftOrders({ silent: true, limit: refreshLimit(giftOrders.length) });
@@ -1397,7 +1455,7 @@ export default function AdminPanel() {
       if (data.success) {
         setAdminSendSuccessId(id);
         await new Promise((resolve) => setTimeout(resolve, ADMIN_SEND_SUCCESS_FLASH_MS));
-        refetch();
+        (activeTab === "warnings" ? refreshWarnings : refetch)();
         collapse();
       } else {
         alert("❌ Xato: " + data.error);
@@ -1541,6 +1599,33 @@ export default function AdminPanel() {
       console.error("❌ Gift yuborishda xato:", err);
       alert("Server xato!");
       setAdminSendingOrderId(null);
+    }
+  };
+
+  const warningActions = {
+    stars: { send: adminSendStars, canSend: starsCanAdminSend, updateUrl: (id) => `/api/transactions/update/${id}` },
+    premium: { send: adminSendPremium, canSend: premiumCanAdminSend, updateUrl: (id) => `/api/admin/premium/update/${id}` },
+    gift: { send: adminSendGift, canSend: giftCanAdminSend, updateUrl: (id) => `/api/admin/gift/update/${id}` },
+  };
+
+  const expireWarning = async (tx) => {
+    if (!window.confirm(`#${tx.id} buyurtmani expired qilasizmi?`)) return;
+    try {
+      const res = await apiFetch(warningActions[warningKind(tx)].updateUrl(tx.id), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "expired" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWarningExpandedId(null);
+        refreshWarnings();
+      } else {
+        alert("❌ Xato: " + data.error);
+      }
+    } catch (err) {
+      console.error("❌ Warning expire xato:", err);
+      alert("Server xato!");
     }
   };
 
@@ -1878,7 +1963,8 @@ export default function AdminPanel() {
               aria-label="Yangilash"
               onClick={() => {
                 fetchHeaderPaymeeBalance();
-                if (activeTab === "transactions") fetchTransactions();
+                if (activeTab === "warnings") fetchWarnings();
+                else if (activeTab === "transactions") fetchTransactions();
                 else if (activeTab === "users") fetchUsers();
                 else if (activeTab === "premium") fetchPremiumOrders();
                 else if (activeTab === "gift") fetchGiftOrders();
@@ -1900,13 +1986,13 @@ export default function AdminPanel() {
             <button
               className="hdr-btn referral-bell hdr-btn--sm"
               type="button"
-              onClick={() => goToTab("referrals")}
-              title="Referral requests"
-              aria-label="Referral"
+              onClick={() => goToTab("warnings")}
+              title="Warning"
+              aria-label="Warning"
             >
               🔔
-              {referralCounts.pending > 0 && (
-                <span className="hdr-badge">{referralCounts.pending}</span>
+              {warningStats.total > 0 && (
+                <span className="hdr-badge">{warningStats.total}</span>
               )}
             </button>
           </div>
@@ -1935,6 +2021,13 @@ export default function AdminPanel() {
       <div className="tabs tabs-primary">
         <button
           type="button"
+          className={`tab ${activeTab === "warnings" ? "active" : ""}`}
+          onClick={() => goToTab("warnings")}
+        >
+          ⚠️ Warning
+        </button>
+        <button
+          type="button"
           className={`tab ${activeTab === "transactions" ? "active" : ""}`}
           onClick={() => goToTab("transactions")}
         >
@@ -1961,16 +2054,131 @@ export default function AdminPanel() {
         >
           👥 Users
         </button>
-        <button
-          type="button"
-          className={`tab ${activeTab === "bonus" ? "active" : ""}`}
-          onClick={() => goToTab("bonus")}
-        >
-          💰 Bonus
-        </button>
       </div>
 
       <div className="admin-main">
+
+      {/* ==================== WARNING TAB ==================== */}
+      {activeTab === "warnings" && (
+        <div className="tab-content">
+          <div className="stats-text">
+            <span>Total: <b>{warningStats.total}</b></span>
+            <span>Failed: <b>{warningStats.failed}</b></span>
+            <span>Error: <b>{warningStats.error}</b></span>
+            <span>Processing 10+: <b>{warningStats.processing}</b></span>
+          </div>
+
+          <div className="filters">
+            <input
+              type="text"
+              placeholder="🔍 Qidiruv..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="search-input"
+            />
+            <AdminCustomSelect
+              className="admin-custom-select--filter"
+              ariaLabel="Warning holati"
+              value={warningFilter}
+              onChange={setWarningFilter}
+              options={WARNING_FILTER_OPTIONS}
+            />
+          </div>
+
+          {loading && !autoRefresh ? (
+            <div className="loader">⏳ Yuklanmoqda...</div>
+          ) : (
+            <div className="orders-list">
+              {warnings.length === 0 ? (
+                <div className="empty-state">✅ Warning yo'q</div>
+              ) : (
+                warnings.map((tx) => {
+                  const actions = warningActions[warningKind(tx)];
+                  return (
+                    <div key={tx.id} className={getOrderCardClassName(tx)}>
+                      <div
+                        className="order-header"
+                        onClick={() => setWarningExpandedId(warningExpandedId === tx.id ? null : tx.id)}
+                        style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}
+                      >
+                        <div className="order-main" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                          <span className="order-user" style={{ fontWeight: "bold" }}>{orderRoute(tx.sender_username, tx.username)}</span>
+                          <div style={{ fontSize: "12px", color: "var(--tg-theme-hint-color, #999)" }}>
+                            {shortDateTime(tx.created_at)} • {tx.amount?.toLocaleString()} so'm
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                          <span className="order-stars">{warningAmountLabel(tx)}</span>
+                          <div className="order-status" style={{ backgroundColor: getStatusColor(tx.status) }}>
+                            {getStatusIcon(tx.status)} {tx.status}
+                          </div>
+                        </div>
+                      </div>
+
+                      {warningExpandedId === tx.id && (
+                        <div className="order-details">
+                          <div className="detail-grid">
+                            <div className="detail-item">
+                              <span className="detail-label">Buyurtma</span>
+                              <span className="detail-value">#{tx.id} • {tx.order_type}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Yuboruvchi</span>
+                              <span className="detail-value">@{tx.sender_username || '-'} ({tx.owner_user_id})</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Qabul qiluvchi</span>
+                              <span className="detail-value">@{tx.username} ({tx.recipient || '-'})</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">To'lov</span>
+                              <span className="detail-value">{tx.payment_method || '-'} • {tx.payment_status || '-'}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Transaction ID</span>
+                              <span className="detail-value">{tx.transaction_id || "-"}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Created</span>
+                              <span className="detail-value">{new Date(tx.created_at).toLocaleString()}</span>
+                            </div>
+                          </div>
+
+                          <div className="order-actions">
+                            {actions.canSend(tx.status) &&
+                              renderAdminSendButton(tx.id, () => actions.send(tx.id, tx.status))}
+                            <button
+                              className="action-btn expire"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                expireWarning(tx);
+                              }}
+                            >
+                              ❌ Expire
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+
+              {warnings.length < warningsTotal && (
+                <button
+                  className="show-all-btn"
+                  disabled={warningsLoadingMore}
+                  onClick={() => fetchWarnings({ append: true, offset: warnings.length })}
+                >
+                  {warningsLoadingMore
+                    ? "⏳ Yuklanmoqda..."
+                    : `📋 Yana ${Math.min(LOAD_STEP, warningsTotal - warnings.length)} ta yuklash (${warnings.length}/${warningsTotal})`}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ==================== BONUSLAR TAB ==================== */}
       {activeTab === "bonus" && <AdminBonus />}
@@ -4172,9 +4380,6 @@ export default function AdminPanel() {
           >
             <span className="bottom-nav-icon">{item.icon}</span>
             <span className="bottom-nav-label">{item.label}</span>
-            {item.id === "referrals" && referralCounts.pending > 0 && (
-              <span className="bottom-nav-badge">{referralCounts.pending}</span>
-            )}
           </button>
         ))}
       </nav>
