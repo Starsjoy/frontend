@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+/** @jsxImportSource ./adminJsx */
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import "./AdminPanel.css";
+import "./AdminTheme.css";
 import { TGSSticker } from "../../components/TGSSticker";
 import adminSticker from "../../assets/AnimatedSticker_admin.tgs";
 import apiFetch from "../../utils/apiFetch";
@@ -38,6 +40,7 @@ const FRAGMENT_PAY_OPTIONS = [
 const ORDER_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
   { value: "pending", label: "Pending", icon: "⏳" },
+  { value: "processing", label: "Jarayonda", icon: "🔄" },
   { value: "completed", label: "Completed", icon: "✅" },
   { value: "expired", label: "Expired", icon: "❌" },
   { value: "stars_sent", label: "Sent", icon: "🌟" },
@@ -48,6 +51,7 @@ const ORDER_STATUS_FILTER_OPTIONS = [
 const GIFT_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
   { value: "pending", label: "Pending", icon: "⏳" },
+  { value: "processing", label: "Jarayonda", icon: "🔄" },
   { value: "completed", label: "Completed", icon: "✅" },
   { value: "gift_sent", label: "Sent", icon: "🎁" },
   { value: "expired", label: "Expired", icon: "❌" },
@@ -57,11 +61,45 @@ const GIFT_STATUS_FILTER_OPTIONS = [
 const PREMIUM_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
   { value: "pending", label: "Pending", icon: "⏳" },
+  { value: "processing", label: "Jarayonda", icon: "🔄" },
   { value: "delivered", label: "Sent", icon: "💎" },
   { value: "expired", label: "Expired", icon: "❌" },
   { value: "failed", label: "Failed", icon: "⚠️" },
   { value: "error", label: "Error", icon: "🔴" },
 ];
+
+/** Holatning tushunarli nomi (bazadagi qiymat o'zgarmaydi) */
+const STATUS_LABELS = {
+  pending: "Kutilmoqda",
+  processing: "Jarayonda",
+  completed: "Yetkazildi",
+  delivered: "Yetkazildi",
+  stars_sent: "Yetkazildi",
+  premium_sent: "Yetkazildi",
+  gift_sent: "Yetkazildi",
+  expired: "Muddati o'tdi",
+  failed: "Muvaffaqiyatsiz",
+  error: "Xato",
+  cancelled: "Bekor qilindi",
+};
+const statusLabel = (status) => STATUS_LABELS[status] || status;
+
+/** 02.11 14:39 */
+const shortDateTime = (value) => {
+  const d = new Date(value);
+  if (!value || Number.isNaN(d.getTime())) return "—";
+  const p = (n) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+
+/** O'ziga olgan bo'lsa bitta username, boshqaga olgan bo'lsa "@a → @b" */
+const orderRoute = (from, to) => {
+  const a = String(from || "").replace(/^@/, "");
+  const b = String(to || "").replace(/^@/, "");
+  if (!a && !b) return "—";
+  if (!a || !b || a.toLowerCase() === b.toLowerCase()) return `@${a || b}`;
+  return `@${a} → @${b}`;
+};
 
 const isPaymeeOrder = (tx) =>
   tx?.order_type === "stars_paymee" || tx?.order_type === "premium_paymee";
@@ -90,6 +128,19 @@ const getGiftStickerPath = (giftId) => {
 };
 
 export default function AdminPanel() {
+  // Dizayn faqat panel ochiq turganda yoqiladi (AdminTheme.css)
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.dataset.adminTheme = "2";
+    root.dataset.adminStyle = "5";
+    root.dataset.adminIcons = "3";
+    return () => {
+      delete root.dataset.adminTheme;
+      delete root.dataset.adminStyle;
+      delete root.dataset.adminIcons;
+    };
+  }, []);
+
   // ========== TELEGRAM AUTH PROTECTION ==========
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
@@ -765,17 +816,17 @@ export default function AdminPanel() {
   // 📄 Paginated fetchers. `append=true` bo'lsa, mavjud arrayga qo'shadi.
   // Barcha chaqiruvlar `queued()` orqali navbatga qo'yiladi — shu bilan
   // tab ochilganda bir nechta so'rov paralell yubormay, ketma-ket yuboradi.
-  const fetchTransactions = async ({ append = false, offset = 0 } = {}) => {
+  const fetchTransactions = async ({ append = false, offset = 0, silent = false, limit = LOAD_STEP } = {}) => {
     if (!isAuthenticated) return;
     return queued("admin:transactions", async () => {
       if (append) setTransactionsLoadingMore(true);
-      else setLoading(true);
+      else if (!silent) setLoading(true);
       try {
         const base =
           filter !== "all"
             ? `/api/transactions/status/${filter}`
             : "/api/transactions/all";
-        const url = `${base}?limit=${LOAD_STEP}&offset=${offset}`;
+        const url = `${base}?limit=${limit}&offset=${offset}`;
 
         const res = await apiFetch(url);
         const data = await res.json();
@@ -809,7 +860,7 @@ export default function AdminPanel() {
         console.error("❌ Transactionlarni olishda xato:", err);
       } finally {
         if (append) setTransactionsLoadingMore(false);
-        else setLoading(false);
+        else if (!silent) setLoading(false);
       }
     });
   };
@@ -855,14 +906,14 @@ export default function AdminPanel() {
     });
   };
 
-  const fetchPremiumOrders = async ({ append = false, offset = 0 } = {}) => {
+  const fetchPremiumOrders = async ({ append = false, offset = 0, silent = false, limit = LOAD_STEP } = {}) => {
     if (!isAuthenticated) return;
     return queued("admin:premium", async () => {
       if (append) setPremiumLoadingMore(true);
-      else setLoading(true);
+      else if (!silent) setLoading(true);
       try {
         const res = await apiFetch(
-          `/api/admin/premium/list?status=${premiumFilter}&limit=${LOAD_STEP}&offset=${offset}`
+          `/api/admin/premium/list?status=${premiumFilter}&limit=${limit}&offset=${offset}`
         );
         const data = await res.json();
 
@@ -876,7 +927,7 @@ export default function AdminPanel() {
         console.error("❌ Premium orders fetch error:", err);
       } finally {
         if (append) setPremiumLoadingMore(false);
-        else setLoading(false);
+        else if (!silent) setLoading(false);
       }
     });
   };
@@ -895,14 +946,14 @@ export default function AdminPanel() {
     }
   };
 
-  const fetchGiftOrders = async ({ append = false, offset = 0 } = {}) => {
+  const fetchGiftOrders = async ({ append = false, offset = 0, silent = false, limit = LOAD_STEP } = {}) => {
     if (!isAuthenticated) return;
     return queued("admin:gift", async () => {
       if (append) setGiftLoadingMore(true);
-      else setLoading(true);
+      else if (!silent) setLoading(true);
       try {
         const res = await apiFetch(
-          `/api/admin/gift/list?status=${giftFilter}&limit=${LOAD_STEP}&offset=${offset}`
+          `/api/admin/gift/list?status=${giftFilter}&limit=${limit}&offset=${offset}`
         );
         const data = await res.json();
 
@@ -916,7 +967,7 @@ export default function AdminPanel() {
         console.error("❌ Gift orders fetch error:", err);
       } finally {
         if (append) setGiftLoadingMore(false);
-        else setLoading(false);
+        else if (!silent) setLoading(false);
       }
     });
   };
@@ -1296,6 +1347,12 @@ export default function AdminPanel() {
   }
   // ========== END AUTH PROTECTION ==========
 
+  // Amaldan keyin ro'yxat joyida yangilanadi: spinner yo'q, yuklanganlar qoladi, ekran siljimaydi
+  const refreshLimit = (loaded) => Math.min(500, Math.max(LOAD_STEP, loaded));
+  const refreshTransactions = () => fetchTransactions({ silent: true, limit: refreshLimit(transactions.length) });
+  const refreshPremiumOrders = () => fetchPremiumOrders({ silent: true, limit: refreshLimit(premiumOrders.length) });
+  const refreshGiftOrders = () => fetchGiftOrders({ silent: true, limit: refreshLimit(giftOrders.length) });
+
   const updateStatus = async (id, newStatus) => {
     try {
       const res = await apiFetch(`/api/transactions/update/${id}`, {
@@ -1306,7 +1363,7 @@ export default function AdminPanel() {
 
       const data = await res.json();
       if (data.success) {
-        fetchTransactions();
+        refreshTransactions();
         setExpandedId(null);
       }
     } catch (err) {
@@ -1328,7 +1385,7 @@ export default function AdminPanel() {
       const data = await res.json();
       if (data.success) {
         alert("✅ Premium order expired qilindi!");
-        fetchPremiumOrders();
+        refreshPremiumOrders();
         setPremiumExpandedId(null);
       } else {
         alert("❌ Xato: " + data.error);
@@ -1365,7 +1422,7 @@ export default function AdminPanel() {
   const executeSendPremium = async (id) => {
     await runAdminSend(id, {
       url: `/api/admin/premium/resend/${id}`,
-      refetch: fetchPremiumOrders,
+      refetch: refreshPremiumOrders,
       collapse: () => setPremiumExpandedId(null),
     });
   };
@@ -1429,7 +1486,7 @@ export default function AdminPanel() {
         const planText = manualPremiumModal === "1_oy" ? "1 oylik" : "1 yillik";
         alert(`✅ ${planText} Premium order yaratildi! Order #${data.order.id}`);
         closeManualPremiumModal();
-        fetchPremiumOrders();
+        refreshPremiumOrders();
       } else {
         alert("❌ Xato: " + data.error);
       }
@@ -1452,7 +1509,7 @@ export default function AdminPanel() {
 
       const data = await res.json();
       if (data.success) {
-        fetchPremiumOrders();
+        refreshPremiumOrders();
         setPremiumExpandedId(null);
       }
     } catch (err) {
@@ -1463,7 +1520,7 @@ export default function AdminPanel() {
   const executeSendStars = async (id) => {
     await runAdminSend(id, {
       url: `/api/admin/stars/send/${id}`,
-      refetch: fetchTransactions,
+      refetch: refreshTransactions,
       collapse: () => setExpandedId(null),
     });
   };
@@ -1504,7 +1561,7 @@ export default function AdminPanel() {
       const data = await res.json();
       if (data.success) {
         alert("✅ Gift order expired qilindi!");
-        fetchGiftOrders();
+        refreshGiftOrders();
         setGiftExpandedId(null);
       } else {
         alert("❌ Xato: " + data.error);
@@ -1518,7 +1575,7 @@ export default function AdminPanel() {
   const executeSendGift = async (id) => {
     await runAdminSend(id, {
       url: `/api/admin/gift/send/${id}`,
-      refetch: fetchGiftOrders,
+      refetch: refreshGiftOrders,
       collapse: () => setGiftExpandedId(null),
     });
   };
@@ -1591,7 +1648,7 @@ export default function AdminPanel() {
 
       const data = await res.json();
       if (data.success) {
-        fetchGiftOrders();
+        refreshGiftOrders();
         setGiftExpandedId(null);
       }
     } catch (err) {
@@ -1851,7 +1908,9 @@ export default function AdminPanel() {
       premium_sent: "💎",
       gift_sent: "🎁",
       failed: "⚠️",
-      error: "🔴"
+      error: "🔴",
+      processing: "🔄",
+      delivered: "✅"
     };
     return icons[status] || "❓";
   };
@@ -1989,7 +2048,7 @@ export default function AdminPanel() {
           className={`tab ${activeTab === "bonus" ? "active" : ""}`}
           onClick={() => goToTab("bonus")}
         >
-          🎁 Bonus
+          💰 Bonus
         </button>
       </div>
 
@@ -2427,12 +2486,13 @@ export default function AdminPanel() {
         <div className="tab-content">
           {/* Stats Text */}
           <div className="stats-text">
-            <span>Total: <b>{stats.totalStars}</b></span>
-            <span>Pending: <b>{stats.pending}</b></span>
-            <span>Sent: <b>{stats.stars_sent}</b></span>
-            <span>Done: <b>{stats.completed}</b></span>
-            <span>Expired: <b>{stats.expired}</b></span>
-            <span>Failed: <b>{stats.failed + stats.error}</b></span>
+            <span>Jami: <b>{stats.totalStars}</b></span>
+            <span>Kutilmoqda: <b>{stats.pending}</b></span>
+            {stats.processing != null && <span>Jarayonda: <b>{stats.processing}</b></span>}
+            <span>Yetkazildi: <b>{stats.stars_sent}</b></span>
+            <span>Bajarildi: <b>{stats.completed}</b></span>
+            <span>Muddati o'tdi: <b>{stats.expired}</b></span>
+            <span>Xato: <b>{stats.failed + stats.error}</b></span>
           </div>
 
           {/* Filters */}
@@ -2479,22 +2539,23 @@ export default function AdminPanel() {
                     >
                       <div className="order-main" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <span className="order-user" style={{ fontWeight: "bold" }}>@{tx.sender_username || tx.owner_user_id || '?'} → @{tx.username || tx.recipient || '?'}</span>
+                          <span className="order-user" style={{ fontWeight: "bold" }}>{orderRoute(tx.sender_username || tx.owner_user_id, tx.username || tx.recipient)}</span>
                           {isFragmentOrder(tx) && (
                             <span style={{ fontSize: "10px", background: "#6c5ce7", color: "#fff", padding: "2px 6px", borderRadius: "4px" }}>Fragment</span>
                           )}
                         </div>
                         <div style={{ fontSize: "12px", color: "var(--tg-theme-hint-color, #999)" }}>
-                          {new Date(tx.created_at).toLocaleString()} • {tx.amount?.toLocaleString()} so'm
+                          {shortDateTime(tx.created_at)} • {tx.amount?.toLocaleString()} so'm
                         </div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
                         <span className="order-stars">{tx.stars} ⭐</span>
                         <div 
                           className="order-status"
+                          data-status={tx.status}
                           style={{ backgroundColor: getStatusColor(tx.status) }}
                         >
-                          {getStatusIcon(tx.status)} {tx.status}
+                          {getStatusIcon(tx.status)} {statusLabel(tx.status)}
                         </div>
                       </div>
                     </div>
@@ -2583,11 +2644,11 @@ export default function AdminPanel() {
           {/* Gift Stats */}
           <div className="stats-text">
             <span>Jami: <b>{giftStats.total}</b></span>
-            <span>Pending: <b>{giftStats.pending}</b></span>
+            <span>Kutilmoqda: <b>{giftStats.pending}</b></span>
             <span>Completed: <b>{giftStats.completed}</b></span>
-            <span>Sent: <b>{giftStats.gift_sent}</b></span>
-            <span>Expired: <b>{giftStats.expired}</b></span>
-            <span>Failed: <b>{giftStats.failed}</b></span>
+            <span>Yetkazildi: <b>{giftStats.gift_sent}</b></span>
+            <span>Muddati o'tdi: <b>{giftStats.expired}</b></span>
+            <span>Xato: <b>{giftStats.failed}</b></span>
           </div>
 
           {/* Gift Filters */}
@@ -2635,10 +2696,10 @@ export default function AdminPanel() {
                     >
                       <div className="order-main" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <span className="order-user" style={{ fontWeight: "bold" }}>@{tx.sender_username || tx.owner_user_id || '?'} → @{tx.recipient_username || tx.username || '?'}</span>
+                          <span className="order-user" style={{ fontWeight: "bold" }}>{orderRoute(tx.sender_username || tx.owner_user_id, tx.recipient_username || tx.username)}</span>
                         </div>
                         <div style={{ fontSize: "12px", color: "var(--tg-theme-hint-color, #999)" }}>
-                          {new Date(tx.created_at).toLocaleString()} • {tx.amount?.toLocaleString()} so'm
+                          {shortDateTime(tx.created_at)} • {tx.amount?.toLocaleString()} so'm
                         </div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -2659,9 +2720,10 @@ export default function AdminPanel() {
                         <span className="order-stars">{tx.stars} ⭐ 🎁</span>
                         <div 
                           className="order-status"
+                          data-status={tx.status}
                           style={{ backgroundColor: getStatusColor(tx.status) }}
                         >
-                          {getStatusIcon(tx.status)} {tx.status}
+                          {getStatusIcon(tx.status)} {statusLabel(tx.status)}
                         </div>
                       </div>
                     </div>
@@ -3016,10 +3078,10 @@ export default function AdminPanel() {
           {/* Premium Stats */}
           <div className="stats-text">
             <span>Jami: <b>{premiumStats.total}</b></span>
-            <span>Pending: <b>{premiumStats.pending}</b></span>
-            <span>Sent: <b>{premiumStats.delivered}</b></span>
-            <span>Expired: <b>{premiumStats.expired}</b></span>
-            <span>Failed: <b>{premiumStats.failed}</b></span>
+            <span>Kutilmoqda: <b>{premiumStats.pending}</b></span>
+            <span>Yetkazildi: <b>{premiumStats.delivered}</b></span>
+            <span>Muddati o'tdi: <b>{premiumStats.expired}</b></span>
+            <span>Xato: <b>{premiumStats.failed}</b></span>
           </div>
 
           {/* Premium Filters */}
@@ -3075,22 +3137,23 @@ export default function AdminPanel() {
                     >
                       <div className="order-main" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <span className="order-user" style={{ fontWeight: "bold" }}>@{tx.sender_username || tx.owner_user_id || '?'} → @{tx.username || tx.recipient || '?'}</span>
+                          <span className="order-user" style={{ fontWeight: "bold" }}>{orderRoute(tx.sender_username || tx.owner_user_id, tx.username || tx.recipient)}</span>
                           {isFragmentOrder(tx) && (
                             <span style={{ fontSize: "10px", background: "#6c5ce7", color: "#fff", padding: "2px 6px", borderRadius: "4px" }}>Fragment</span>
                           )}
                         </div>
                         <div style={{ fontSize: "12px", color: "var(--tg-theme-hint-color, #999)" }}>
-                          {new Date(tx.created_at).toLocaleString()} • {tx.amount?.toLocaleString()} so'm
+                          {shortDateTime(tx.created_at)} • {tx.amount?.toLocaleString()} so'm
                         </div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
                         <span className="order-stars">{tx.months || 1} oy 💎</span>
                         <div 
                           className="order-status"
+                          data-status={tx.status}
                           style={{ backgroundColor: getStatusColor(tx.status === 'delivered' || tx.status === 'premium_sent' ? 'stars_sent' : tx.status) }}
                         >
-                          {tx.status === 'delivered' || tx.status === 'premium_sent' ? '💎' : getStatusIcon(tx.status)} {tx.status === 'premium_sent' ? 'delivered' : tx.status}
+                          {tx.status === 'delivered' || tx.status === 'premium_sent' ? '💎' : getStatusIcon(tx.status)} {statusLabel(tx.status)}
                         </div>
                       </div>
                     </div>
@@ -3804,13 +3867,12 @@ export default function AdminPanel() {
                   fontWeight: referralFilter === f ? '600' : '500',
                   transition: 'all 0.2s ease',
                   fontSize: '13px',
-                  fontFamily: 'monospace'
                 }}
               >
-                {f === 'pending' ? `pending: ${referralCounts.pending}` :
-                 f === 'accepted' ? `accept: ${referralCounts.accepted}` :
-                 f === 'rejected' ? `refuse: ${referralCounts.rejected}` :
-                 `all: ${referralCounts.total}`}
+                {f === 'pending' ? `Kutilmoqda: ${referralCounts.pending}` :
+                 f === 'accepted' ? `Tasdiqlangan: ${referralCounts.accepted}` :
+                 f === 'rejected' ? `Rad etilgan: ${referralCounts.rejected}` :
+                 `Hammasi: ${referralCounts.total}`}
               </button>
             ))}
           </div>

@@ -1,0 +1,114 @@
+/* Admin panel dizayni: Grafit rang, Suzuvchi uslub, ikki tonli ikonkalar.
+   Hamma qoidalar html[data-admin-*] ostida: AdminPanel ochiq turganda yoqiladi, boshqa sahifalarga ta'sir qilmaydi. */
+
+/* ---- Tokenlar ---- */
+html[data-admin-theme="2"] { --ax-bg: #15171b; --ax-card: #1f2228; --ax-card2: #282c33; --ax-line: #33383f; --ax-ink: #eef0f2; --ax-muted: #a2a9b2; --ax-accent: #2bcfa6; --ax-on: #06241c; --ax-gold: #f3c969; --ax-ok: #4fdba8; --ax-ok-bg: #123029; --ax-warn: #f5c04e; --ax-warn-bg: #362c12; --ax-bad: #fb8a8a; --ax-bad-bg: #3a1f22; --ax-grey: #b0b6be; --ax-grey-bg: #2d3138; --ax-info: #8fc1ff; --ax-info-bg: #1b2d42; }
+
+/* ---- Fon va matn ---- */
+html[data-admin-theme="2"] .admin-panel-new { background: var(--ax-bg); color: var(--ax-ink); }
+html[data-admin-theme="2"], html[data-admin-theme="2"] body, html[data-admin-theme="2"] #root { background: var(--ax-bg) !important; }
+html[data-admin-theme="2"] .admin-panel-new :is(.order-card, .ab-card, .ab-stat, .ab-periods, .ab-tabs, .referral-card, .detail-item) { background: var(--ax-card) !important; border-color: var(--ax-line) !important; box-shadow: none !important; color: var(--ax-ink); }
+html[data-admin-theme="2"] .admin-panel-new .order-card--failed { border-left: 3px solid var(--ax-bad) !important; }
+html[data-admin-theme="2"] .order-user { color: var(--ax-ink); font-size: 15px; }
+html[data-admin-theme="2"] .order-stars { color: var(--ax-gold); font-weight: 800; }
+html[data-admin-theme="2"] .order-main > div:last-child { color: var(--ax-muted) !important; }
+
+/* ---- Menyular: ikonka to'liq ko'rinadi, faol holat aniq ---- */
+html[data-admin-theme="2"] :is(.hdr-nav-btn, .tabs-primary .tab, .admin-bottom-nav button) { background: var(--ax-card) !important; border: 1px solid var(--ax-line) !important; box-shadow: none !important; color: var(--ax-ink) !important; opacity: 1 !important; filter: none !important; }
+html[data-admin-theme="2"] :is(.hdr-nav-btn, .tabs-primary .tab, .admin-bottom-nav button) * { opacity: 1 !important; filter: none !important; }
+html[data-admin-theme="2"] :is(.hdr-nav-btn.active, .tabs-primary .tab.active, .admin-bottom-nav button.active) { background: var(--ax-accent) !important; border-color: var(--ax-accent) !important; color: var(--ax-on) !important; }
+html[data-admin-theme="2"] .admin-bottom-nav { background: var(--ax-card) !important; border-color: var(--ax-line) !important; }
+html[data-admin-theme="2"] .admin-bottom-nav button { background: transparent !important; border-color: transparent !important; }
+
+/* ---- Statistika, qidiruv ---- */
+html[data-admin-theme="2"] .stats-text { color: var(--ax-muted); }
+html[data-admin-theme="2"] .stats-text span { color: var(--ax-muted); font-weight: 500; }
+html[data-admin-theme="2"] .stats-text b { color: var(--ax-ink); }
+html[data-admin-theme="2"] :is(.search-input, .admin-custom-select-trigger) { background: var(--ax-card) !important; border-color: var(--ax-line) !important; color: var(--ax-ink) !important; box-shadow: none !important; }
+html[data-admin-theme="2"] .search-input::placeholder { color: var(--ax-muted); }
+html[data-admin-theme="2"] .admin-custom-select-menu { background: var(--ax-card2) !important; border-color: var(--ax-line) !important; }
+html[data-admin-theme="2"] .admin-custom-select-option { color: var(--ax-ink) !important; }
+
+/* ---- Holat belgilari: bir xil o'lchamda, yumshoq fon ---- */
+html[data-admin-theme="2"] .order-status { box-shadow: none; text-transform: none; font-weight: 700; letter-spacing: 0; }
+html[data-admin-theme="2"] .order-status:is([data-status="stars_sent"],[data-status="gift_sent"],[data-status="delivered"],[data-status="completed"],[data-status="premium_sent"]) { background: var(--ax-ok-bg) !important; color: var(--ax-ok); }
+html[data-admin-theme="2"] .order-status[data-status="processing"] { background: var(--ax-info-bg) !important; color: var(--ax-info); }
+html[data-admin-theme="2"] .order-status[data-status="pending"] { background: var(--ax-warn-bg) !important; color: var(--ax-warn); }
+html[data-admin-theme="2"] .order-status[data-status="expired"] { background: var(--ax-grey-bg) !important; color: var(--ax-grey); }
+html[data-admin-theme="2"] .order-status:is([data-status="failed"],[data-status="error"]) { background: var(--ax-bad-bg) !important; color: var(--ax-bad); }
+
+/* ---- Bonus va referal ---- */
+html[data-admin-theme="2"] .ab-root { color: var(--ax-ink); }
+html[data-admin-theme="2"] :is(.ab-row, .ab-pager button) { border-color: var(--ax-line) !important; color: var(--ax-ink); }
+html[data-admin-theme="2"] :is(.ab-chip) { background: var(--ax-card) !important; border-color: var(--ax-line) !important; color: var(--ax-ink) !important; opacity: 1 !important; }
+html[data-admin-theme="2"] .ab-chip.is-active { background: var(--ax-accent) !important; border-color: var(--ax-accent) !important; color: var(--ax-on) !important; }
+html[data-admin-theme="2"] .ab-root .ab-gold { color: var(--ax-gold) !important; }
+html[data-admin-theme="2"] .ab-root .ab-plus { color: var(--ax-ok) !important; }
+html[data-admin-theme="2"] .ab-root .ab-minus { color: var(--ax-bad) !important; }
+
+html[data-admin-theme="2"] .ab-root { --ab-gold: var(--ax-accent); --ab-text: var(--ax-ink); --ab-muted: var(--ax-muted); --ab-line: var(--ax-line); --ab-card: var(--ax-card); }
+html[data-admin-theme="2"] .ab-tabs button { color: var(--ax-muted) !important; }
+html[data-admin-theme="2"] .ab-tabs button.is-active { background: var(--ax-accent) !important; color: var(--ax-on) !important; }
+html[data-admin-theme="2"] .ab-root :is(.ab-card-title, .ab-item-name, .ab-profile-name, h2, h3) { color: var(--ax-ink) !important; }
+html[data-admin-theme="2"] .ab-root small, html[data-admin-theme="2"] .ab-root .ab-row-date { color: var(--ax-muted) !important; }
+html[data-admin-theme="2"] .ab-items > * { background: var(--ax-card2) !important; color: var(--ax-ink); }
+html[data-admin-theme="2"] .referrals-filter button { background: var(--ax-card) !important; border: 1px solid var(--ax-line) !important; color: var(--ax-ink) !important; }
+html[data-admin-theme="2"] .referrals-list > div { background: var(--ax-card) !important; border-color: var(--ax-line) !important; color: var(--ax-ink) !important; }
+
+html[data-admin-theme="2"] .referrals-filter button[style*="font-weight: 600"] { background: var(--ax-accent) !important; border-color: var(--ax-accent) !important; color: var(--ax-on) !important; }
+
+/* ---- Karta ichida chapga tekislash, qo'ng'iroq nishoni o'z joyida ---- */
+html[data-admin-theme="2"] .order-main { align-items: flex-start !important; text-align: left !important; }
+html[data-admin-theme="2"] .order-main > div:first-child { justify-content: flex-start !important; }
+html[data-admin-theme="2"] .referral-bell { position: relative; }
+html[data-admin-theme="2"] .tabs-primary { background: var(--ax-bg) !important; }
+
+/* ---- Telefon: chapga tekislangan, ortiqcha joysiz ---- */
+@media (max-width: 640px) {
+  html[data-admin-theme="2"] .order-header { flex-direction: column; align-items: stretch !important; gap: 8px !important; text-align: left; }
+  html[data-admin-theme="2"] .order-main { align-items: flex-start !important; text-align: left !important; }
+  html[data-admin-theme="2"] .order-header > div:last-child { justify-content: space-between; }
+}
+
+html[data-admin-style] .orders-list { display: flex; flex-direction: column; }
+html[data-admin-style] .order-card { margin: 0 !important; }
+
+html[data-admin-style="5"] .tabs-primary { gap: 2px; padding: 4px; border: 1px solid var(--ax-line); border-radius: 16px; background: var(--ax-card) !important; }
+html[data-admin-style="5"] .tabs-primary .tab { border: 0 !important; border-radius: 12px !important; background: transparent !important; color: var(--ax-muted) !important; }
+html[data-admin-style="5"] .tabs-primary .tab.active { background: var(--ax-accent) !important; color: var(--ax-on) !important; box-shadow: 0 4px 14px rgba(43, 207, 166, .28) !important; }
+html[data-admin-style="5"] .hdr-nav-btn { border-radius: 999px !important; font-size: 13px; }
+html[data-admin-style="5"] .orders-list { gap: 10px; }
+html[data-admin-style="5"] .admin-panel-new :is(.order-card, .ab-card, .ab-stat, .referrals-list > div) { border-radius: 16px !important; box-shadow: 0 6px 18px rgba(0, 0, 0, .22) !important; }
+html[data-admin-style="5"] .admin-bottom-nav { left: 10px !important; right: 10px !important; bottom: 10px !important; width: auto !important; border: 1px solid var(--ax-line) !important; border-radius: 20px !important; box-shadow: 0 10px 28px rgba(0, 0, 0, .45) !important; }
+html[data-admin-style="5"] .admin-panel-new { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+html[data-admin-style="5"] .order-status { border-radius: 10px; }
+
+/* Telefonda kesilib qolmasin */
+@media (max-width: 640px) {
+  html[data-admin-style] .filters .admin-custom-select { flex: 0 0 136px; min-width: 136px; }
+  html[data-admin-style] .filters .search-input { min-width: 0; font-size: 14px; }
+  html[data-admin-style] .ab-tabs { display: flex; }
+  html[data-admin-style] .ab-tabs button { flex: 1 1 auto; min-width: 0; padding-left: 6px; padding-right: 6px; font-size: 12.5px; }
+  html[data-admin-style] .tabs-primary { display: flex; gap: 4px; }
+  html[data-admin-style] .tabs-primary .tab { flex: 1 1 auto; width: auto; min-width: 0; padding-left: 3px; padding-right: 3px; font-size: 11.5px; }
+}
+
+/* ---- Ikonkalar: emoji o'rniga, ikki tonli ---- */
+.ai { --t: currentColor; display: inline-flex; align-items: center; justify-content: center; vertical-align: -0.14em; line-height: 0; }
+.ai svg { display: block; }
+.ai[data-tone="gold"] { --t: #f5c451; }
+.ai[data-tone="blue"] { --t: #6cb2ff; }
+.ai[data-tone="pink"] { --t: #ff7fa8; }
+.ai[data-tone="green"] { --t: #2bcfa6; }
+.ai[data-tone="teal"] { --t: #2bcfa6; }
+.ai[data-tone="red"] { --t: #ff7b72; }
+.ai[data-tone="amber"] { --t: #f5b942; }
+.ai[data-tone="violet"] { --t: #b49bff; }
+.ai[data-tone="grey"] { --t: #a3adba; }
+html[data-admin-icons] .bottom-nav-icon { display: inline-flex; font-size: 20px; line-height: 1; }
+html[data-admin-icons] .tabs-primary .tab .ai, html[data-admin-icons] .hdr-nav-btn .ai { margin-right: 3px; font-size: 1.15em; }
+html[data-admin-icons] :is(.tab.active, .hdr-nav-btn.active, .bottom-nav-item.active, .ab-tabs button.is-active, .ab-chip.is-active, .order-status) .ai { color: inherit !important; }
+html[data-admin-icons] .search-input { padding-left: 38px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a3adba' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: 13px center !important; }
+
+html[data-admin-icons="3"] .ai { color: var(--t); }
+html[data-admin-icons="3"] .ai svg { fill: currentColor; fill-opacity: .22; }

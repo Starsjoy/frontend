@@ -1,3 +1,4 @@
+/** @jsxImportSource ../pages/Admin/adminJsx */
 import React, { useEffect, useRef, useState } from "react";
 
 /**

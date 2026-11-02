@@ -1,9 +1,10 @@
+/** @jsxImportSource ./adminJsx */
 import { useCallback, useEffect, useState } from "react";
 import apiFetch from "../../utils/apiFetch";
 import "./AdminBonus.css";
 
 /**
- * Admin panel → 🎁 Bonuslar. Uch bo'lim:
+ * Admin panel → 💰 Bonuslar. Uch bo'lim:
  *   Asosiy           — umumiy statistika, almashtirilganlar, umumiy tarix
  *   Foydalanuvchilar — bonusi bor userlar (balans bo'yicha, 10 tadan sahifalab)
  *   Profil           — tanlangan userning bonuslari, xaridlari va tarixi
@@ -549,7 +550,7 @@ function GrantModal({ user, onClose, onDone }) {
     <div className="ab-overlay">
       <div className="ab-modal" role="dialog" aria-modal="true">
         <button type="button" className="ab-modal-x" onClick={onClose} aria-label="Yopish">✕</button>
-        <h4 className="ab-modal-title">🎁 Bonus berish</h4>
+        <h4 className="ab-modal-title">💰 Bonus berish</h4>
         <p className="ab-modal-sub">@{user.username || user.user_id} balansiga darhol qo'shiladi va userga xabar boradi</p>
         <label className="ab-field">
           <span>Miqdor (⭐)</span>
@@ -724,7 +725,7 @@ function ProfileView({ userId, onBack, onOpenUser, refreshKey }) {
             <div className="ab-profile-bal">
               <span>Balans</span>
               <b>{fmt(p.user.bonus_balance)} ⭐</b>
-              <button type="button" className="ab-grant-btn" onClick={() => setGrantOpen(true)}>🎁 Bonus berish</button>
+              <button type="button" className="ab-grant-btn" onClick={() => setGrantOpen(true)}>💰 Bonus berish</button>
               <button
                 type="button"
                 className="ab-grant-btn ab-deduct-btn"
@@ -836,7 +837,7 @@ export default function AdminBonus() {
   return (
     <div className="tab-content ab-root">
       <div className="ab-head">
-        <h3 className="ab-title">🎁 Bonuslar</h3>
+        <h3 className="ab-title">💰 Bonuslar</h3>
         <button type="button" className="ab-refresh" onClick={() => setRefreshKey((k) => k + 1)}>🔄</button>
       </div>
 
