@@ -942,21 +942,21 @@ html, body {
 }
 
 .order-card--failed {
-  border-color: rgba(155, 89, 182, 0.55);
+  border-color: rgba(192, 57, 43, 0.55);
   background: linear-gradient(
     135deg,
-    rgba(155, 89, 182, 0.14) 0%,
+    rgba(192, 57, 43, 0.14) 0%,
     rgba(255, 255, 255, 0.03) 55%
   );
-  box-shadow: 0 0 0 1px rgba(155, 89, 182, 0.12);
+  box-shadow: 0 0 0 1px rgba(192, 57, 43, 0.12);
 }
 
 .order-card--failed .order-status {
-  background-color: #9b59b6 !important;
+  background-color: #c0392b !important;
 }
 
 .order-card--failed:hover {
-  border-color: rgba(155, 89, 182, 0.75);
+  border-color: rgba(192, 57, 43, 0.75);
 }
 
 .order-header--gift {
@@ -1530,192 +1530,7 @@ html, body {
 }
 
 /* ==================== PREMIUM TAB — manual order ==================== */
-.admin-premium-manual-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
 
-.admin-premium-manual-label {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.admin-premium-manual-btns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.admin-premium-manual-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  text-align: left;
-  color: #fff;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.admin-premium-manual-btn:active {
-  transform: scale(0.98);
-}
-
-.admin-premium-manual-btn--month {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.35);
-}
-
-.admin-premium-manual-btn--year {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  box-shadow: 0 4px 16px rgba(245, 87, 108, 0.3);
-}
-
-.admin-premium-manual-btn-icon {
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
-.admin-premium-manual-btn-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.admin-premium-manual-btn-text strong {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.admin-premium-manual-btn-text small {
-  font-size: 11px;
-  opacity: 0.9;
-}
-
-.admin-premium-modal-overlay {
-  z-index: 1100;
-}
-
-.admin-premium-modal {
-  max-width: 400px;
-}
-
-.admin-premium-modal-header--month {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.45), rgba(118, 75, 162, 0.35));
-}
-
-.admin-premium-modal-header--year {
-  background: linear-gradient(135deg, rgba(240, 147, 251, 0.4), rgba(245, 87, 108, 0.35));
-}
-
-.admin-premium-modal-body {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.admin-premium-modal-sum {
-  margin: 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.65);
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.admin-premium-modal-sum b {
-  color: #fff;
-}
-
-.admin-premium-modal-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.admin-premium-modal-field span {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.admin-premium-modal-field input {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.25);
-  color: #fff;
-  /* 16px'dan kichik bo'lsa iOS avtomatik zoom qiladi */
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-.admin-premium-modal-field input:focus {
-  outline: none;
-  border-color: rgba(102, 126, 234, 0.6);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-}
-
-.admin-premium-modal-footer {
-  display: flex;
-  gap: 10px;
-  padding: 16px 20px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.admin-premium-modal-btn {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: opacity 0.2s;
-}
-
-.admin-premium-modal-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.admin-premium-modal-btn--ghost {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.admin-premium-modal-btn--primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-}
-
-.admin-premium-modal-btn--primary.admin-premium-modal-btn--year {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-@media (max-width: 480px) {
-  .admin-premium-manual-btns {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-premium-modal {
-    max-width: none;
-    margin: 0 8px;
-  }
-}
 
 .balance-user-info {
   display: flex;

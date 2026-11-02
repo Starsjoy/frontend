@@ -40,7 +40,7 @@ const FRAGMENT_PAY_OPTIONS = [
 const ORDER_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
   { value: "pending", label: "Pending", icon: "⏳" },
-  { value: "processing", label: "Jarayonda", icon: "🔄" },
+  { value: "processing", label: "Processing", icon: "🔄" },
   { value: "completed", label: "Completed", icon: "✅" },
   { value: "expired", label: "Expired", icon: "❌" },
   { value: "stars_sent", label: "Sent", icon: "🌟" },
@@ -51,7 +51,7 @@ const ORDER_STATUS_FILTER_OPTIONS = [
 const GIFT_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
   { value: "pending", label: "Pending", icon: "⏳" },
-  { value: "processing", label: "Jarayonda", icon: "🔄" },
+  { value: "processing", label: "Processing", icon: "🔄" },
   { value: "completed", label: "Completed", icon: "✅" },
   { value: "gift_sent", label: "Sent", icon: "🎁" },
   { value: "expired", label: "Expired", icon: "❌" },
@@ -61,28 +61,12 @@ const GIFT_STATUS_FILTER_OPTIONS = [
 const PREMIUM_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
   { value: "pending", label: "Pending", icon: "⏳" },
-  { value: "processing", label: "Jarayonda", icon: "🔄" },
+  { value: "processing", label: "Processing", icon: "🔄" },
   { value: "delivered", label: "Sent", icon: "💎" },
   { value: "expired", label: "Expired", icon: "❌" },
   { value: "failed", label: "Failed", icon: "⚠️" },
   { value: "error", label: "Error", icon: "🔴" },
 ];
-
-/** Holatning tushunarli nomi (bazadagi qiymat o'zgarmaydi) */
-const STATUS_LABELS = {
-  pending: "Kutilmoqda",
-  processing: "Jarayonda",
-  completed: "Yetkazildi",
-  delivered: "Yetkazildi",
-  stars_sent: "Yetkazildi",
-  premium_sent: "Yetkazildi",
-  gift_sent: "Yetkazildi",
-  expired: "Muddati o'tdi",
-  failed: "Muvaffaqiyatsiz",
-  error: "Xato",
-  cancelled: "Bekor qilindi",
-};
-const statusLabel = (status) => STATUS_LABELS[status] || status;
 
 /** 02.11 14:39 */
 const shortDateTime = (value) => {
@@ -175,6 +159,7 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [stats, setStats] = useState({
     totalStars: 0,
     completed: 0,
@@ -302,9 +287,6 @@ export default function AdminPanel() {
     failed: 0
   });
   // Manual Premium Order state
-  const [manualPremiumModal, setManualPremiumModal] = useState(null); // "1_oy" | "1_yil" | null
-  const [manualPremiumUsername, setManualPremiumUsername] = useState("");
-  const [manualPremiumLoading, setManualPremiumLoading] = useState(false);
 
   // Gift orders state
   const [giftOrders, setGiftOrders] = useState([]);
@@ -816,6 +798,13 @@ export default function AdminPanel() {
   // 📄 Paginated fetchers. `append=true` bo'lsa, mavjud arrayga qo'shadi.
   // Barcha chaqiruvlar `queued()` orqali navbatga qo'yiladi — shu bilan
   // tab ochilganda bir nechta so'rov paralell yubormay, ketma-ket yuboradi.
+  // Qidiruv serverda: yuklanmagan buyurtma va userlar ham topiladi
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [search]);
+  const searchQuery = debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : "";
+
   const fetchTransactions = async ({ append = false, offset = 0, silent = false, limit = LOAD_STEP } = {}) => {
     if (!isAuthenticated) return;
     return queued("admin:transactions", async () => {
@@ -826,7 +815,7 @@ export default function AdminPanel() {
           filter !== "all"
             ? `/api/transactions/status/${filter}`
             : "/api/transactions/all";
-        const url = `${base}?limit=${limit}&offset=${offset}`;
+        const url = `${base}?limit=${limit}&offset=${offset}${searchQuery}`;
 
         const res = await apiFetch(url);
         const data = await res.json();
@@ -872,7 +861,7 @@ export default function AdminPanel() {
       else setLoading(true);
       try {
         const res = await apiFetch(
-          `/api/admin/users?limit=${LOAD_STEP}&offset=${offset}`
+          `/api/admin/users?limit=${LOAD_STEP}&offset=${offset}${searchQuery}`
         );
         const data = await res.json();
 
@@ -913,7 +902,7 @@ export default function AdminPanel() {
       else if (!silent) setLoading(true);
       try {
         const res = await apiFetch(
-          `/api/admin/premium/list?status=${premiumFilter}&limit=${limit}&offset=${offset}`
+          `/api/admin/premium/list?status=${premiumFilter}&limit=${limit}&offset=${offset}${searchQuery}`
         );
         const data = await res.json();
 
@@ -953,7 +942,7 @@ export default function AdminPanel() {
       else if (!silent) setLoading(true);
       try {
         const res = await apiFetch(
-          `/api/admin/gift/list?status=${giftFilter}&limit=${limit}&offset=${offset}`
+          `/api/admin/gift/list?status=${giftFilter}&limit=${limit}&offset=${offset}${searchQuery}`
         );
         const data = await res.json();
 
@@ -1300,7 +1289,7 @@ export default function AdminPanel() {
     } else if (activeTab === "promocodes") {
       fetchPromocodes();
     }
-  }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter, referralFilter]);
+  }, [filter, activeTab, isAuthenticated, premiumFilter, giftFilter, referralFilter, debouncedSearch]);
 
   // Auto refresh - disabled
   useEffect(() => {
@@ -1452,53 +1441,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Manual Premium Order yaratish (admin qo'lda akkauntga kirib yuborgan uchun)
-  const closeManualPremiumModal = () => {
-    setManualPremiumModal(null);
-    setManualPremiumUsername("");
-  };
-
-  const openManualPremiumModal = (plan) => {
-    setManualPremiumUsername("");
-    setManualPremiumModal(plan);
-  };
-
-  const createManualPremiumOrder = async () => {
-    if (!manualPremiumUsername.trim()) {
-      alert("❌ Username kiriting!");
-      return;
-    }
-    
-    setManualPremiumLoading(true);
-    try {
-      const res = await apiFetch("/api/admin/premium/manual", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recipient_username: manualPremiumUsername.trim(),
-          plan: manualPremiumModal // "1_oy" yoki "1_yil"
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        const planText = manualPremiumModal === "1_oy" ? "1 oylik" : "1 yillik";
-        alert(`✅ ${planText} Premium order yaratildi! Order #${data.order.id}`);
-        closeManualPremiumModal();
-        refreshPremiumOrders();
-      } else {
-        alert("❌ Xato: " + data.error);
-      }
-    } catch (err) {
-      console.error("❌ Manual premium order xato:", err);
-      alert("Server xato!");
-    } finally {
-      setManualPremiumLoading(false);
-    }
-  };
-
-  // Premium order update status
   const updatePremiumStatus = async (id, newStatus) => {
     try {
       const res = await apiFetch(`/api/admin/premium/update/${id}`, {
@@ -1859,30 +1801,6 @@ export default function AdminPanel() {
     }
   };
 
-  const filteredTransactions = transactions.filter((tx) => {
-    const s = search.toLowerCase();
-    return (
-      tx.username?.toLowerCase().includes(s) ||
-      tx.sender_username?.toLowerCase().includes(s) ||
-      tx.recipient?.toLowerCase().includes(s) ||
-      tx.owner_user_id?.toString().includes(s) ||
-      tx.id.toString().includes(s)
-    );
-  });
-
-  const filteredUsers = users.filter((u) => {
-    const s = search.toLowerCase();
-    return (
-      u.username.toLowerCase().includes(s) ||
-      u.referral_code?.toLowerCase().includes(s)
-    );
-  });
-
-  // 📄 Client tarafida hamma yuklangan qatorlar ko'rsatiladi.
-  // Backend endi paginatsiya qiladi — search esa faqat yuklangan itemlar
-  // ichidan filter qiladi.
-  const displayedTransactions = filteredTransactions;
-
   const getStatusColor = (status) => {
     const colors = {
       pending: "#f39c12",
@@ -1891,7 +1809,7 @@ export default function AdminPanel() {
       stars_sent: "#3498db",
       premium_sent: "#3498db",
       gift_sent: "#9b59b6",
-      failed: "#9b59b6",
+      failed: "#c0392b",
       error: "#8e44ad",
       processing: "#3498db",
       delivered: "#27ae60"
@@ -2486,13 +2404,13 @@ export default function AdminPanel() {
         <div className="tab-content">
           {/* Stats Text */}
           <div className="stats-text">
-            <span>Jami: <b>{stats.totalStars}</b></span>
-            <span>Kutilmoqda: <b>{stats.pending}</b></span>
-            {stats.processing != null && <span>Jarayonda: <b>{stats.processing}</b></span>}
-            <span>Yetkazildi: <b>{stats.stars_sent}</b></span>
-            <span>Bajarildi: <b>{stats.completed}</b></span>
-            <span>Muddati o'tdi: <b>{stats.expired}</b></span>
-            <span>Xato: <b>{stats.failed + stats.error}</b></span>
+            <span>Total: <b>{stats.totalStars}</b></span>
+            <span>Pending: <b>{stats.pending}</b></span>
+            {stats.processing != null && <span>Processing: <b>{stats.processing}</b></span>}
+            <span>Sent: <b>{stats.stars_sent}</b></span>
+            <span>Done: <b>{stats.completed}</b></span>
+            <span>Expired: <b>{stats.expired}</b></span>
+            <span>Failed: <b>{stats.failed + stats.error}</b></span>
           </div>
 
           {/* Filters */}
@@ -2518,10 +2436,10 @@ export default function AdminPanel() {
             <div className="loader">⏳ Yuklanmoqda...</div>
           ) : (
             <div className="orders-list">
-              {displayedTransactions.length === 0 ? (
+              {transactions.length === 0 ? (
                 <div className="empty-state">📭 Buyurtmalar yo'q</div>
               ) : (
-                displayedTransactions.map((tx) => (
+                transactions.map((tx) => (
                   <div
                     key={tx.id}
                     className={getOrderCardClassName(tx)}
@@ -2552,10 +2470,9 @@ export default function AdminPanel() {
                         <span className="order-stars">{tx.stars} ⭐</span>
                         <div 
                           className="order-status"
-                          data-status={tx.status}
                           style={{ backgroundColor: getStatusColor(tx.status) }}
                         >
-                          {getStatusIcon(tx.status)} {statusLabel(tx.status)}
+                          {getStatusIcon(tx.status)} {tx.status}
                         </div>
                       </div>
                     </div>
@@ -2644,11 +2561,11 @@ export default function AdminPanel() {
           {/* Gift Stats */}
           <div className="stats-text">
             <span>Jami: <b>{giftStats.total}</b></span>
-            <span>Kutilmoqda: <b>{giftStats.pending}</b></span>
+            <span>Pending: <b>{giftStats.pending}</b></span>
             <span>Completed: <b>{giftStats.completed}</b></span>
-            <span>Yetkazildi: <b>{giftStats.gift_sent}</b></span>
-            <span>Muddati o'tdi: <b>{giftStats.expired}</b></span>
-            <span>Xato: <b>{giftStats.failed}</b></span>
+            <span>Sent: <b>{giftStats.gift_sent}</b></span>
+            <span>Expired: <b>{giftStats.expired}</b></span>
+            <span>Failed: <b>{giftStats.failed}</b></span>
           </div>
 
           {/* Gift Filters */}
@@ -2677,16 +2594,6 @@ export default function AdminPanel() {
                 <div className="empty-state">🎁 Gift buyurtmalar yo'q</div>
               ) : (
                 giftOrders
-                  .filter((tx) => {
-                    const s = search.toLowerCase();
-                    return (
-                      tx.username?.toLowerCase().includes(s) ||
-                      tx.sender_username?.toLowerCase().includes(s) ||
-                      tx.recipient_username?.toLowerCase().includes(s) ||
-                      tx.owner_user_id?.toString().includes(s) ||
-                      tx.id.toString().includes(s)
-                    );
-                  })
                   .map((tx) => (
                   <div key={tx.id} className={getOrderCardClassName(tx)}>
                     <div 
@@ -2720,10 +2627,9 @@ export default function AdminPanel() {
                         <span className="order-stars">{tx.stars} ⭐ 🎁</span>
                         <div 
                           className="order-status"
-                          data-status={tx.status}
                           style={{ backgroundColor: getStatusColor(tx.status) }}
                         >
-                          {getStatusIcon(tx.status)} {statusLabel(tx.status)}
+                          {getStatusIcon(tx.status)} {tx.status}
                         </div>
                       </div>
                     </div>
@@ -2869,10 +2775,10 @@ export default function AdminPanel() {
             <div className="loader">⏳ Yuklanmoqda...</div>
           ) : (
             <div className="users-list" style={{ padding: '10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
-              {filteredUsers.length === 0 ? (
+              {users.length === 0 ? (
                 <div className="empty-state">👤 Foydalanuvchilar yo'q</div>
               ) : (
-                filteredUsers.map((u, index) => (
+                users.map((u, index) => (
                   <div 
                     key={u.id} 
                     className="user-card"
@@ -2916,7 +2822,7 @@ export default function AdminPanel() {
                         fontWeight: 'bold',
                         color: '#fff'
                       }}>
-                        {filteredUsers.length - index}
+                        {users.length - index}
                       </div>
                       
                       <div className="user-main" style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden' }}>
@@ -3047,41 +2953,13 @@ export default function AdminPanel() {
       {/* ==================== PREMIUM ORDERS TAB ==================== */}
       {activeTab === "premium" && (
         <div className="tab-content">
-          <div className="admin-premium-manual-actions">
-            <span className="admin-premium-manual-label">Qo&apos;lda premium order</span>
-            <div className="admin-premium-manual-btns">
-              <button
-                type="button"
-                className="admin-premium-manual-btn admin-premium-manual-btn--month"
-                onClick={() => openManualPremiumModal("1_oy")}
-              >
-                <span className="admin-premium-manual-btn-icon">💎</span>
-                <span className="admin-premium-manual-btn-text">
-                  <strong>1 oylik</strong>
-                  <small>57 000 so&apos;m</small>
-                </span>
-              </button>
-              <button
-                type="button"
-                className="admin-premium-manual-btn admin-premium-manual-btn--year"
-                onClick={() => openManualPremiumModal("1_yil")}
-              >
-                <span className="admin-premium-manual-btn-icon">👑</span>
-                <span className="admin-premium-manual-btn-text">
-                  <strong>1 yillik</strong>
-                  <small>320 000 so&apos;m</small>
-                </span>
-              </button>
-            </div>
-          </div>
-
           {/* Premium Stats */}
           <div className="stats-text">
             <span>Jami: <b>{premiumStats.total}</b></span>
-            <span>Kutilmoqda: <b>{premiumStats.pending}</b></span>
-            <span>Yetkazildi: <b>{premiumStats.delivered}</b></span>
-            <span>Muddati o'tdi: <b>{premiumStats.expired}</b></span>
-            <span>Xato: <b>{premiumStats.failed}</b></span>
+            <span>Pending: <b>{premiumStats.pending}</b></span>
+            <span>Sent: <b>{premiumStats.delivered}</b></span>
+            <span>Expired: <b>{premiumStats.expired}</b></span>
+            <span>Failed: <b>{premiumStats.failed}</b></span>
           </div>
 
           {/* Premium Filters */}
@@ -3110,16 +2988,6 @@ export default function AdminPanel() {
                 <div className="empty-state">💎 Premium buyurtmalar yo'q</div>
               ) : (
                 premiumOrders
-                  .filter((tx) => {
-                    const s = search.toLowerCase();
-                    return (
-                      tx.username?.toLowerCase().includes(s) ||
-                      tx.sender_username?.toLowerCase().includes(s) ||
-                      tx.recipient?.toLowerCase().includes(s) ||
-                      tx.owner_user_id?.toString().includes(s) ||
-                      tx.id.toString().includes(s)
-                    );
-                  })
                   .map((tx) => (
                   <div
                     key={tx.id}
@@ -3150,10 +3018,9 @@ export default function AdminPanel() {
                         <span className="order-stars">{tx.months || 1} oy 💎</span>
                         <div 
                           className="order-status"
-                          data-status={tx.status}
                           style={{ backgroundColor: getStatusColor(tx.status === 'delivered' || tx.status === 'premium_sent' ? 'stars_sent' : tx.status) }}
                         >
-                          {tx.status === 'delivered' || tx.status === 'premium_sent' ? '💎' : getStatusIcon(tx.status)} {statusLabel(tx.status)}
+                          {tx.status === 'delivered' || tx.status === 'premium_sent' ? '💎' : getStatusIcon(tx.status)} {tx.status}
                         </div>
                       </div>
                     </div>
@@ -3869,10 +3736,10 @@ export default function AdminPanel() {
                   fontSize: '13px',
                 }}
               >
-                {f === 'pending' ? `Kutilmoqda: ${referralCounts.pending}` :
-                 f === 'accepted' ? `Tasdiqlangan: ${referralCounts.accepted}` :
-                 f === 'rejected' ? `Rad etilgan: ${referralCounts.rejected}` :
-                 `Hammasi: ${referralCounts.total}`}
+                {f === 'pending' ? `pending: ${referralCounts.pending}` :
+                 f === 'accepted' ? `accept: ${referralCounts.accepted}` :
+                 f === 'rejected' ? `refuse: ${referralCounts.rejected}` :
+                 `all: ${referralCounts.total}`}
               </button>
             ))}
           </div>
@@ -4311,85 +4178,6 @@ export default function AdminPanel() {
           </button>
         ))}
       </nav>
-
-      {manualPremiumModal && (
-        <div
-          className="balance-modal-overlay admin-premium-modal-overlay"
-          onClick={closeManualPremiumModal}
-          role="presentation"
-        >
-          <div
-            className="balance-modal admin-premium-modal"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="admin-premium-modal-title"
-          >
-            <div
-              className={`balance-modal-header admin-premium-modal-header ${
-                manualPremiumModal === "1_oy"
-                  ? "admin-premium-modal-header--month"
-                  : "admin-premium-modal-header--year"
-              }`}
-            >
-              <h3 id="admin-premium-modal-title">
-                {manualPremiumModal === "1_oy" ? "1 oylik Premium" : "1 yillik Premium"}
-              </h3>
-              <button
-                type="button"
-                className="modal-close"
-                onClick={closeManualPremiumModal}
-                aria-label="Yopish"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="balance-modal-body admin-premium-modal-body">
-              <p className="admin-premium-modal-sum">
-                To&apos;lov summasi:{" "}
-                <b>{manualPremiumModal === "1_oy" ? "57 000" : "320 000"} so&apos;m</b>
-              </p>
-              <label className="admin-premium-modal-field">
-                <span>Qabul qiluvchi username</span>
-                <input
-                  type="text"
-                  value={manualPremiumUsername}
-                  onChange={(e) => setManualPremiumUsername(e.target.value)}
-                  placeholder="@username"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && manualPremiumUsername.trim() && !manualPremiumLoading) {
-                      createManualPremiumOrder();
-                    }
-                  }}
-                />
-              </label>
-            </div>
-
-            <div className="admin-premium-modal-footer">
-              <button
-                type="button"
-                className="admin-premium-modal-btn admin-premium-modal-btn--ghost"
-                onClick={closeManualPremiumModal}
-                disabled={manualPremiumLoading}
-              >
-                Bekor qilish
-              </button>
-              <button
-                type="button"
-                className={`admin-premium-modal-btn admin-premium-modal-btn--primary ${
-                  manualPremiumModal === "1_yil" ? "admin-premium-modal-btn--year" : ""
-                }`}
-                onClick={createManualPremiumOrder}
-                disabled={manualPremiumLoading || !manualPremiumUsername.trim()}
-              >
-                {manualPremiumLoading ? "Yaratilmoqda..." : "Order yaratish"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
