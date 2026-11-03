@@ -1,6 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import starsSticker from "../../assets/AnimatedSticker_stars.tgs";
-import { TGSSticker } from "../../components/TGSSticker";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
@@ -15,35 +13,14 @@ import {
 } from "../../utils/starsPurchaseRoute";
 import { useTranslation } from "../../context/LanguageContext";
 import "./Stars.css";
+import "../../ui/ui.css";
+import { TgStar, ChevronDown, ChevronLeft } from "../../ui/Brand";
+import StarBurst from "../../ui/StarBurst";
 
 import WebApp from "@twa-dev/sdk";
 
-// Star Icon Component
-const StarIcon = () => (
-  <svg height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" style={{ marginRight: '8px', marginTop: '-2px' }}>
-    <defs>
-      <path id="a" d="m6.02 4.99 2.21-4.42c.25-.51.86-.72 1.37-.46.2.1.36.27.46.47l2.08 4.26c.17.34.5.58.88.63l4.36.52c.59.08 1.02.62.95 1.22-.03.24-.14.47-.32.65l-3.45 3.42c-.14.13-.2.33-.18.53l.57 4.61c.09.66-.38 1.27-1.03 1.35-.25.03-.5-.02-.72-.14l-3.64-2c-.26-.14-.58-.15-.85-.01l-3.77 1.95c-.53.27-1.18.06-1.45-.48-.11-.2-.14-.43-.11-.65l.3-2.12c.15-1.04.79-1.93 1.71-2.41l4.19-2.15c.11-.06.15-.2.1-.31-.05-.09-.14-.14-.24-.12l-5.12.74c-.78.11-1.58-.11-2.19-.62l-1.71-1.4c-.49-.4-.56-1.12-.17-1.62.19-.22.45-.37.74-.41l4.38-.57c.28-.03.52-.21.65-.46z" />
-      <linearGradient id="b" x1="25%" x2="74.92%" y1=".825%" y2="107.86%">
-        <stop offset="0" stopColor="#ffd951" />
-        <stop offset="1" stopColor="#ffb222" />
-      </linearGradient>
-      <linearGradient id="c" x1="50%" x2="50%" y1="0%" y2="99.8%">
-        <stop offset="0" stopColor="#e58f0d" />
-        <stop offset=".9996" stopColor="#eb7915" />
-      </linearGradient>
-      <filter id="d" height="110.6%" width="110.3%" x="-5.2%" y="-5.3%">
-        <feOffset dx="1" dy="1" in="SourceAlpha" result="shadowOffsetInner1" />
-        <feComposite in="shadowOffsetInner1" in2="SourceAlpha" k2="-1" k3="1" operator="arithmetic" result="shadowInnerInner1" />
-        <feColorMatrix in="shadowInnerInner1" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.657 0" />
-      </filter>
-    </defs>
-    <g fill="none" fillRule="evenodd" transform="translate(1.389 1.389)">
-      <use fill="url(#b)" fillRule="evenodd" xlinkHref="#a" />
-      <use fill="#000" filter="url(#d)" xlinkHref="#a" />
-      <use stroke="url(#c)" strokeWidth=".89" xlinkHref="#a" />
-    </g>
-  </svg>
-);
+// Bonus: har to'liq 50 Stars uchun +2 ⭐ (backend modules/rewards: stars_per_50)
+const STARS_BONUS_PER_50 = 2;
 
 // 8 daqiqa = 480 sekund
 const POLLING_DURATION = 8 * 60 * 1000; // 8 daqiqa millisekondda
@@ -605,227 +582,176 @@ export function StarsPurchasePage({ variant = "fragment" }) {
   const stickyAmountOk = Number.isFinite(starsNum) && starsNum >= 50 && starsNum <= 10000;
   const showStickyBuy = stickyAmountOk && !buyBtnVisible && !showModal && !showWarningModal;
 
-  return (
-    <div className={`stars-container ${showStickyBuy ? "has-sticky-buy" : ""}`}>
-      <div className="stars-header-container">
-        <TGSSticker stickerPath={starsSticker} className="stars-header-sticker" />
-      </div>
+  // Paket qatori — chegirma bo'lsa /discount ga, aks holda tanlash (mantiq o'zgarmagan)
+  const renderStarRow = (starAmount) => {
+    const maxPrice = starAmount * NARX;
+    const discountPkg = discountMap[starAmount];
+    const stackCount = Math.min(STARS_OPTIONS.indexOf(starAmount) + 1, 6);
+    const bonus = Math.floor(starAmount / 50) * STARS_BONUS_PER_50;
+    const stack = (
+      <span className="sjs-stack" aria-hidden="true">
+        {Array.from({ length: stackCount }).map((_, i) => <TgStar key={i} size={26} outline />)}
+      </span>
+    );
 
-      <div className="stars-page-title">
-        <h1>Telegram Stars</h1>
-      </div>
-
-      {/* Profile */}
-      {profile && (
-        <div className="profile-preview-small">
-          <img
-            src={profile.imageUrl || "../src/assets/default_image.png"}
-            className="profile-img-small"
-          />
-          <div className="profile-info">
-            <div className="name">{profile.fullName}</div>
-            <div className="username">@{profile.username}</div>
-          </div>
-        </div>
-      )}
-
-      {loadingProfile && (
-        <div className="loader-arc">
-          <div className="loader-arc-1"></div>
-          <div className="loader-arc-2">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      )}
-
-      {/* SEARCH */}
-      <div className="search-row">
-        <div className="username-row" style={{ width: "100%" }}>
-          <input
-            data-tour-id="tour-username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder={t("stars.usernamePlaceholder")}
-          />
-          {window?.Telegram?.WebApp && (
-            <button type="button" className="btn-my" onClick={fillMyUsername}>
-              {t("common.me")}
-            </button>
-          )}
-        </div>
-      </div>
-
-      <h3>{t("stars.enterAmountLabel")}</h3>
-      <div className="input-group">
-        <input
-          data-tour-id="tour-stars-amount"
-          className="tg-input"
-          type="number"
-          value={stars}
-          onChange={(e) => setStars(e.target.value)}
-          placeholder={t("stars.amountPlaceholder")}
-        />
-      </div>
-
-      {/* Stars Options */}
-      <div className="preset-options-section">
-        <h3 style={{color: '#fff', margin: '24px 0 12px 0', fontSize: '16px', fontWeight: '600'}}>{t("stars.orSelectPack")}</h3>
-        <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px'}}>
-          {visiblePlans.map((starAmount, idx) => {
-            const maxPrice = starAmount * NARX;
-            const discountPkg = discountMap[starAmount];
-
-            if (discountPkg) {
-              // Bu amount uchun chegirma paket mavjud — discount ko'rinishida chiqar
-              return (
-                <div
-                  key={idx}
-                  onClick={() => navigate('/discount', { state: { selectedPackageId: discountPkg.id } })}
-                  style={{
-                    position: 'relative',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '10px 14px',
-                    background: 'linear-gradient(135deg, rgba(249,168,37,0.18) 0%, rgba(255,204,2,0.08) 100%)',
-                    border: '2px solid rgba(249,168,37,0.5)',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {/* Chegirma badge */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    background: 'linear-gradient(135deg, #f9a825, #ffcc02)',
-                    color: '#1a1a2e',
-                    fontSize: '10px',
-                    fontWeight: '700',
-                    padding: '3px 10px',
-                    borderRadius: '0 8px 0 8px'
-                  }}>
-                    -{discountPkg.discount}%
-                  </div>
-
-                  <span style={{color: '#fff', fontSize: '14px', fontWeight: '500', flex: 1, display: 'flex', alignItems: 'center'}}>
-                    <StarIcon />
-                    {starAmount >= 1000 ? (starAmount / 1000) + 'K' : starAmount} Stars
-                  </span>
-
-                  <div style={{textAlign: 'right'}}>
-                    <div style={{color: '#f9a825', fontSize: '13px', fontWeight: '700'}}>
-                      {formatAmount(discountPkg.discountedPrice)} UZS
-                    </div>
-                    <div style={{color: 'rgba(255,255,255,0.45)', fontSize: '11px', textDecoration: 'line-through'}}>
-                      {formatAmount(maxPrice)} UZS
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-
-            return (
-              <div
-                key={idx}
-                onClick={() => selectPlan(starAmount)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '10px 14px',
-                  background: stars === String(starAmount) ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  border: stars === String(starAmount) ? '2px solid #667eea' : '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <span style={{color: '#fff', fontSize: '14px', fontWeight: '500', flex: 1, display: 'flex', alignItems: 'center'}}>
-                  <StarIcon />
-                  {starAmount >= 1000 ? (starAmount / 1000) + 'K' : starAmount} Stars
-                </span>
-                <span style={{color: '#4ee0ff', fontSize: '13px', fontWeight: '600'}}>
-                  {formatAmount(maxPrice)} UZS
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        
-        {/* MORE OPTIONS DROPDOWN */}
-        {STARS_OPTIONS.length > 3 && (
-          <div style={{textAlign: 'center', marginBottom: '20px'}}>
-            <button onClick={() => setShowMorePlans(!showMorePlans)} style={{
-              background: 'none',
-              border: 'none',
-              color: '#667eea',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              textDecoration: 'none',
-              transition: 'all 0.2s ease'
-            }}>
-              {showMorePlans ? `${t("stars.hidePlans")} ▲` : `${t("stars.showMorePlans")} ▼`}
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="actions" style={{ marginBottom: '20px' }}>
+    if (discountPkg) {
+      return (
         <button
-          ref={buyBtnRef}
+          key={starAmount}
           type="button"
-          className="tg-button"
-          data-tour-id="tour-stars-submit"
-          onClick={handlePayment}
+          className="sjs-starrow sjs-starrow--discount"
+          onClick={() => navigate('/discount', { state: { selectedPackageId: discountPkg.id } })}
         >
-          {t("stars.buyBtn")} {price > 0 && `- ${formatAmount(appliedPromo ? appliedPromo.newPrice : price)} ${t("common.currency")}`}
+          {stack}
+          <span className="sjs-starrow__n">{formatAmount(starAmount)} Stars</span>
+          <span className="sjs-starrow__disc">-{discountPkg.discount}%</span>
+          <span className="sjs-starrow__p">
+            {formatAmount(discountPkg.discountedPrice)} {t("common.currency")}
+            <s>{formatAmount(maxPrice)}</s>
+          </span>
         </button>
-      </div>
+      );
+    }
 
-      {/* Pastda qotgan sotib olish paneli — asosiy tugma ekrandan chiqib ketganda */}
-      {showStickyBuy && (
-        <div className="stars-sticky-buy" role="region" aria-label={t("stars.buyBtn")}>
-          <div className="stars-sticky-buy__info">
-            <span className="stars-sticky-buy__amount">
-              <StarIcon /> {starsNum.toLocaleString("ru-RU")} Stars
-            </span>
-            {finalPrice > 0 && (
-              <span className="stars-sticky-buy__price">
-                {formatAmount(finalPrice)} {t("common.currency")}
-              </span>
+    return (
+      <button
+        key={starAmount}
+        type="button"
+        className={`sjs-starrow ${stars === String(starAmount) ? "is-active" : ""}`}
+        onClick={() => selectPlan(starAmount)}
+      >
+        {stack}
+        <span className="sjs-starrow__n">{formatAmount(starAmount)} Stars</span>
+        {bonus > 0 && <span className="sjs-starrow__bonus">+{bonus} <TgStar size={12} /></span>}
+        <span className="sjs-starrow__p">{formatAmount(maxPrice)} {t("common.currency")}</span>
+      </button>
+    );
+  };
+
+  return (
+    <div className="sjp-root sjs-root">
+      <div className="sjs-page has-bar">
+        <button type="button" className="sjs-back sjs-back--float" onClick={() => navigate("/")} aria-label={t("ui.back")}>
+          <ChevronLeft size={20} />
+        </button>
+
+        <header className="sjs-starhero">
+          <div className="sjs-starhero__art" aria-hidden="true">
+            <StarBurst />
+            <span className="sjs-starhero__star"><TgStar size={108} /></span>
+          </div>
+          <h1>Telegram Stars</h1>
+        </header>
+
+        {/* KIMGA */}
+        <section className="sjs-field">
+          <label htmlFor="sjs-username">{t("ui.toWhom")}</label>
+          <div className="sjs-inputrow">
+            <input
+              id="sjs-username"
+              data-tour-id="tour-username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={t("stars.usernamePlaceholder")}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+            />
+            {window?.Telegram?.WebApp && (
+              <button type="button" className="sjs-mini" onClick={fillMyUsername}>
+                {t("common.me")}
+              </button>
             )}
           </div>
-          <button type="button" className="stars-sticky-buy__btn" onClick={handlePayment}>
+          {loadingProfile && <div className="sjs-spin" />}
+          {profile && (
+            <div className="sjs-recipient">
+              {profile.imageUrl ? (
+                <img className="sjs-recipient__ph" src={profile.imageUrl} alt="" />
+              ) : (
+                <span className="sjs-recipient__ph">{(profile.fullName || profile.username || "?").charAt(0)}</span>
+              )}
+              <span>
+                <b>{profile.fullName || profile.username}</b>@{profile.username}
+              </span>
+            </div>
+          )}
+        </section>
+
+        {/* NECHTA STARS */}
+        <section className="sjs-field">
+          <label htmlFor="sjs-amount">{t("ui.howManyStars")}</label>
+          <input
+            id="sjs-amount"
+            data-tour-id="tour-stars-amount"
+            className="sjs-input"
+            type="number"
+            inputMode="numeric"
+            value={stars}
+            onChange={(e) => setStars(e.target.value)}
+            placeholder={t("ui.amountRange")}
+          />
+        </section>
+
+        {/* PAKETLAR */}
+        <section className="sjs-field">
+          <span className="sjs-label">{t("ui.selectAmount")}</span>
+          <div className="sjs-starlist">
+            {visiblePlans.map(renderStarRow)}
+            {STARS_OPTIONS.length > 3 && (
+              <button
+                type="button"
+                className={`sjs-starlist__toggle ${showMorePlans ? "is-open" : ""}`}
+                aria-expanded={showMorePlans}
+                onClick={() => setShowMorePlans(!showMorePlans)}
+              >
+                {showMorePlans ? t("ui.showLess") : t("ui.showMore")}
+                <ChevronDown size={16} />
+              </button>
+            )}
+          </div>
+        </section>
+
+        {/* PROMOKOD */}
+        <section className="sjs-field">
+          <label htmlFor="sjs-promo">{t("ui.promo")} <span className="sjg-opt">{t("ui.optional")}</span></label>
+          <div className="sjs-inputrow">
+            <input
+              id="sjs-promo"
+              value={pramacod}
+              onChange={(e) => setPramacod(e.target.value)}
+              placeholder={t("ui.promoPlaceholder")}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck="false"
+            />
+            <button type="button" className="sjs-mini" onClick={handleCheckPromo}>
+              {t("common.check")}
+            </button>
+          </div>
+          {promoMessage && (
+            <p className={`sjs-promo-msg ${promoError ? "is-error" : "is-ok"}`}>{promoMessage}</p>
+          )}
+        </section>
+
+        <p className="sjs-note">{t("ui.starsNote")}</p>
+
+        {/* PASTKI PANEL — Jami + Stars olish */}
+        <div className="sjs-bar">
+          <div className={`sjs-bar__total ${priceLoading ? "is-loading" : ""}`}>
+            <span>{t("ui.total")}</span>
+            <b>{formatAmount(finalPrice || 0)} {t("common.currency")}</b>
+          </div>
+          <button
+            ref={buyBtnRef}
+            type="button"
+            className={`sjs-cta ${stickyAmountOk ? "" : "is-dim"}`}
+            data-tour-id="tour-stars-submit"
+            onClick={handlePayment}
+          >
             {t("stars.buyBtn")}
           </button>
         </div>
-      )}
-
-      <div className="pramacod" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <input 
-            value={pramacod}
-            onChange={(e) => setPramacod(e.target.value)}
-            style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
-            placeholder={t("stars.promoPlaceholder")}
-          />
-          <button
-            type="button"
-            onClick={handleCheckPromo}
-            style={{ padding: '0 16px', borderRadius: '10px', background: '#e58f0d', color: '#fff', border: 'none', fontWeight: 'bold' }}
-          >
-            {t("common.check")}
-          </button>
-        </div>
-        {promoMessage && (
-          <div style={{ fontSize: '13px', color: promoError ? '#ff4d4d' : '#00e676', textAlign: 'left', paddingLeft: '5px' }}>
-            {promoMessage}
-          </div>
-        )}
       </div>
 
       {/* ---------------- XAVFSIZ TO'LOV (order yaratilgach) ---------------- */}

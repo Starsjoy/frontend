@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Premium.css";
+import "../../ui/ui.css";
+import { TgStar, ChevronLeft } from "../../ui/Brand";
+import StarBurst from "../../ui/StarBurst";
+import premiumStar from "../../ui/icons/star-tgpremium.svg"; // Telegram Premium gradienti
 import WebApp from "@twa-dev/sdk";
-import premiumGif from "../../assets/premium_gif.gif";
-import premiumSticker from "../../assets/AnimatedSticker_premium.tgs";
-import { TGSSticker } from "../../components/TGSSticker";
 import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
 import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
@@ -17,6 +18,9 @@ import {
   premiumApiPrefix,
 } from "../../utils/starsPurchaseRoute";
 import { useTranslation } from "../../context/LanguageContext";
+// Bonus: har oy uchun +1 ⭐ (backend modules/rewards: premium_per_month)
+const PREMIUM_BONUS_PER_MONTH = 1;
+
 function normalizePremiumPollStatus(status) {
   if (status === "completed" || status === "delivered") return "premium_sent";
   return status;
@@ -488,117 +492,144 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
   // ================================
   // UI
   // ================================
+  // Ko'rsatiladigan narx: tanlangan paket uchun server narxi bo'lsa — o'sha, aks holda tarif narxi
+  const planDisplayPrice = (p) =>
+    isCardFlow && selectedPlan.id === p.id && fragmentPlanPrice != null ? fragmentPlanPrice : p.price;
+  const totalPrice = appliedPromo?.new_price != null ? appliedPromo.new_price : planDisplayPrice(selectedPlan);
+
   return (
-    <div className="premium-container">
-      <div className="premium-header-container">
-        <TGSSticker stickerPath={premiumSticker} className="premium-header-sticker" />
-      </div>
+    <div className="sjp-root sjs-root sjs-root--premium">
+      <div className="sjs-page has-bar">
+        <button type="button" className="sjs-back sjs-back--float" onClick={() => navigate("/")} aria-label={t("ui.back")}>
+          <ChevronLeft size={20} />
+        </button>
 
-      <div className="premium-page-title">
-        <h1>Telegram Premium</h1>
-        <p>
-          {t("premium.purchase")}
-          {isCardFlow && fragmentPayLabel
-            ? isPaymee
-              ? ` · ${fragmentPayLabel}`
-              : ` · Fragment (${fragmentPayLabel})`
-            : ""}
-        </p>
-      </div>
-
-      {/* SEARCH */}
-      <div className="search-row">
-        <div className="username-row" style={{ width: "100%" }}>
-          <input
-            data-tour-id="tour-username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder={t("stars.usernamePlaceholder")}
-          />
-          {window?.Telegram?.WebApp && (
-            <button
-              type="button"
-              className="btn-my"
-              onClick={fillMyUsername}
-            >
-              {t("common.me")}
-            </button>
-          )}
-        </div>
-        {loadingProfile && <div className="loader-arc">🔄</div>}
-      </div>
-
-      {searchError && <div className="error">{searchError}</div>}
-
-      {profile && (
-        <div className="profile-preview">
-          <img src={profile.imageUrl || "../src/assets/default_image.png"} />
-          <div>
-            <b>{profile.fullName}</b>
-            <p>@{profile.username}</p>
+        <header className="sjs-starhero sjs-starhero--premium">
+          <div className="sjs-starhero__art" aria-hidden="true">
+            <StarBurst src={premiumStar} />
+            <span className="sjs-starhero__star"><img src={premiumStar} width="108" height="108" alt="" /></span>
           </div>
-        </div>
-      )}
+          <h1>Telegram Premium</h1>
+        </header>
 
-      {/* avto fragment orqali */}
-      <h3>{t("premium.auto")}</h3>
-
-      <div className="plans" data-tour-id="tour-premium-plan">
-        {plans.map((p) => (
-          <label key={p.id} className={selectedPlan.id === p.id ? "plan selected" : "plan"}>
+        {/* KIMGA */}
+        <section className="sjs-field">
+          <label htmlFor="sjs-username">{t("ui.toWhom")}</label>
+          <div className="sjs-inputrow">
             <input
-              type="radio"
-              name="plan"
-              checked={selectedPlan.id === p.id}
-              onChange={() => setSelectedPlan(p)}
+              id="sjs-username"
+              data-tour-id="tour-username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={t("stars.usernamePlaceholder")}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
             />
-
-            <img src={premiumGif} className="plan-gif" />
-
-            <div className="narx">
-              <span>{t(p.labelKey)}</span>
-              <span style={{ opacity: isCardFlow && selectedPlan.id === p.id && fragmentPriceLoading ? 0.55 : 1, transition: "opacity 0.2s ease" }}>
-                {/* Server narxi kelmasa (tarmoq/limit xatosi) — "—" emas, tarifning odatdagi narxi.
-                    Aniq to'lov summasi baribir buyurtma ochilganda beriladi. */}
-                {isCardFlow && selectedPlan.id === p.id && fragmentSlotsFull
-                  ? t("premium.soldOut")
-                  : isCardFlow && selectedPlan.id === p.id && fragmentPlanPrice != null
-                    ? `${formatAmount(fragmentPlanPrice)} ${t("common.currency")}`
-                    : `${formatAmount(p.price)} ${t("common.currency")}`}
+            {window?.Telegram?.WebApp && (
+              <button type="button" className="sjs-mini" onClick={fillMyUsername}>
+                {t("common.me")}
+              </button>
+            )}
+          </div>
+          {loadingProfile && <div className="sjs-spin" />}
+          {searchError && <p className="sjs-promo-msg is-error">{searchError}</p>}
+          {profile && (
+            <div className="sjs-recipient">
+              {profile.imageUrl ? (
+                <img className="sjs-recipient__ph" src={profile.imageUrl} alt="" />
+              ) : (
+                <span className="sjs-recipient__ph">{(profile.fullName || profile.username || "?").charAt(0)}</span>
+              )}
+              <span>
+                <b>{profile.fullName || profile.username}</b>@{profile.username}
               </span>
             </div>
-            <span style={{ marginLeft: "auto", fontSize: "13px", color: "#0088cc", fontWeight: "600" }}>({t("premium.auto").replace(":", "")})</span>
-          </label>
-        ))}
-      </div>
+          )}
+        </section>
 
-      <div className="actions" style={{ marginTop: "25px", marginBottom: "15px" }}>
-        <button
-          data-tour-id="tour-premium-submit"
-          disabled={loadingBuy}
-          onClick={handleCreateOrder}
-        >
-          {loadingBuy ? t("premium.loadingBuy") : t("premium.buyBtn")}
-        </button>
-      </div>
+        {/* MUDDAT */}
+        <section className="sjs-field">
+          <span className="sjs-label">{t("ui.selectDuration")}</span>
+          <div className="sjs-plans" data-tour-id="tour-premium-plan">
+            {plans.map((p) => {
+              const shown = planDisplayPrice(p);
+              const soldOut = isCardFlow && selectedPlan.id === p.id && fragmentSlotsFull;
+              const perMonth = Math.round((Number(shown) || 0) / p.months / 100) * 100;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selectedPlan.id === p.id}
+                  className={`sjs-plan ${selectedPlan.id === p.id ? "is-active" : ""}`}
+                  onClick={() => setSelectedPlan(p)}
+                >
+                  <span className="sjs-plan__radio" aria-hidden="true" />
+                  <span className="sjs-plan__text">
+                    <b>
+                      {t(p.labelKey)}
+                      <span className="sjs-starrow__bonus">+{p.months * PREMIUM_BONUS_PER_MONTH} <TgStar size={12} /></span>
+                    </b>
+                    {perMonth > 0 && (
+                      <span>{t("ui.perMonth").replace("{price}", formatAmount(perMonth))}</span>
+                    )}
+                  </span>
+                  <span
+                    className="sjs-plan__price"
+                    style={{ opacity: isCardFlow && selectedPlan.id === p.id && fragmentPriceLoading ? 0.55 : 1 }}
+                  >
+                    {soldOut ? t("premium.soldOut") : `${formatAmount(shown)} ${t("common.currency")}`}
+                    {p.months === 12 && <em>{t("ui.bestValue")}</em>}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-      <div className="promo-input-group" style={{ marginBottom: "15px" }}>
-        <input
-          type="text"
-          placeholder={t("premium.promoPlaceholder")}
-          value={pramacod}
-          onChange={(e) => setPramacod(e.target.value)}
-          style={{ width: "calc(100% - 100px)", padding: "12px", borderRadius: "14px", border: "1px solid #ccc", outline: "none", fontSize: "16px", marginRight: "10px" }}
-        />
-        <button className="btn-my" onClick={handleCheckPromo} style={{ width: "90px", padding: "12px", borderRadius: "14px", border: "none", cursor: "pointer", background: "var(--tg-theme-button-color, #2481cc)", color: "white", fontSize: "14px" }}>{t("premium.promoApply")}</button>
-      </div>
-      {promoMessage && (
-        <div style={{ color: promoError ? 'red' : 'green', fontSize: '14px', marginBottom: '15px', textAlign: 'center' }}>
-          {promoMessage}
+        {/* PROMOKOD */}
+        <section className="sjs-field">
+          <label htmlFor="sjs-promo">{t("ui.promo")} <span className="sjg-opt">{t("ui.optional")}</span></label>
+          <div className="sjs-inputrow">
+            <input
+              id="sjs-promo"
+              type="text"
+              value={pramacod}
+              onChange={(e) => setPramacod(e.target.value)}
+              placeholder={t("ui.promoPlaceholder")}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck="false"
+            />
+            <button type="button" className="sjs-mini" onClick={handleCheckPromo}>
+              {t("premium.promoApply")}
+            </button>
+          </div>
+          {promoMessage && (
+            <p className={`sjs-promo-msg ${promoError ? "is-error" : "is-ok"}`}>{promoMessage}</p>
+          )}
+        </section>
+
+        <p className="sjs-note">{t("ui.premiumNote")}</p>
+
+        {/* PASTKI PANEL — Jami + Premium olish */}
+        <div className="sjs-bar">
+          <div className={`sjs-bar__total ${fragmentPriceLoading ? "is-loading" : ""}`}>
+            <span>{t("ui.total")}</span>
+            <b>{formatAmount(totalPrice || 0)} {t("common.currency")}</b>
+          </div>
+          <button
+            type="button"
+            className="sjs-cta"
+            data-tour-id="tour-premium-submit"
+            disabled={loadingBuy}
+            onClick={handleCreateOrder}
+          >
+            {loadingBuy ? t("premium.loadingBuy") : t("premium.buyBtn")}
+          </button>
         </div>
-      )}
-
-
+      </div>
 
       {/* XAVFSIZ TO'LOV (order yaratilgach) */}
       {showWarningModal && order && (
@@ -654,13 +685,6 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
           onRetry={() => { setShowModal(false); setPaymentStatus("idle"); }}
         />
       )}
-
-      {/* NAVIGATION */}
-      {/* <div className="btn-container">
-        <button className="btn-nav" onClick={() => navigate("/")}>⬅️Orqaga</button>
-        <button className="btn-nav" onClick={() => navigate("/stars")}>Stars</button>
-      </div> */}
-
     </div>
   );
 }

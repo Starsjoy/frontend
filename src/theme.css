@@ -81,9 +81,9 @@
   --color-primary-light: #1f2937;
   --color-primary-dark: #1e40af;
   
-  /* Backgrounds */
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #1a1a2e;
+  /* Backgrounds (Premium24 uslubidagi yangi UI bilan bir xil) */
+  --bg-primary: #0b0f17;
+  --bg-secondary: #0b0f17;
   --bg-tertiary: #334155;
   
   /* Text */
@@ -115,7 +115,7 @@
   
   /* Special */
   --hover-bg: rgba(255, 255, 255, 0.1);
-  --input-bg: #1e293b;
+  --input-bg: #18202d;
 }
 
 /* ============================================

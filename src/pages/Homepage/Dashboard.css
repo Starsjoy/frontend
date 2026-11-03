@@ -61,7 +61,7 @@
 .dashboard-root_dashboard {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100vh;
-  background: #1a1a2e;
+  background: #0b0f17;
   padding: 14px;
   color: var(--text-primary);
   transition: all 0.3s ease;
@@ -1050,7 +1050,7 @@
   height: 100%;
   border: none;
   overflow: auto;
-  background: #1a1a2e; /* iframe yuklanguncha / chegaradan tortilganda oq ko'rinmasin */
+  background: #0b0f17; /* iframe yuklanguncha / chegaradan tortilganda oq ko'rinmasin */
 }
 
 /* =====================

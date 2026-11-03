@@ -3,13 +3,13 @@
    uchun ba'zi xossalar !important bilan yozilgan. */
 
 .pt-screen {
-  --pt-bg: #0e0f13;
-  --pt-surface: #17181d;
-  --pt-surface-2: #1f2026;
-  --pt-line: rgba(255, 255, 255, 0.07);
+  --pt-bg: #0b0f17;
+  --pt-surface: #18202d;
+  --pt-surface-2: #1f2836;
+  --pt-line: rgba(255, 255, 255, 0.1);
   --pt-text: #f5f6f8;
-  --pt-muted: #8b8d98;
-  --pt-accent: #3d8bfd;
+  --pt-muted: #a3aec1;
+  --pt-accent: #3b82ff;
   --pt-amount: #ffc94d;
   --pt-ok: #34c759;
   --pt-danger: #ff453a;
@@ -581,12 +581,12 @@
    "Xavfsiz to'lov" oynasi — PaymentConfirm.jsx
    ================================================================ */
 .pc-overlay {
-  --pt-surface: #17181d;
-  --pt-surface-2: #1f2026;
-  --pt-line: rgba(255, 255, 255, 0.07);
+  --pt-surface: #18202d;
+  --pt-surface-2: #1f2836;
+  --pt-line: rgba(255, 255, 255, 0.1);
   --pt-text: #f5f6f8;
-  --pt-muted: #8b8d98;
-  --pt-accent: #3d8bfd;
+  --pt-muted: #a3aec1;
+  --pt-accent: #3b82ff;
   --pt-amount: #ffc94d;
   --pt-ok: #34c759;
 

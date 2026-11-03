@@ -9,7 +9,11 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Admin panel eski ranglarda qoladi (foydalanuvchi sahifalari fonini yangi UI'ga o'tkazish uni o'zgartirmasin) */
 .admin-panel-new {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #1a1a2e;
+  --input-bg: #1e293b;
   min-height: 100vh;
   min-height: 100dvh; /* Dynamic viewport height for mobile */
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);

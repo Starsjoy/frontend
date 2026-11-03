@@ -14,9 +14,9 @@ import {
 import { PaymeeStockAlert } from "../../components/PaymeeStockAlert";
 import { TGSSticker } from "../../components/TGSSticker";
 import WebApp from "@twa-dev/sdk";
-import { Gift as GiftIcon } from "lucide-react";
-import starsjoyLogo from "../../assets/starsjoy.jpg";
 import "./gift.css";
+import "../../ui/ui.css";
+import { TgStar, ChevronLeft } from "../../ui/Brand";
 
 
 // Gift IDlar - har bir gift fayl nomi gift ID ga mos keladi (masalan: 5170145012310081615.tgs).
@@ -52,11 +52,11 @@ const GIFTS_RAW = [
 // Narxlar (so'mda) - Backend bilan sinxronlashtirilgan
 const PRICE_MAP = { 15: 5000, 25: 7000, 50: 13000, 100: 25000 };
 
-/** Katalogda ko'rinadiganlar, qimmatdan arzoniga (narxi bo'yicha kamayish) */
+/** Katalogda ko'rinadiganlar, arzonidan qimmatiga (eng arzoni tepada) */
 const GIFTS = GIFTS_RAW.filter((g) => !g.hidden).sort((a, b) => {
-  const diff = (PRICE_MAP[b.stars] ?? 0) - (PRICE_MAP[a.stars] ?? 0);
+  const diff = (PRICE_MAP[a.stars] ?? 0) - (PRICE_MAP[b.stars] ?? 0);
   if (diff !== 0) return diff;
-  return b.stars - a.stars;
+  return a.stars - b.stars;
 });
 
 const GIFT_EXT_BY_ID = new Map(GIFTS_RAW.map((g) => [g.id, g.ext || "tgs"]));
@@ -438,242 +438,153 @@ export default function Gift() {
   const giftPrice = selectedGift ? PRICE_MAP[selectedGift.stars] : 0;
 
   return (
-    <div className="gift-container">
-      {/* Header */}
-      <div className="gift-page-title">
-        <h1>{t("gift.title")}</h1>
-        <p>{t("gift.subtitle")}</p>
-      </div>
+    <div className="sjp-root sjs-root">
+      <div className="sjs-page has-bar">
+        <button type="button" className="sjs-back sjs-back--float" onClick={() => navigate("/")} aria-label={t("ui.back")}>
+          <ChevronLeft size={20} />
+        </button>
 
-      {/* Recipient Search */}
-      <div className="gift-search-section">
-        <label className="gift-label">{t("gift.selectRecipient")}</label>
-        <div className="gift-search-row">
-          <input
-            data-tour-id="tour-username"
-            className="gift-input"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="@username"
-          />
-          {window?.Telegram?.WebApp && (
-            <button className="gift-my-btn" onClick={fillMyUsername}>
-              {t("gift.me")}
-            </button>
-          )}
-        </div>
+        <header className="sjs-starhero sjg-hero sjg-hero--plain">
+          <h1>Telegram Gifts</h1>
+        </header>
 
-        {loadingProfile && (
-          <div className="gift-loading-dots">
-            <span></span><span></span><span></span>
+        {/* KIMGA */}
+        <section className="sjs-field">
+          <label htmlFor="sjg-username">{t("ui.toWhom")}</label>
+          <div className="sjs-inputrow">
+            <input
+              id="sjg-username"
+              data-tour-id="tour-username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="@username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+            />
+            {window?.Telegram?.WebApp && (
+              <button type="button" className="sjs-mini" onClick={fillMyUsername}>
+                {t("gift.me")}
+              </button>
+            )}
           </div>
-        )}
-
-        {profile && (
-          <div className="gift-profile-card">
-            <img src={profile.imageUrl || ""} alt="" className="gift-profile-img" />
-            <div className="gift-profile-info">
-              <div className="gift-profile-name">{profile.fullName}</div>
-              <div className="gift-profile-username">@{profile.username}</div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* All Gifts Grid */}
-      <div className="gift-catalog">
-        <label className="gift-label">
-          <span className="gift-label-icon" aria-hidden>
-            <GiftIcon size={18} strokeWidth={2} />
-          </span>
-          {t("gift.selectGift")}
-        </label>
-        <div className="gift-grid-4col">
-          {GIFTS.map((gift, index) => (
-            <div
-              key={gift.id}
-              {...(index === 0 ? { "data-tour-id": "tour-gift-select" } : {})}
-              className={`gift-card ${selectedGift?.id === gift.id ? "selected" : ""}`}
-              onClick={() => handleGiftSelect(gift)}
-              onMouseEnter={() => setHoveredGift(gift.id)}
-              onMouseLeave={() => setHoveredGift(null)}
-              onTouchStart={() => setHoveredGift(gift.id)}
-              onTouchEnd={() => setTimeout(() => setHoveredGift(null), 500)}
-            >
-              <GiftVisual
-                giftId={gift.id}
-                className="gift-tgs-sticker"
-                autoplay={hoveredGift === gift.id || selectedGift?.id === gift.id}
-                loop={true}
-              />
-              <span className="gift-price-label">{formatAmount(PRICE_MAP[gift.stars])} so'm</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ============== GIFT SELECTION BOTTOM SHEET MODAL ============== */}
-      {showGiftModal && selectedGift && (
-        <div className="gift-bottom-sheet-overlay" onClick={handleCloseGiftModal}>
-          {/* 10% top area - Close button */}
-          <div className="gift-bs-top-close-area" onClick={handleCloseGiftModal}>
-            <button className="gift-bs-top-close-btn" onClick={handleCloseGiftModal}>✕</button>
-          </div>
-          
-          {/* 90% modal area */}
-          <div className="gift-bottom-sheet" onClick={(e) => e.stopPropagation()}>
-            {/* Drag Handle */}
-            <div className="gift-bottom-sheet-handle"></div>
-            
-            {/* Recipient Label + Input */}
-            <label className="gift-bs-recipient-label">Kimga yuboramiz</label>
-            <div className="gift-bs-header">
-              {profile ? (
-                <div className="gift-bs-recipient-found">
-                  <img src={profile.imageUrl || ""} alt="" className="gift-bs-avatar" />
-                  <div className="gift-bs-user-info">
-                    <span className="gift-bs-name">{profile.fullName}</span>
-                    <span className="gift-bs-username">@{profile.username}</span>
-                  </div>
-                  <button 
-                    className="gift-bs-clear-btn" 
-                    onClick={() => { setUsername(""); setProfile(null); }}
-                  >✕</button>
-                </div>
+          {loadingProfile && <div className="sjs-spin" />}
+          {profile && (
+            <div className="sjs-recipient">
+              {profile.imageUrl ? (
+                <img className="sjs-recipient__ph" src={profile.imageUrl} alt="" />
               ) : (
-                <div className="gift-bs-recipient-input-row">
-                  <div className="gift-bs-input-wrap">
-                    <span className="gift-bs-input-prefix">@</span>
-                    <input
-                      type="text"
-                      className="gift-bs-username-input"
-                      placeholder="username kiriting"
-                      value={username.replace('@', '')}
-                      onChange={(e) => setUsername(e.target.value)}
-                      autoComplete="off"
-                    />
-                    {loadingProfile && <span className="gift-bs-input-loader">⏳</span>}
-                  </div>
-                  {window?.Telegram?.WebApp?.initDataUnsafe?.user?.username && (
-                    <button 
-                      className="gift-bs-self-btn"
-                      onClick={() => setUsername(window.Telegram.WebApp.initDataUnsafe.user.username)}
-                    >
-                      O'zimga
-                    </button>
-                  )}
-                </div>
+                <span className="sjs-recipient__ph">{(profile.fullName || profile.username || "?").charAt(0)}</span>
               )}
+              <span>
+                <b>{profile.fullName || profile.username}</b>@{profile.username}
+              </span>
             </div>
+          )}
+        </section>
 
-            {/* Title */}
-            <h2 className="gift-bs-title">Hadya yuborish</h2>
-
-            {/* Gift Preview Card */}
-            <div className="gift-bs-preview-card">
-              <p className="gift-bs-preview-text">
-                Starsjoy Official sizga {selectedGift.stars} yulduz miqdorida hadya yubordi
-              </p>
-              
-              <div className="gift-bs-sticker-wrap">
-                <GiftVisual
-                  giftId={selectedGift.id}
-                  className="gift-bs-sticker"
-                  autoplay={true}
-                  loop={true}
-                />
-              </div>
-              
-              <div className="gift-bs-sender-row">
-                <span className="gift-bs-sender-label">Hadya yuboruvchi:</span>
-                <img src={starsjoyLogo} alt="" className="gift-bs-sender-avatar" />
-                <span className="gift-bs-sender-name">
-                  {isAnonymous ? "Anonim" : "Starsjoy Official"}
-                </span>
-              </div>
-              {comment && (
-                <p className="gift-bs-message-preview">{comment}</p>
-              )}
-              <p className="gift-bs-hint">Bu hadyani profilingizga qo'shishingiz mumkin.</p>
-              
-              <button type="button" className="gift-bs-view-btn">Ko'rish</button>
-            </div>
-
-            {/* Message Input */}
-            <div className="gift-bs-input-section">
-              <input
-                type="text"
-                className="gift-bs-message-input"
-                placeholder="Xabar kiriting"
-                value={comment}
-                onChange={(e) => {
-                  if (e.target.value.length <= MAX_COMMENT_LENGTH) {
-                    setComment(e.target.value);
-                  }
-                }}
-              />
-              <span className="gift-bs-emoji-btn">😊</span>
-            </div>
-
-            {/* Anonymous Toggle */}
-            <div className="gift-bs-toggle-row">
-              <div className="gift-bs-toggle-info">
-                <span className="gift-bs-toggle-title">Anonim yuborish</span>
-              </div>
-              <label className="gift-bs-switch">
-                <input
-                  type="checkbox"
-                  checked={isAnonymous}
-                  onChange={(e) => setIsAnonymous(e.target.checked)}
-                />
-                <span className="gift-bs-switch-slider"></span>
-              </label>
-            </div>
-
-            <div className="gift-bs-footer">
-              {/* Send Button — promokoddan oldin (Stars/Premium bilan bir xil tartib) */}
-              <div className="gift-bs-bottom-area">
-                <button
-                  className={`gift-bs-send-btn ${!profile ? 'no-recipient' : ''}`}
-                  onClick={handleSend}
-                  disabled={sending || !profile}
-                >
-                  {sending ? (
-                    "Yuborilmoqda..."
-                  ) : !profile ? (
-                    "Kimga yuboramiz?"
-                  ) : (
-                    <>{formatAmount(appliedPromo ? appliedPromo.newPrice : PRICE_MAP[selectedGift.stars])} so'm · Hadya yuborish</>
-                  )}
-                </button>
-              </div>
-
-              <div className="pramacod" style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: 0 }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <input 
-                    value={pramacod}
-                    onChange={(e) => setPramacod(e.target.value)}
-                    style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '14px' }}
-                    placeholder="Promokod (Agar bo'lsa)" 
+        {/* SOVG'A TANLASH — faqat tanlangan stiker animatsiya qiladi */}
+        <section className="sjs-field">
+          <span className="sjs-label">{t("ui.selectGift")}</span>
+          <div className="sjg-grid">
+            {GIFTS.map((gift, index) => (
+              <button
+                key={gift.id}
+                type="button"
+                {...(index === 0 ? { "data-tour-id": "tour-gift-select" } : {})}
+                className={`sjg-card ${selectedGift?.id === gift.id ? "is-active" : ""}`}
+                onClick={() => handleGiftSelect(gift)}
+              >
+                <span className="sjg-card__art">
+                  <GiftVisual
+                    giftId={gift.id}
+                    className="sjg-card__tgs"
+                    autoplay={selectedGift?.id === gift.id}
+                    loop={true}
                   />
-                  <button 
-                    type="button" 
-                    onClick={handleCheckPromo}
-                    style={{ padding: '0 16px', borderRadius: '10px', background: '#e58f0d', color: '#fff', border: 'none', fontWeight: 'bold' }}
-                  >
-                    Tekshirish
-                  </button>
-                </div>
-                {promoMessage && (
-                  <div style={{ fontSize: '13px', color: promoError ? '#ff4d4d' : '#00e676', textAlign: 'left', paddingLeft: '5px' }}>
-                    {promoMessage}
-                  </div>
-                )}
-              </div>
-            </div>
+                </span>
+                <span className="sjg-card__stars"><TgStar size={13} /> {gift.stars}</span>
+                <span className="sjg-card__price">{formatAmount(PRICE_MAP[gift.stars])} {t("common.currency")}</span>
+              </button>
+            ))}
           </div>
+        </section>
+
+        {/* ANONIM */}
+        <section className="sjs-field">
+          <button
+            type="button"
+            className={`sjg-toggle ${isAnonymous ? "is-on" : ""}`}
+            role="switch"
+            aria-checked={isAnonymous}
+            onClick={() => setIsAnonymous(!isAnonymous)}
+          >
+            <span className="sjg-toggle__text">
+              <b>{t("ui.anonymous")}</b>
+              {isAnonymous ? t("ui.anonOn") : t("ui.anonOff")}
+            </span>
+            <span className="sjg-toggle__sw" aria-hidden="true"><i /></span>
+          </button>
+        </section>
+
+        {/* IZOH */}
+        <section className="sjs-field">
+          <label htmlFor="sjg-comment">{t("ui.comment")} <span className="sjg-opt">{t("ui.optional")}</span></label>
+          <textarea
+            id="sjg-comment"
+            className="sjg-textarea"
+            rows={3}
+            value={comment}
+            onChange={(e) => {
+              if (e.target.value.length <= MAX_COMMENT_LENGTH) {
+                setComment(e.target.value);
+              }
+            }}
+            placeholder={t("ui.commentPlaceholder")}
+          />
+          <span className="sjg-count">{comment.length}/{MAX_COMMENT_LENGTH}</span>
+        </section>
+
+        {/* PROMOKOD */}
+        <section className="sjs-field">
+          <label htmlFor="sjg-promo">{t("ui.promo")} <span className="sjg-opt">{t("ui.optional")}</span></label>
+          <div className="sjs-inputrow">
+            <input
+              id="sjg-promo"
+              value={pramacod}
+              onChange={(e) => setPramacod(e.target.value)}
+              placeholder={t("ui.promoPlaceholder")}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck="false"
+            />
+            <button type="button" className="sjs-mini" onClick={handleCheckPromo}>
+              {t("common.check")}
+            </button>
+          </div>
+          {promoMessage && (
+            <p className={`sjs-promo-msg ${promoError ? "is-error" : "is-ok"}`}>{promoMessage}</p>
+          )}
+        </section>
+
+        <p className="sjs-note">{t("ui.giftNote")}</p>
+
+        {/* PASTKI PANEL — Jami + Sovg'a yuborish */}
+        <div className="sjs-bar">
+          <div className="sjs-bar__total">
+            <span>{t("ui.total")}</span>
+            <b>{formatAmount(appliedPromo ? appliedPromo.newPrice : giftPrice)} {t("common.currency")}</b>
+          </div>
+          <button
+            type="button"
+            className="sjs-cta"
+            onClick={handleSend}
+            disabled={sending || !profile || !selectedGift}
+          >
+            {sending ? t("ui.sending") : !profile ? t("ui.whoToSend") : t("ui.sendGift")}
+          </button>
         </div>
-      )}
+      </div>
 
       {/* ============== XAVFSIZ TO'LOV (order yaratilgach) ============== */}
       {showWarningModal && order && (

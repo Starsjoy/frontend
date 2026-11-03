@@ -9,25 +9,21 @@ import {
   getStarsPurchasePath,
   getPremiumPurchasePath,
 } from "../../utils/starsPurchaseRoute";
-import { BookOpen, Globe, Headset } from "lucide-react";
 import { TGSSticker } from "../../components/TGSSticker";
 import StarsJoyLogoStatic from "../../components/Loaders/StarsJoyLogoStatic";
 import LogoWordmark from "../../components/Loaders/LogoWordmark";
 import StarOutlineLoader from "../../components/Loaders/StarOutlineLoader";
 import { broadcastSafeAreaTo, listenForIframeReadyPings } from "../../utils/tgSafeAreaBridge";
 import "./Dashboard.css";
+import "../../ui/ui.css";
+import { TgStar, GlobeIcon, SupportIcon, ChevronRight, HomeIcon, GiftIcon, ProfileIcon } from "../../ui/Brand";
 
-import starsGif from "../../assets/stars.gif";
-import premiumGif from "../../assets/premium_gif.gif";
-import ayiqImg from "../../assets/ayiqyurakchali.jpg";
 import actionCardSticker from "../../assets/5800655655995968830.tgs";
 import tilSticker from "../../assets/AnimatedSticker_til.tgs";
-import referalSticker from "../../assets/AnimatedSticker_ref.tgs";
-import ordersIcon from "../../assets/orders_icon.png";
-import profileIcon from "../../assets/profile_icon.png";
-import menuIcon from "../../assets/main_icon.png";
-import bonusIcon from "../../assets/bonus_icon.svg";
 
+
+// Premium/Stars kartalaridagi mayda uchqunlar (katta yulduzlar statik)
+const Dust = () => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => <i key={n} className={`sjp-dust sjp-dust--${n}`} aria-hidden="true" />);
 
 // ================== UTILS ==================
 const formatAmount = (num) =>
@@ -494,174 +490,138 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="dashboard-root_dashboard">
-
-      {/* HEADER */}
-      <header className="dash-header_dashboard">
-        <div className="header-inner_dashboard">
-          <h1 className="brand-title_dashboard">
-            <StarsJoyLogoStatic size={52} className="brand-logo_dashboard" />
-            Starsjoy
-          </h1>
-          <div className="header-actions_dashboard">
-            <button
-              className="help-btn-dashboard"
-              onClick={startTour}
-              title={t("onboarding.guideBtn")}
-            >
-              <BookOpen size={14} strokeWidth={2.5} />
-              <span>{t("onboarding.guideBtn")}</span>
-            </button>
-            <div className="lang-switch_dashboard" ref={langMenuRef}>
-              <button
-                type="button"
-                className={`lang-btn-dashboard ${langMenuOpen ? "is-open" : ""}`}
-                onClick={() => setLangMenuOpen((v) => !v)}
-                aria-label={t("common.selectLanguage") || "Tilni tanlang"}
-                aria-haspopup="menu"
-                aria-expanded={langMenuOpen}
-              >
-                <Globe size={20} strokeWidth={2.2} />
-              </button>
-              {langMenuOpen && (
-                <div className="lang-menu_dashboard" role="menu">
-                  {[
-                    { code: "uz", flag: "🇺🇿", label: "O'zbekcha" },
-                    { code: "ru", flag: "🇷🇺", label: "Русский" },
-                    { code: "en", flag: "🇬🇧", label: "English" },
-                  ].map((l) => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={language === l.code}
-                      className={`lang-menu_dashboard__item ${language === l.code ? "is-active" : ""}`}
-                      onClick={() => chooseLanguage(l.code)}
-                    >
-                      <span className="lang-menu_dashboard__flag" aria-hidden="true">{l.flag}</span>
-                      <span className="lang-menu_dashboard__label">{l.label}</span>
-                      {language === l.code && <span className="lang-menu_dashboard__check" aria-hidden="true">✓</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="dash-main_dashboard" style={{display: tab === 'home' ? 'flex' : 'none'}}>
-        {/* QO'LLANMA CTA — faqat yangi foydalanuvchiga */}
-        {showGuideCta && (
-          <div
-            className="guide-cta_dashboard"
-            role="button"
-            tabIndex={0}
-            onClick={openGuideFromCta}
-            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openGuideFromCta()}
-          >
-            <span className="guide-cta_dashboard__wave" aria-hidden="true">👋</span>
-            <span className="guide-cta_dashboard__text">
-              <span className="guide-cta_dashboard__title">{t("onboarding.ctaTitle")}</span>
-              <span className="guide-cta_dashboard__desc">{t("onboarding.ctaDesc")}</span>
-            </span>
-            <span className="guide-cta_dashboard__play">
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
-                <path d="M8 5.5v13l10.5-6.5z" />
-              </svg>
-              <span className="guide-cta_dashboard__play-label">{t("onboarding.ctaAction")}</span>
-            </span>
+    <div className="sjp-root sjp-dash">
+      <div className="sjp-home">
+        {/* HEADER */}
+        <header className="sjp-top">
+          <span className="sjp-brand">
+            <StarsJoyLogoStatic size={46} />
+            <span className="sjp-word">Starsjoy</span>
+          </span>
+          <button type="button" className="sjp-guide-btn" onClick={startTour} title={t("onboarding.guideBtn")}>
+            {t("onboarding.guideBtn")}
+          </button>
+          <div className="sjp-langwrap" ref={langMenuRef}>
             <button
               type="button"
-              className="guide-cta_dashboard__close"
-              aria-label={t("onboarding.ctaClose")}
-              onClick={(e) => {
-                e.stopPropagation();
-                markOnboardingComplete();
-              }}
+              className={`sjp-lang ${langMenuOpen ? "is-open" : ""}`}
+              onClick={() => setLangMenuOpen((v) => !v)}
+              aria-label={t("common.selectLanguage") || "Tilni tanlang"}
+              aria-haspopup="menu"
+              aria-expanded={langMenuOpen}
             >
-              ✕
+              <GlobeIcon size={20} />
             </button>
-          </div>
-        )}
-
-        {/* ACTION CARDS - Stars wide, Gift & Premium side by side */}
-        <div className="dashboard-actions-container">
-          {/* Stars - Full Width */}
-          <div className="action-card-wide" data-tour-id="tour-stars-btn" onClick={() => navigate(starsPurchasePath)}>
-            <img src={starsGif} className="action-card-wide__img" alt="stars" />
-            <div className="action-card-wide__content">
-              <span className="action-card-wide__title">{t("dashboard.buyStars") || "Stars olish"}</span>
-            </div>
-          </div>
-
-          {/* Gift & Premium - Side by Side */}
-          <div className="action-cards-row">
-            <div className="action-card-half" data-tour-id="tour-gift-btn" onClick={() => navigate("/gift")}>
-              <TGSSticker stickerPath={actionCardSticker} className="action-card-half__img" autoplay={true} loop={true} />
-              <span className="action-card-half__title">{t("dashboard.buyGift") || "Gift olish"}</span>
-            </div>
-            <div className="action-card-half" data-tour-id="tour-premium-btn" onClick={() => navigate(premiumPurchasePath)}>
-              <img src={premiumGif} className="action-card-half__img" alt="premium" />
-              <span className="action-card-half__title">{t("dashboard.buyPremium") || "Premium olish"}</span>
-            </div>
-          </div>
-
-          {/* Secondary Actions - Support (ikkinchi darajali) */}
-          <div className="secondary-actions-row">
-            <div
-              className="secondary-action-card"
-              onClick={handleContactAdmin}
-            >
-              <div className="secondary-action-card__icon">
-                <Headset size={18} strokeWidth={2} />
+            {langMenuOpen && (
+              <div className="sjp-langmenu" role="menu">
+                {[
+                  { code: "uz", flag: "🇺🇿", label: "O'zbekcha" },
+                  { code: "ru", flag: "🇷🇺", label: "Русский" },
+                  { code: "en", flag: "🇬🇧", label: "English" },
+                ].map((l) => (
+                  <button
+                    key={l.code}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={language === l.code}
+                    className={language === l.code ? "is-active" : ""}
+                    onClick={() => chooseLanguage(l.code)}
+                  >
+                    <span aria-hidden="true">{l.flag}</span>
+                    <b>{l.label}</b>
+                    {language === l.code && <i aria-hidden="true">✓</i>}
+                  </button>
+                ))}
               </div>
-              <span className="secondary-action-card__text">
-                {t("dashboard.contactAdminBanner") || "Admin bilan bog'lanish"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* BOTTOM NAVIGATION */}
-      <div className="bottom-nav_dashboard">
-        <button
-          className={`nav-btn_dashboard ${tab === "home" ? "active" : ""}`}
-          onClick={() => handleNavClick("home")}
-          title={t("dashboard.home")}
-        >
-          <div className="nav-icon">
-            <img src={menuIcon} alt="Home" />
-          </div>
-          <span className="nav-label">{t("dashboard.home")}</span>
-        </button>
-
-        <button
-          className={`nav-btn_dashboard ${tab === "bonus" ? "active" : ""}`}
-          onClick={() => handleNavClick("bonus")}
-          title={t("rewards.title")}
-        >
-          <div className="nav-icon">
-            <img src={bonusIcon} alt="" />
-            {bonusUnseen > 0 && (
-              <span className="nav-badge_dashboard">{bonusUnseen > 99 ? "99+" : bonusUnseen}</span>
             )}
           </div>
-          <span className="nav-label">{t("rewards.title")}</span>
-        </button>
+        </header>
 
-        <button
-          className={`nav-btn_dashboard ${tab === "profile" ? "active" : ""}`}
-          onClick={() => handleNavClick("profile")}
-          title={t("dashboard.profile")}
-        >
-          <div className="nav-icon">
-            <img src={profileIcon} alt="Profile" />
+        <main className="sjp-main" style={{ display: tab === "home" ? "flex" : "none" }}>
+          {/* QO'LLANMA CTA — faqat yangi foydalanuvchiga */}
+          {showGuideCta && (
+            <div
+              className="sjp-cta"
+              role="button"
+              tabIndex={0}
+              onClick={openGuideFromCta}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openGuideFromCta()}
+            >
+              <span className="sjp-cta__ic" aria-hidden="true"><TgStar size={22} /></span>
+              <span className="sjp-cta__text">
+                <b>{t("onboarding.ctaTitle")}</b>
+                <span>{t("onboarding.ctaDesc")}</span>
+              </span>
+              <span className="sjp-cta__play">{t("onboarding.ctaAction")}</span>
+              <button
+                type="button"
+                className="sjp-cta__x"
+                aria-label={t("onboarding.ctaClose")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  markOnboardingComplete();
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Gift — keng karta */}
+          <button type="button" className="sjp-gift" data-tour-id="tour-gift-btn" onClick={() => navigate("/gift")}>
+            <span className="sjp-gift__ic sjp-gift__ic--box">
+              <TGSSticker stickerPath={actionCardSticker} className="sjp-gift__tgs" autoplay={true} loop={true} />
+            </span>
+            <span className="sjp-gift__text">
+              <b>{t("dashboard.buyGift") || "Gift olish"}</b>
+              <span>{t("ui.giftSubtitle")}</span>
+            </span>
+          </button>
+
+          {/* Premium (chapda) va Stars (o'ngda) */}
+          <div className="sjp-grid">
+            <button type="button" className="sjp-tile sjp-tile--premium" data-tour-id="tour-premium-btn" onClick={() => navigate(premiumPurchasePath)}>
+              <span className="sjp-star-dust"><TgStar size={72} premium /><Dust /></span>
+              <b>Premium</b>
+            </button>
+            <button type="button" className="sjp-tile sjp-tile--stars" data-tour-id="tour-stars-btn" onClick={() => navigate(starsPurchasePath)}>
+              <span className="sjp-star-dust"><TgStar size={72} /><Dust /></span>
+              <b>Stars</b>
+            </button>
           </div>
-          <span className="nav-label">{t("dashboard.profile")}</span>
-        </button>
+
+          {/* Admin bilan bog'lanish */}
+          <button type="button" className="sjp-admin" onClick={handleContactAdmin}>
+            <span className="sjp-admin__ic"><SupportIcon size={20} /></span>
+            <span className="sjp-admin__text">
+              <b>{t("dashboard.contactAdminBanner") || "Admin bilan bog'lanish"}</b>
+              <span>@StarsjoySupport</span>
+            </span>
+            <ChevronRight size={18} className="sjp-admin__chev" />
+          </button>
+        </main>
       </div>
+
+      {/* BOTTOM NAVIGATION */}
+      <nav className="sjp-tabs sjp-tabs--dash" aria-label="Menu">
+        <button type="button" className={tab === "home" ? "is-active" : ""} onClick={() => handleNavClick("home")} title={t("dashboard.home")}>
+          <HomeIcon size={22} />
+          <span>{t("dashboard.home")}</span>
+        </button>
+        <button type="button" className={tab === "bonus" ? "is-active" : ""} onClick={() => handleNavClick("bonus")} title={t("rewards.title")}>
+          <span className="sjp-tabs__ic">
+            <GiftIcon size={22} />
+            {bonusUnseen > 0 && (
+              <span className="sjp-tabs__badge">{bonusUnseen > 99 ? "99+" : bonusUnseen}</span>
+            )}
+          </span>
+          <span>{t("rewards.title")}</span>
+        </button>
+        <button type="button" className={tab === "profile" ? "is-active" : ""} onClick={() => handleNavClick("profile")} title={t("dashboard.profile")}>
+          <ProfileIcon size={22} />
+          <span>{t("dashboard.profile")}</span>
+        </button>
+      </nav>
 
       {/* COMING SOON TOAST */}
       {showComingSoonToast && (
@@ -689,8 +649,6 @@ export default function Dashboard() {
           ></iframe>
         </div>
       )}
-
-
 
       {tab === "profile" && (
         <div className="overlay-modal_dashboard">

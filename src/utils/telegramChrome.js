@@ -6,7 +6,7 @@ import WebApp from "@twa-dev/sdk";
  * (overscroll) orqadan aynan shu ko'rinadi; oq bo'lsa oq chaqnaydi.
  * Pastki panel (Bot API 7.10+) eski klientlarda yo'q — xato yutiladi.
  */
-export const APP_BG = "#1a1a2e";
+export const APP_BG = "#0b0f17";
 
 export function applyTelegramChrome() {
   try { WebApp.setBackgroundColor(APP_BG); } catch { /* eski klient */ }
