@@ -280,6 +280,7 @@ export default function AdminPanel() {
   const [fragmentPaymentMethod, setFragmentPaymentMethod] = useState("ton");
   // To'lov kartalari (UZCARD / HUMO) — qaysi biri mijozga ko'rsatiladi
   const [paymentCards, setPaymentCards] = useState([]);
+  const [savings, setSavings] = useState(null);
   const [paymentCardLoading, setPaymentCardLoading] = useState(false);
   const [fragmentPayLoading, setFragmentPayLoading] = useState(false);
   const [fragmentEnvStatus, setFragmentEnvStatus] = useState(null);
@@ -767,6 +768,13 @@ export default function AdminPanel() {
     } catch (err) {
       console.error("To'lov kartalarini yuklash:", err);
     }
+    try {
+      const res = await apiFetch("/api/admin/savings");
+      const data = await res.json();
+      if (res.ok) setSavings(data.enabled ? data : null);
+    } catch (err) {
+      console.error("Jamg'arma holatini yuklash:", err);
+    }
   };
 
   const switchPaymentCard = async (slot) => {
@@ -776,7 +784,8 @@ export default function AdminPanel() {
       alert(`${target.title} sozlanmagan — .env da karta raqami yo'q`);
       return;
     }
-    if (!window.confirm(`To'lov kartasi ${target.title} ${target.masked} ga almashtirilsinmi?\n\nMijozlarga to'lov ekranida shu karta ko'rsatiladi.`)) return;
+    const savingsNote = savings?.active ? "\n\nDiqqat: jamg'arma yig'ilyapti. Almashtirsangiz, u keyingi hisob vaqtigacha to'xtaydi." : "";
+    if (!window.confirm(`To'lov kartasi ${target.title} ${target.masked} ga almashtirilsinmi?\n\nMijozlarga to'lov ekranida shu karta ko'rsatiladi.${savingsNote}`)) return;
     setPaymentCardLoading(true);
     try {
       const res = await apiFetch("/api/admin/payment-system", {
@@ -3745,6 +3754,30 @@ export default function AdminPanel() {
               </button>
             ))}
           </div>
+
+          {savings && (() => {
+            const som = (n) => `${Math.round(Number(n) || 0).toLocaleString("ru-RU")} so‘m`;
+            const hm = (iso) => new Date(iso).toLocaleTimeString("uz-UZ", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit" });
+            const left = Math.max(savings.outstanding, 0);
+            const paused = savings.override_until && new Date(savings.override_until) > new Date();
+            return (
+              <div className="settings-hint" style={{ marginTop: 12 }}>
+                <strong>🏦 Jamg‘arma (*{savings.savings_last4}, tushumning {savings.percent}%)</strong>
+                {" — "}
+                {savings.active ? `yig‘ilmoqda, qoldi ${som(left)}` : paused ? `to‘xtatilgan, ${hm(savings.override_until)} dan keyin davom etadi` : left > 0 ? `qoldi ${som(left)}` : "to‘lgan"}
+                <br />
+                Jami maqsad {som(savings.target)} · *{savings.savings_last4} ga tushgan {som(savings.collected)}
+                {savings.outstanding < 0 && ` · ortiqcha ${som(-savings.outstanding)}`}
+                {" · "}keyingi hisob {hm(savings.next_checkpoint)}
+                {savings.recent?.length > 0 && (
+                  <>
+                    <br />
+                    {savings.recent.map((r) => `${hm(r.period_start)}–${hm(r.checkpoint_at)}: ${som(r.revenue)} → ${som(r.target)}`).join(" · ")}
+                  </>
+                )}
+              </div>
+            );
+          })()}
 
           <p className="settings-hint">
             SMS listener <strong>ikkala kartani ham</strong> kuzatadi. Shuning uchun
