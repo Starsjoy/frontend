@@ -776,6 +776,7 @@ export default function AdminPanel() {
       alert(`${target.title} sozlanmagan — .env da karta raqami yo'q`);
       return;
     }
+    if (!window.confirm(`To'lov kartasi ${target.title} ${target.masked} ga almashtirilsinmi?\n\nMijozlarga to'lov ekranida shu karta ko'rsatiladi.`)) return;
     setPaymentCardLoading(true);
     try {
       const res = await apiFetch("/api/admin/payment-system", {
