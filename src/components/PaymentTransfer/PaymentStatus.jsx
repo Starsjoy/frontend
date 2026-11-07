@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "../../context/LanguageContext";
 import { Countdown } from "./PaymentTransfer";
+import useDelayNotice from "../../hooks/useDelayNotice";
 import "./PaymentTransfer.css";
 
 /**
@@ -175,6 +176,9 @@ export default function PaymentStatus({
     };
   }, [embedded]);
 
+  // Admin: "Kechikish ogohlantirishi" yoqilgan — "12 soatgacha" matni
+  const delayNotice = useDelayNotice();
+
   const openSupport = () => window.open(SUPPORT_URL, "_blank");
 
   const text = {
@@ -190,7 +194,7 @@ export default function PaymentStatus({
       note: autoClose != null ? fill("status.successNote") : "",
     },
     failed: { title: fill("status.failedTitle"), callout: fill("status.failedText"), note: orderId ? fill("status.failedNote") : "" },
-    delayed: { title: fill("status.delayedTitle"), callout: fill("status.delayedText"), note: fill("status.delayedNote") },
+    delayed: { title: fill("status.delayedTitle"), callout: fill(delayNotice ? "status.delayedText12h" : "status.delayedText"), note: fill("status.delayedNote") },
     expired: { title: fill("status.expiredTitle"), callout: fill("status.expiredText"), note: fill("status.expiredNote") },
   }[stage];
 
