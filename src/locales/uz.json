@@ -609,6 +609,9 @@
     "sendGift": "Sovg'a yuborish",
     "whoToSend": "Kimga yuboramiz?",
     "sending": "Yuborilmoqda...",
-    "back": "Orqaga"
+    "back": "Orqaga",
+    "delayTitle": "Buyurtmalar kechikishi mumkin",
+    "delayText": "Balans bilan bog'liq vaqtinchalik muammo sababli buyurtmalar 12 soatgacha kechikishi mumkin. To'lovingiz saqlanadi va buyurtma albatta yetkaziladi.",
+    "delayShort": "Hozir buyurtmalar 12 soatgacha kechikishi mumkin. To'lovingiz saqlanadi va buyurtma albatta yetkaziladi."
   }
 }

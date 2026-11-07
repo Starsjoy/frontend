@@ -265,6 +265,9 @@ export default function AdminPanel() {
   // 🔧 Maintenance mode
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
+  // "Buyurtmalar 12 soatgacha kechikishi mumkin" — mijozga ogohlantirish
+  const [delayNotice, setDelayNotice] = useState(false);
+  const [delayNoticeLoading, setDelayNoticeLoading] = useState(false);
 
   const [starsPurchaseMode, setStarsPurchaseMode] = useState("fragment");
   const [purchaseModeLoading, setPurchaseModeLoading] = useState(false);
@@ -391,6 +394,7 @@ export default function AdminPanel() {
   const applySettingsFromApi = (data) => {
     if (!data) return;
     if (data.maintenance !== undefined) setMaintenanceMode(Boolean(data.maintenance));
+    if (data.delay_notice !== undefined) setDelayNotice(Boolean(data.delay_notice));
     if (data.stars_purchase_mode) {
       setStarsPurchaseMode(
         data.stars_purchase_mode === "robynhood" ? "fragment" : data.stars_purchase_mode
@@ -432,6 +436,22 @@ export default function AdminPanel() {
       console.error("Maintenance toggle xato:", err);
     }
     setMaintenanceLoading(false);
+  };
+
+  const toggleDelayNotice = async () => {
+    setDelayNoticeLoading(true);
+    try {
+      const res = await apiFetch("/api/admin/delay-notice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: !delayNotice }),
+      });
+      const data = await res.json();
+      if (res.ok) applySettingsFromApi(data);
+    } catch (err) {
+      console.error("Delay notice toggle xato:", err);
+    }
+    setDelayNoticeLoading(false);
   };
 
   // ========== WALLET & PRICES FUNCTION ==========
@@ -3693,6 +3713,40 @@ export default function AdminPanel() {
       {/* ==================== SETTINGS TAB ==================== */}
       {activeTab === "settings" && (
         <div className="tab-content settings-tab">
+          {/* ========== KECHIKISH OGOHLANTIRISHI ==========
+              Balans muammosi bo'lganda yoqiladi: mijoz Stars/Premium
+              sahifasi va to'lovni tasdiqlash oynasida ogohlantirishni ko'radi. */}
+          <h3 className="settings-section-title">⏳ Kechikish ogohlantirishi</h3>
+          <p className="settings-section-desc">
+            Balans bilan muammo bo‘lganda yoqing — mijozlarga “buyurtmalar 12 soatgacha
+            kechikishi mumkin” degan ogohlantirish ko‘rsatiladi. Yetkazish o‘zi to‘xtamaydi.
+          </p>
+          <div className="purchase-mode-settings">
+            <div className="purchase-mode-switch purchase-mode-switch--large">
+              <button
+                type="button"
+                className={`purchase-mode-btn ${!delayNotice ? "active paymee" : ""}`}
+                onClick={() => delayNotice && toggleDelayNotice()}
+                disabled={delayNoticeLoading}
+              >
+                O‘chiq
+              </button>
+              <button
+                type="button"
+                className={`purchase-mode-btn ${delayNotice ? "active warn" : ""}`}
+                onClick={() => !delayNotice && toggleDelayNotice()}
+                disabled={delayNoticeLoading}
+              >
+                Yoqilgan
+              </button>
+            </div>
+            <p className="settings-hint">
+              {delayNotice
+                ? "Hozir: mijozlar “12 soatgacha kechikishi mumkin” ogohlantirishini ko‘rmoqda (30 soniyada yangilanadi)."
+                : "Hozir: ogohlantirish ko‘rsatilmayapti."}
+            </p>
+          </div>
+
           {/* ========== TO'LOV KARTASI (UZCARD ⇄ HUMO) ==========
               Tabning ENG TEPASIDA: eng tez-tez ishlatiladigan switch shu.
               Pastroqqa qo'yilganda uzun ro'yxat ichida ko'rinmay qolgan edi. */}

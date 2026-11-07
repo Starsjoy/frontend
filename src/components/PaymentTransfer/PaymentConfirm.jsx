@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "../../context/LanguageContext";
+import DelayNotice from "../DelayNotice";
+import useDelayNotice from "../../hooks/useDelayNotice";
 import "./PaymentTransfer.css";
 
 /**
@@ -34,6 +36,7 @@ export default function PaymentConfirm({
   embedded = false, // /test sahifasidagi ramka uchun: portal va scroll-lock'siz
 }) {
   const { t } = useTranslation();
+  const delayed = useDelayNotice();
   const cleanRecipient = (recipient || "").replace(/^@/, "").trim();
 
   useEffect(() => {
@@ -69,6 +72,9 @@ export default function PaymentConfirm({
           <span className="pc-auto-ic"><CheckIcon /></span>
           {t("transfer.confirmAuto")}
         </p>
+
+        {/* Admin: "Kechikish ogohlantirishi" yoqilganda — to'lashdan oldin ko'rsin */}
+        {delayed && <DelayNotice variant="compact" />}
 
         <button type="button" className="pc-cta" onClick={onContinue}>
           {t("transfer.confirmCta")}

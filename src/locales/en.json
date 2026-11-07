@@ -608,6 +608,9 @@
     "sendGift": "Send gift",
     "whoToSend": "Who is it for?",
     "sending": "Sending...",
-    "back": "Back"
+    "back": "Back",
+    "delayTitle": "Orders may be delayed",
+    "delayText": "Due to a temporary balance issue, orders may be delayed by up to 12 hours. Your payment is safe and your order will be delivered.",
+    "delayShort": "Orders may currently take up to 12 hours. Your payment is safe and your order will be delivered."
   }
 }

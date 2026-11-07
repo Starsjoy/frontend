@@ -604,6 +604,11 @@ html, body {
   color: #6ee7b7;
 }
 
+.purchase-mode-btn.active.warn {
+  background: rgba(255, 184, 0, 0.28);
+  color: #ffd27a;
+}
+
 .purchase-mode-btn.active.ton {
   background: rgba(0, 152, 234, 0.25);
   color: #74c0fc;

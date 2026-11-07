@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DelayNotice from "../../components/DelayNotice";
 import "./Premium.css";
 import "../../ui/ui.css";
 import { TgStar, ChevronLeft } from "../../ui/Brand";
@@ -511,6 +512,8 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
           </div>
           <h1>Telegram Premium</h1>
         </header>
+
+        <DelayNotice variant="inline" />
 
         {/* KIMGA */}
         <section className="sjs-field">

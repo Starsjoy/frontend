@@ -1,0 +1,57 @@
+/* Kechikish ogohlantirishi — sariq (ogohlantirish), qizil emas: xato emas, kutish */
+.dn {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 14px 12px 12px;
+  border: 1px solid rgba(255, 184, 0, 0.32);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.13), rgba(255, 140, 0, 0.06));
+  color: #ffe2a8;
+  text-align: left;
+}
+.dn__ic {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 184, 0, 0.16);
+  color: #ffc53d;
+}
+.dn__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 226, 168, 0.82);
+}
+.dn__text b {
+  font-size: 14.5px;
+  font-weight: 650;
+  color: #ffd27a;
+}
+
+.dn--card { margin-bottom: 14px; }
+.dn--inline { margin: 0 0 18px; }
+
+.dn--compact {
+  align-items: center;
+  gap: 9px;
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+.dn--compact .dn__ic {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+}
+.dn--compact .dn__text {
+  font-size: 13px;
+  color: #ffe2a8;
+}

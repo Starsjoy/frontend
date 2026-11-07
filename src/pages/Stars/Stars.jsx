@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import DelayNotice from "../../components/DelayNotice";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../../utils/apiFetch";
 import { usePaymentCard } from "../../hooks/usePaymentCard";
@@ -642,6 +643,8 @@ export function StarsPurchasePage({ variant = "fragment" }) {
           </div>
           <h1>Telegram Stars</h1>
         </header>
+
+        <DelayNotice variant="inline" />
 
         {/* KIMGA */}
         <section className="sjs-field">
