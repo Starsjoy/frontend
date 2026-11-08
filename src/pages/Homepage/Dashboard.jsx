@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import FakePromoWarning from "../../components/FakePromoWarning";
 import { useNavigate } from "react-router-dom";
 import WebApp from "@twa-dev/sdk";
 import { useTranslation } from "../../context/LanguageContext";
@@ -491,6 +492,8 @@ export default function Dashboard() {
 
   return (
     <div className="sjp-root sjp-dash">
+      {/* Soxta "tekin Stars" havolasi bilan kelganlarga ogohlantirish */}
+      <FakePromoWarning />
       <div className="sjp-home">
         {/* HEADER */}
         <header className="sjp-top">
