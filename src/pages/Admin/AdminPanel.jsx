@@ -8,6 +8,7 @@ import apiFetch from "../../utils/apiFetch";
 import { queued } from "../../utils/apiQueue";
 import AdminCustomSelect from "../../components/AdminCustomSelect";
 import AdminBonus from "./AdminBonus";
+import AdminPremiumWait from "./AdminPremiumWait";
 
 const WARNING_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
@@ -3191,6 +3192,7 @@ export default function AdminPanel() {
       {/* ==================== PREMIUM ORDERS TAB ==================== */}
       {activeTab === "premium" && (
         <div className="tab-content">
+          <AdminPremiumWait />
           {/* Premium Stats */}
           <div className="stats-text">
             <span>Jami: <b>{premiumStats.total}</b></span>
