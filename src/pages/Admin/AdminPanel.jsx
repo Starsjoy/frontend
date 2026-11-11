@@ -9,6 +9,7 @@ import { queued } from "../../utils/apiQueue";
 import AdminCustomSelect from "../../components/AdminCustomSelect";
 import AdminBonus from "./AdminBonus";
 import AdminPremiumWait from "./AdminPremiumWait";
+import AdminAiWarnings from "./AdminAiWarnings";
 
 const WARNING_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
@@ -2059,6 +2060,13 @@ export default function AdminPanel() {
         </button>
         <button
           type="button"
+          className={`tab ${activeTab === "aiwarnings" ? "active" : ""}`}
+          onClick={() => goToTab("aiwarnings")}
+        >
+          🤖 AI Warning
+        </button>
+        <button
+          type="button"
           className={`tab ${activeTab === "transactions" ? "active" : ""}`}
           onClick={() => goToTab("transactions")}
         >
@@ -2082,6 +2090,17 @@ export default function AdminPanel() {
       </div>
 
       <div className="admin-main">
+
+      {/* ==================== AI WARNING TAB ==================== */}
+      {activeTab === "aiwarnings" && (
+        <div className="tab-content">
+          <AdminAiWarnings
+            onSend={(kind, id, status) =>
+              kind === "gift" ? adminSendGift(id, status) : kind === "premium" ? adminSendPremium(id, status) : adminSendStars(id, status)
+            }
+          />
+        </div>
+      )}
 
       {/* ==================== WARNING TAB ==================== */}
       {activeTab === "warnings" && (
