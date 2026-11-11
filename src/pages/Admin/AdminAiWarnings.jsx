@@ -106,8 +106,14 @@ export default function AdminAiWarnings({ onSend, onCount }) {
                 </div>
                 <div className="pw-line">
                   To'langan: <b>{fmt(it.sms_amount)}</b> so'm ({diff > 0 ? "+" : ""}
-                  {fmt(diff)}), *{it.card_last4}, {hhmm(it.sms_at)}, sms #{it.sms_id}
+                  {fmt(diff)}), *{it.card_last4}, {hhmm(it.sms_at)}
+                  {it.source === "balance" ? "" : `, sms #${it.sms_id}`}
                 </div>
+                {it.source === "balance" && (
+                  <div className="pw-line" style={{ color: "#ffd45c" }}>
+                    ⚖️ Balans usuli bilan: SMS kelmagan, to'lov karta qoldig'i bo'yicha aniqlangan. Kartadan tekshirib ko'ring.
+                  </div>
+                )}
                 {it.note && <div className="pw-line pw-muted">{it.note}</div>}
                 <div className="pw-actions">
                   <button className="pw-btn ok" disabled={busy === it.id} onClick={() => send(it)}>
