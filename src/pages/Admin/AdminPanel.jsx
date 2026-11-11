@@ -2078,13 +2078,7 @@ export default function AdminPanel() {
         >
           🎁 Gift
         </button>
-        <button
-          type="button"
-          className={`tab ${activeTab === "users" ? "active" : ""}`}
-          onClick={() => goToTab("users")}
-        >
-          👥 Users
-        </button>
+        {/* 👥 Users tabi olib tashlandi (2026-11-11, egasi qarori); kod pastda qoldi */}
       </div>
 
       <div className="admin-main">
