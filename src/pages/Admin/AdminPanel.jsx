@@ -2095,8 +2095,8 @@ export default function AdminPanel() {
       {activeTab === "aiwarnings" && (
         <div className="tab-content">
           <AdminAiWarnings
-            onSend={(kind, id, status) =>
-              kind === "gift" ? adminSendGift(id, status) : kind === "premium" ? adminSendPremium(id, status) : adminSendStars(id, status)
+            onSend={(kind, id) =>
+              kind === "gift" ? executeSendGift(id) : kind === "premium" ? executeSendPremium(id) : executeSendStars(id)
             }
           />
         </div>

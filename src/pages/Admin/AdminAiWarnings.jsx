@@ -51,23 +51,32 @@ export default function AdminAiWarnings({ onSend, onCount }) {
   }, [load]);
 
   const send = async (it) => {
+    if (!window.confirm(`#${it.order_id} ni mijozga yuborasizmi? (${fmt(it.sms_amount)} so'm to'langan)`)) return;
     setBusy(it.id);
     setSendState((s) => ({ ...s, [it.id]: "sending" }));
     try {
       await onSend?.(kind(it.order_type), Number(it.order_id), it.status);
-      // Natijani ro'yxatdan bilamiz: buyurtma to'langan bo'lsa ro'yxatdan chiqadi
-      const res = await apiFetch("/api/admin/ai-warnings");
-      const d = await res.json();
-      const still = (d.items || []).some((x) => x.id === it.id);
-      if (still) {
-        setSendState((s) => ({ ...s, [it.id]: undefined })); // bekor qilindi yoki xato
-      } else {
+      // Yetkazilguncha kutamiz: buyurtma to'langach ro'yxatdan chiqadi (90 soniyagacha)
+      let gone = false;
+      let last = null;
+      for (let i = 0; i < 45 && !gone; i++) {
+        const res = await apiFetch("/api/admin/ai-warnings");
+        last = await res.json();
+        gone = !(last.items || []).some((x) => x.id === it.id);
+        if (!gone) await new Promise((r) => setTimeout(r, 2000));
+      }
+      if (gone) {
         setSendState((s) => ({ ...s, [it.id]: "sent" }));
         setSentItems((xs) => [...xs, it]);
         setTimeout(() => setSentItems((xs) => xs.filter((x) => x.id !== it.id)), 8000);
+      } else {
+        setSendState((s) => ({ ...s, [it.id]: undefined }));
+        alert(`#${it.order_id} hali yetkazilmadi, buyurtmani tekshiring.`);
       }
-      setItems(d.items || []);
-      onCount?.(d.items?.length || 0);
+      if (last) {
+        setItems(last.items || []);
+        onCount?.(last.items?.length || 0);
+      }
     } catch {
       setSendState((s) => ({ ...s, [it.id]: undefined }));
     } finally {
