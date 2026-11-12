@@ -26,6 +26,8 @@ export default function AdminAiWarnings({ onSend, onCount }) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(null);
+  const [sendState, setSendState] = useState({}); // id -> "sending" | "sent"
+  const [sentItems, setSentItems] = useState([]); // yuborilganlar bir oz ko'rinib turadi
 
   const load = useCallback(async () => {
     try {
@@ -50,13 +52,29 @@ export default function AdminAiWarnings({ onSend, onCount }) {
 
   const send = async (it) => {
     setBusy(it.id);
+    setSendState((s) => ({ ...s, [it.id]: "sending" }));
     try {
       await onSend?.(kind(it.order_type), Number(it.order_id), it.status);
+      // Natijani ro'yxatdan bilamiz: buyurtma to'langan bo'lsa ro'yxatdan chiqadi
+      const res = await apiFetch("/api/admin/ai-warnings");
+      const d = await res.json();
+      const still = (d.items || []).some((x) => x.id === it.id);
+      if (still) {
+        setSendState((s) => ({ ...s, [it.id]: undefined })); // bekor qilindi yoki xato
+      } else {
+        setSendState((s) => ({ ...s, [it.id]: "sent" }));
+        setSentItems((xs) => [...xs, it]);
+        setTimeout(() => setSentItems((xs) => xs.filter((x) => x.id !== it.id)), 8000);
+      }
+      setItems(d.items || []);
+      onCount?.(d.items?.length || 0);
+    } catch {
+      setSendState((s) => ({ ...s, [it.id]: undefined }));
     } finally {
       setBusy(null);
-      setTimeout(load, 1500);
     }
   };
+  const shown = [...items, ...sentItems.filter((x) => !items.some((i) => i.id === x.id))];
 
   const dismiss = async (it) => {
     if (!window.confirm(`#${it.order_id} ni AI Warning ro'yxatidan olib tashlaysizmi? (buyurtma o'zgarmaydi)`)) return;
@@ -85,10 +103,10 @@ export default function AdminAiWarnings({ onSend, onCount }) {
         {err && <div className="pw-err">{err}</div>}
         {loading ? (
           <div className="pw-muted">Yuklanmoqda…</div>
-        ) : !items.length ? (
+        ) : !shown.length ? (
           <div className="pw-muted">Hozircha yo'q ✅</div>
         ) : (
-          items.map((it) => {
+          shown.map((it) => {
             const diff = Number(it.diff);
             return (
               <div className="pw-card" key={it.id}>
@@ -116,12 +134,18 @@ export default function AdminAiWarnings({ onSend, onCount }) {
                 )}
                 {it.note && <div className="pw-line pw-muted">{it.note}</div>}
                 <div className="pw-actions">
-                  <button className="pw-btn ok" disabled={busy === it.id} onClick={() => send(it)}>
-                    ✅ Yuborish
+                  <button
+                    className="pw-btn ok"
+                    disabled={busy === it.id || sendState[it.id] === "sent"}
+                    onClick={() => send(it)}
+                  >
+                    {sendState[it.id] === "sending" ? "⏳ Yuborilyapti…" : sendState[it.id] === "sent" ? "✅ Yuborildi" : "✅ Yuborish"}
                   </button>
-                  <button className="pw-btn no" disabled={busy === it.id} onClick={() => dismiss(it)}>
-                    Olib tashlash
-                  </button>
+                  {sendState[it.id] !== "sent" && (
+                    <button className="pw-btn no" disabled={busy === it.id} onClick={() => dismiss(it)}>
+                      Olib tashlash
+                    </button>
+                  )}
                 </div>
               </div>
             );
