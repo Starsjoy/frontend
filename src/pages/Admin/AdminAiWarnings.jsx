@@ -56,23 +56,30 @@ export default function AdminAiWarnings({ onSend, onCount }) {
     setSendState((s) => ({ ...s, [it.id]: "sending" }));
     try {
       await onSend?.(kind(it.order_type), Number(it.order_id), it.status);
-      // Yetkazilguncha kutamiz: buyurtma to'langach ro'yxatdan chiqadi (90 soniyagacha)
-      let gone = false;
-      let last = null;
-      for (let i = 0; i < 45 && !gone; i++) {
-        const res = await apiFetch("/api/admin/ai-warnings");
-        last = await res.json();
-        gone = !(last.items || []).some((x) => x.id === it.id);
-        if (!gone) await new Promise((r) => setTimeout(r, 2000));
+      // Haqiqiy holatni kutamiz: to'langani yetkazilgani degani emas (90 soniyagacha)
+      let state = "pending";
+      for (let i = 0; i < 45 && state === "pending"; i++) {
+        const r = await apiFetch(`/api/admin/ai-warnings/order/${it.order_id}`);
+        const d = await r.json().catch(() => ({}));
+        state = d.state || "pending";
+        if (i >= 3 && d.payment_status !== "paid") break; // yuborish boshlanmadi (bekor yoki xato)
+        if (state === "pending") await new Promise((res) => setTimeout(res, 2000));
       }
-      if (gone) {
+      if (state === "sent") {
         setSendState((s) => ({ ...s, [it.id]: "sent" }));
         setSentItems((xs) => [...xs, it]);
         setTimeout(() => setSentItems((xs) => xs.filter((x) => x.id !== it.id)), 8000);
+      } else if (state === "failed") {
+        setSendState((s) => ({ ...s, [it.id]: "failed" }));
+        setSentItems((xs) => [...xs, it]);
+        setTimeout(() => setSentItems((xs) => xs.filter((x) => x.id !== it.id)), 15000);
+        alert(`❌ #${it.order_id} yetkazilmadi (xato). Warning bo'limida tekshiring.`);
       } else {
         setSendState((s) => ({ ...s, [it.id]: undefined }));
         alert(`#${it.order_id} hali yetkazilmadi, buyurtmani tekshiring.`);
       }
+      const lr = await apiFetch("/api/admin/ai-warnings");
+      const last = await lr.json().catch(() => null);
       if (last) {
         setItems(last.items || []);
         onCount?.(last.items?.length || 0);
@@ -145,12 +152,12 @@ export default function AdminAiWarnings({ onSend, onCount }) {
                 <div className="pw-actions">
                   <button
                     className="pw-btn ok"
-                    disabled={busy === it.id || sendState[it.id] === "sent"}
+                    disabled={busy === it.id || sendState[it.id] === "sent" || sendState[it.id] === "failed"}
                     onClick={() => send(it)}
                   >
-                    {sendState[it.id] === "sending" ? "⏳ Yuborilyapti…" : sendState[it.id] === "sent" ? "✅ Yuborildi" : "✅ Yuborish"}
+                    {sendState[it.id] === "sending" ? "⏳ Yuborilyapti…" : sendState[it.id] === "sent" ? "✅ Yuborildi" : sendState[it.id] === "failed" ? "❌ Yuborilmadi" : "✅ Yuborish"}
                   </button>
-                  {sendState[it.id] !== "sent" && (
+                  {!["sent", "failed"].includes(sendState[it.id]) && (
                     <button className="pw-btn no" disabled={busy === it.id} onClick={() => dismiss(it)}>
                       Olib tashlash
                     </button>
