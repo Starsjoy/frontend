@@ -269,6 +269,8 @@ export default function AdminPanel() {
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   // "Buyurtmalar 12 soatgacha kechikishi mumkin" — mijozga ogohlantirish
   const [delayNotice, setDelayNotice] = useState(false);
+  const [forceSub, setForceSub] = useState(false);
+  const [forceSubLoading, setForceSubLoading] = useState(false);
   const [delayNoticeLoading, setDelayNoticeLoading] = useState(false);
 
   const [starsPurchaseMode, setStarsPurchaseMode] = useState("fragment");
@@ -397,6 +399,7 @@ export default function AdminPanel() {
     if (!data) return;
     if (data.maintenance !== undefined) setMaintenanceMode(Boolean(data.maintenance));
     if (data.delay_notice !== undefined) setDelayNotice(Boolean(data.delay_notice));
+    if (data.force_subscription !== undefined) setForceSub(Boolean(data.force_subscription));
     if (data.stars_purchase_mode) {
       setStarsPurchaseMode(
         data.stars_purchase_mode === "robynhood" ? "fragment" : data.stars_purchase_mode
@@ -439,6 +442,37 @@ export default function AdminPanel() {
     }
     setMaintenanceLoading(false);
   };
+
+  const toggleForceSub = async () => {
+
+    setForceSubLoading(true);
+
+    try {
+
+      const res = await apiFetch("/api/admin/force-subscription", {
+
+        method: "POST",
+
+        headers: { "Content-Type": "application/json" },
+
+        body: JSON.stringify({ enabled: !forceSub }),
+
+      });
+
+      const data = await res.json();
+
+      if (res.ok) applySettingsFromApi(data);
+
+    } catch (err) {
+
+      console.error("Force subscription toggle xato:", err);
+
+    }
+
+    setForceSubLoading(false);
+
+  };
+
 
   const toggleDelayNotice = async () => {
     setDelayNoticeLoading(true);
@@ -3731,6 +3765,40 @@ export default function AdminPanel() {
           {/* ========== KECHIKISH OGOHLANTIRISHI ==========
               Balans muammosi bo'lganda yoqiladi: mijoz Stars/Premium
               sahifasi va to'lovni tasdiqlash oynasida ogohlantirishni ko'radi. */}
+          {/* ========== MAJBURIY KANAL OBUNASI ==========
+              Yoqilsa: bot /start, Mini App va buyurtma yaratish faqat kanalga obuna bo'lganlarga.
+              Telegram javob bermasa user o'tkaziladi (savdo to'xtamaydi). */}
+          <h3 className="settings-section-title">📢 Majburiy kanal obunasi</h3>
+          <p className="settings-section-desc">
+            Yoqilsa, kanalga obuna bo‘lmagan user botdan va Mini App’dan foydalana olmaydi — avval obuna bo‘lish ekrani chiqadi.
+            Sotuv keskin tushsa, shu yerdan o‘chiring.
+          </p>
+          <div className="purchase-mode-settings">
+            <div className="purchase-mode-switch purchase-mode-switch--large">
+              <button
+                type="button"
+                className={`purchase-mode-btn ${!forceSub ? "active paymee" : ""}`}
+                onClick={() => forceSub && toggleForceSub()}
+                disabled={forceSubLoading}
+              >
+                O‘chiq
+              </button>
+              <button
+                type="button"
+                className={`purchase-mode-btn ${forceSub ? "active warn" : ""}`}
+                onClick={() => !forceSub && toggleForceSub()}
+                disabled={forceSubLoading}
+              >
+                Yoqilgan
+              </button>
+            </div>
+            <p className="settings-hint">
+              {forceSub
+                ? "Hozir: faqat kanalga obuna bo‘lganlar foydalana oladi."
+                : "Hozir: obuna majburiy emas."}
+            </p>
+          </div>
+
           <h3 className="settings-section-title">⏳ Kechikish ogohlantirishi</h3>
           <p className="settings-section-desc">
             Balans bilan muammo bo‘lganda yoqing — mijozlarga “buyurtmalar 12 soatgacha

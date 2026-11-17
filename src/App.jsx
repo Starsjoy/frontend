@@ -26,6 +26,7 @@ import OnboardingTour from "./components/OnboardingTour/OnboardingTour";
 import TelegramGate from "./components/TelegramGate";
 import LanguageSetup from "./components/LanguageSetup";
 import apiFetch from "./utils/apiFetch";
+import SubscriptionGate from "./components/SubscriptionGate";
 
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -82,6 +83,7 @@ function App() {
           <LanguageProvider>
             <LanguageGate>
             <OnboardingProvider>
+            <SubscriptionGate>
             <BrowserRouter>
               {/* Router ICHIDA — useNavigate/useLocation kerak */}
               <OnboardingTour />
@@ -108,6 +110,7 @@ function App() {
                 <Route path="/bonus" element={<Bonus />} />
               </Routes>
             </BrowserRouter>
+            </SubscriptionGate>
             </OnboardingProvider>
             </LanguageGate>
           </LanguageProvider>

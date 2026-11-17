@@ -35,6 +35,14 @@ export default async function apiFetch(url, options = {}) {
 
   try {
     const response = await fetch(fullUrl, fetchOptions);
+    // Majburiy kanal obunasi: backend buyurtmani rad etsa — obuna ekranini ko'rsatamiz
+    if (response.status === 403) {
+      response.clone().json().then((d) => {
+        if (d?.code === "SUBSCRIPTION_REQUIRED") {
+          window.dispatchEvent(new CustomEvent("subscription-required", { detail: d }));
+        }
+      }).catch(() => {});
+    }
     clearTimeout(id);
     return response;
   } catch (error) {
