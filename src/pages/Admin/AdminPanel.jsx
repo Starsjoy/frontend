@@ -10,6 +10,7 @@ import AdminCustomSelect from "../../components/AdminCustomSelect";
 import AdminBonus from "./AdminBonus";
 import AdminPremiumWait from "./AdminPremiumWait";
 import AdminAiWarnings from "./AdminAiWarnings";
+import AdminDonat from "./AdminDonat";
 
 const WARNING_FILTER_OPTIONS = [
   { value: "all", label: "Hammasi", icon: "📋" },
@@ -2101,6 +2102,13 @@ export default function AdminPanel() {
         </button>
         <button
           type="button"
+          className={`tab ${activeTab === "donat" ? "active" : ""}`}
+          onClick={() => goToTab("donat")}
+        >
+          🎮 Donat
+        </button>
+        <button
+          type="button"
           className={`tab ${activeTab === "transactions" ? "active" : ""}`}
           onClick={() => goToTab("transactions")}
         >
@@ -2124,6 +2132,13 @@ export default function AdminPanel() {
       </div>
 
       <div className="admin-main">
+
+      {/* ==================== DONAT TAB ==================== */}
+      {activeTab === "donat" && (
+        <div className="tab-content">
+          <AdminDonat />
+        </div>
+      )}
 
       {/* ==================== AI WARNING TAB ==================== */}
       {activeTab === "aiwarnings" && (
