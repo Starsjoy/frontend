@@ -163,8 +163,8 @@ export default function TelegramGate({ children }) {
     return (
       <>
         {children}
-        <div className="tg-gate tg-gate--overlay" role="dialog" aria-modal="true">
-          <div className="tg-gate-card">
+        <div className="tg-gate tg-gate--overlay" role="dialog" aria-modal="true" onClick={close}>
+          <div className="tg-gate-card" onClick={(e) => e.stopPropagation()}>
             <LogoWordmark size={96} />
             <h2 className="tg-gate-title tg-gate-title--mt">
               {["/history", "/profile", "/bonus", "/referral", "/challenges", "/notifications"].includes(loginPath) ? T.needTitlePrivate : T.needTitle}
@@ -176,9 +176,6 @@ export default function TelegramGate({ children }) {
                 <TgIcon />
                 {T.login}
               </a>
-              <button type="button" className="tg-gate-btn tg-gate-btn-secondary" onClick={close}>
-                {T.later}
-              </button>
             </div>
           </div>
         </div>
