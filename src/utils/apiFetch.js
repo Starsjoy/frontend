@@ -43,6 +43,12 @@ export default async function apiFetch(url, options = {}) {
         }
       }).catch(() => {});
     }
+    // Brauzer versiyasi: kirilmagan mijoz xarid qadamida (POST) 401 olsa — kirish oynasi.
+    // Fon so'rovlari (ro'yxatdan o'tish, obuna tekshiruvi) jim o'tadi.
+    if (response.status === 401 && !initData && (options.method || "GET").toUpperCase() === "POST"
+        && !/\/api\/(referral\/register|user\/subscribe-check|web-auth\/)/.test(url)) {
+      window.dispatchEvent(new CustomEvent("sj:need-login", { detail: { path: window.location.pathname } }));
+    }
     clearTimeout(id);
     return response;
   } catch (error) {

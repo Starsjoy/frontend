@@ -9,7 +9,7 @@ import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
 import { toStage, resolvePolledStatus, polledStatusOf, isPaidStatus } from "../../components/PaymentTransfer/paymentStage";
 import "./Discount.css";
-import { getTgUser } from "../../utils/webSession";
+import { getTgUser, requireLogin } from "../../utils/webSession";
 
 const POLLING_DURATION = 8 * 60 * 1000;
 
@@ -112,6 +112,7 @@ export default function Discount() {
   // Telegramdan username olish
   const fillMyUsername = () => {
     try {
+      if (!requireLogin()) return; // brauzer: kirilmagan bo'lsa kirish oynasi
       const tgUser = getTgUser()?.username;
       if (!tgUser) {
         alert("Telegram username topilmadi");

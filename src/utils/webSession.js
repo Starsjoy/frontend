@@ -86,9 +86,20 @@ export function openExternal(url) {
   window.location.href = url;
 }
 
+/** Kirishdan keyin qaytiladigan sahifa → bot start parametri (faqat ruxsat etilganlari) */
+const LOGIN_PAGES = { "/stars": "stars", "/premium": "premium", "/gift": "gift", "/history": "history", "/profile": "profile", "/bonus": "bonus" };
+
 /** Saytdan "Telegram orqali kirish": bot ochiladi va bir martalik kirish havolasini yuboradi (Mini App'siz) */
-export function telegramLoginUrl() {
-  return `https://t.me/${BOT_USERNAME}?start=login`;
+export function telegramLoginUrl(path = "/") {
+  const page = LOGIN_PAGES[path];
+  return `https://t.me/${BOT_USERNAME}?start=login${page ? `_${page}` : ""}`;
+}
+
+/** Brauzerda kirilmagan bo'lsa: kirish oynasini ochadi va false qaytaradi */
+export function requireLogin(path) {
+  if (getTgUser()) return true;
+  window.dispatchEvent(new CustomEvent("sj:need-login", { detail: { path: path || window.location.pathname } }));
+  return false;
 }
 
 export async function logoutWeb() {

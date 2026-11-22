@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import LogoWordmark from "./Loaders/LogoWordmark";
 import {
   exchangeCode,
+  getTgUser,
   isInTelegram,
   loadWebUser,
   openExternal,
@@ -17,8 +18,8 @@ import "./TelegramGate.css";
  *    brauzerdagi saytga (app.starsjoy.uz) bir martalik havola bilan o'tkazadi — Telegram
  *    qoidasi bo'yicha xarid Telegram ichida emas, saytda bo'ladi. O'chiq bo'lsa yoki admin
  *    bo'lsa — Mini App avvalgidek ishlaydi.
- *  • Brauzer: /auth?c=... havolasini sessiyaga almashtiradi; sessiya bo'lmasa "Telegram orqali
- *    kirish" ekrani.
+ *  • Brauzer: /auth?c=... havolasini sessiyaga almashtiradi. Kirmagan mijoz saytni ko'ra oladi;
+ *    kirish faqat xarid qadamida (yoki shaxsiy sahifalarda) oyna sifatida so'raladi.
  */
 const RU = (navigator.language || "").toLowerCase().startsWith("ru");
 const T = RU
@@ -26,6 +27,9 @@ const T = RU
       handedTitle: "Сайт открыт в браузере",
       handedText: "Покупки StarsJoy теперь проходят на сайте. Если браузер не открылся, нажмите кнопку ниже.",
       reopen: "Открыть сайт",
+      needTitle: "Войдите, чтобы купить",
+      needText: "Нажмите кнопку: бот StarsJoy в Telegram пришлёт ссылку для входа и вернёт вас сюда. Вводить ничего не нужно.",
+      later: "Позже",
       loginTitle: "Вход в StarsJoy",
       loginText: "Нажмите кнопку: бот StarsJoy в Telegram пришлёт ссылку для входа. Вводить ничего не нужно.",
       login: "Войти через Telegram",
@@ -36,6 +40,9 @@ const T = RU
       handedTitle: "Sayt brauzerda ochildi",
       handedText: "StarsJoy'da xaridlar endi saytda bo'ladi. Brauzer ochilmagan bo'lsa, pastdagi tugmani bosing.",
       reopen: "Saytni ochish",
+      needTitle: "Xarid uchun kirish",
+      needText: "Tugmani bosing: Telegram'dagi StarsJoy boti kirish havolasini yuboradi va sizni shu sahifaga qaytaradi. Hech narsa yozish shart emas.",
+      later: "Keyinroq",
       loginTitle: "StarsJoy'ga kirish",
       loginText: "Tugmani bosing: Telegram'dagi StarsJoy boti kirish havolasini yuboradi. Hech narsa yozish shart emas.",
       login: "Telegram orqali kirish",
@@ -62,6 +69,29 @@ export default function TelegramGate({ children }) {
   const dev = import.meta.env.DEV;
   const [state, setState] = useState(dev ? "app" : "checking"); // checking | app | handed | login | blocked
   const [note, setNote] = useState("");
+  // Kirish oynasi: null — yopiq, aks holda kirishdan keyin qaytiladigan sahifa
+  const [loginPath, setLoginPath] = useState(null);
+
+  // Xarid qadamida 401 yoki "O'zim" tugmasi → kirish oynasi (utils/webSession: requireLogin, apiFetch)
+  useEffect(() => {
+    const onNeed = (e) => setLoginPath(e.detail?.path || window.location.pathname);
+    window.addEventListener("sj:need-login", onNeed);
+    return () => window.removeEventListener("sj:need-login", onNeed);
+  }, []);
+
+  // Shaxsiy sahifalar (tarix, profil, bonus...) kirmagan mijozga oyna bilan ochiladi
+  useEffect(() => {
+    if (dev || state !== "app" || isInTelegram()) return;
+    const PRIVATE = ["/history", "/profile", "/bonus", "/referral", "/challenges", "/notifications"];
+    let last = "";
+    const t = setInterval(() => {
+      const p = window.location.pathname;
+      if (p === last) return;
+      last = p;
+      if (PRIVATE.includes(p) && !getTgUser()) setLoginPath(p);
+    }, 400);
+    return () => clearInterval(t);
+  }, [dev, state]);
 
   const handoff = useCallback(async (force) => {
     const d = await requestHandoff({ path: window.location.pathname, force });
@@ -102,11 +132,16 @@ export default function TelegramGate({ children }) {
           window.history.replaceState(null, "", "/");
           // Havola eskirgan bo'lsa ham, avvalgi sessiya bo'lishi mumkin
           if (await loadWebUser()) return set("app");
-          if (alive) setNote(T.expired);
-          return set("login");
+          if (alive) {
+            setNote(T.expired);
+            setLoginPath(/^\/[A-Za-z0-9/_-]*$/.test(next) ? next : "/");
+          }
+          return set("app");
         }
       }
-      return set((await loadWebUser()) ? "app" : "login");
+      // Kirmagan bo'lsa ham sayt ochiladi (kirish faqat xaridda so'raladi)
+      await loadWebUser();
+      return set("app");
     })();
 
     return () => {
@@ -114,7 +149,38 @@ export default function TelegramGate({ children }) {
     };
   }, [dev, handoff]);
 
-  if (state === "app") return children;
+  if (state === "app") {
+    if (!loginPath) return children;
+    const close = () => {
+      setLoginPath(null);
+      setNote("");
+      if (["/history", "/profile", "/bonus", "/referral", "/challenges", "/notifications"].includes(window.location.pathname)) {
+        window.location.assign("/");
+      }
+    };
+    return (
+      <>
+        {children}
+        <div className="tg-gate tg-gate--overlay" role="dialog" aria-modal="true">
+          <div className="tg-gate-card">
+            <LogoWordmark size={96} />
+            <h2 className="tg-gate-title tg-gate-title--mt">{T.needTitle}</h2>
+            <p className="tg-gate-text">{T.needText}</p>
+            {note && <p className="tg-gate-note">{note}</p>}
+            <div className="tg-gate-buttons">
+              <a href={telegramLoginUrl(loginPath)} className="tg-gate-btn tg-gate-btn-primary tg-gate-btn-icon">
+                <TgIcon />
+                {T.login}
+              </a>
+              <button type="button" className="tg-gate-btn tg-gate-btn-secondary" onClick={close}>
+                {T.later}
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (state === "checking") {
     return (

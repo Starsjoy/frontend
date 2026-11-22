@@ -19,7 +19,7 @@ import { TgStar, ChevronDown, ChevronLeft } from "../../ui/Brand";
 import StarBurst from "../../ui/StarBurst";
 
 import WebApp from "@twa-dev/sdk";
-import { getTgUser } from "../../utils/webSession";
+import { getTgUser, requireLogin } from "../../utils/webSession";
 
 // Bonus: har to'liq 50 Stars uchun +2 ⭐ (backend modules/rewards: stars_per_50)
 const STARS_BONUS_PER_50 = 2;
@@ -98,6 +98,7 @@ export function StarsPurchasePage({ variant = "fragment" }) {
   // 🔹 Telegramdan username olish
   const fillMyUsername = () => {
     try {
+      if (!requireLogin()) return; // brauzer: kirilmagan bo'lsa kirish oynasi
       const tgUser = getTgUser()?.username;
       if (!tgUser) {
         alert("Telegram username topilmadi");
