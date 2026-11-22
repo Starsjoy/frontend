@@ -2,16 +2,31 @@
 // Mantiq landing'dagi src/scripts/donat/core.ts bilan bir xil.
 
 export const SUPPORT_URL = "https://t.me/StarsjoySupport";
-export const IMG_BASE = "https://starsjoy.uz/images/donat";
+// O'yin rasmlari ilovaning o'zida (Vite build): xesh nomli fayl, nginx 1 yil keshlaydi,
+// boshqa domenga so'rov yo'q. Kichiklari (4 KB gacha) to'g'ridan-to'g'ri JS ichiga joylanadi.
+const GAME_FILES = import.meta.glob("../../assets/donat/*.webp", { eager: true, import: "default" });
+const CUR_FILES = import.meta.glob("../../assets/donat/cur/*.{webp,svg}", { eager: true, import: "default" });
+const bySlug = (files) =>
+  Object.fromEntries(Object.entries(files).map(([path, url]) => [path.split("/").pop().replace(/\.(webp|svg)$/, ""), url]));
+const GAME_IMG = bySlug(GAME_FILES);
+const CUR_IMG = bySlug(CUR_FILES);
 
-const CUR_EXT = {
-  "pubg-mobile": "webp", "mobile-legends": "webp", "free-fire": "webp", "honor-of-kings": "webp", "arena-breakout": "webp",
-  "standoff-2": "svg", roblox: "svg", "delta-force": "svg", "blood-strike": "svg",
-};
-const GAME_IMG = ["arena-breakout", "blood-strike", "delta-force", "free-fire", "honor-of-kings", "mobile-legends", "pubg-mobile", "roblox", "standoff-2"];
+export const gameImgUrl = (slug) => GAME_IMG[slug] || "";
+export const curImgUrl = (slug) => CUR_IMG[slug] || "";
 
-export const gameImgUrl = (slug) => (GAME_IMG.includes(slug) ? `${IMG_BASE}/${slug}.png` : "");
-export const curImgUrl = (slug) => (CUR_EXT[slug] ? `${IMG_BASE}/cur/${slug}.${CUR_EXT[slug]}` : "");
+// Sahifa ochilishi bilan hamma rasmni oldindan yuklab qo'yamiz: o'yin tanlanganda kutish bo'lmaydi
+export function preloadDonatImages() {
+  try {
+    [...Object.values(GAME_IMG), ...Object.values(CUR_IMG)].forEach((u) => {
+      if (u.startsWith("data:")) return;
+      const im = new Image();
+      im.decoding = "async";
+      im.src = u;
+    });
+  } catch {
+    /* ixtiyoriy */
+  }
+}
 
 export const TXT = {
   uz: {

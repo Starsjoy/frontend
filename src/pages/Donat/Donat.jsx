@@ -7,7 +7,7 @@ import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
 import "../../components/PaymentTransfer/PaymentTransfer.css";
 import { useTranslation } from "../../context/LanguageContext";
 import { ChevronDown, ChevronLeft, ChevronRight, SupportIcon } from "../../ui/Brand";
-import { SUPPORT_URL, curImgUrl, gameImgUrl, makeHelpers } from "./donatText";
+import { SUPPORT_URL, curImgUrl, gameImgUrl, makeHelpers, preloadDonatImages } from "./donatText";
 import "../Stars/Stars.css";
 import "../../ui/ui.css";
 import "./Donat.css";
@@ -62,11 +62,12 @@ function setQuery(key, value) {
 function Art({ src, title, className }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) return <span className={`${className} dn-art-fallback`}>{(title || "?").charAt(0)}</span>;
-  return <img className={className} src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  return <img className={className} src={src} alt="" width="128" height="128" decoding="async" onError={() => setFailed(true)} />;
 }
 
 export default function Donat() {
   const { language, setLanguageLocal } = useTranslation();
+  useEffect(() => { preloadDonatImages(); }, []);
   const lang = LANGS.includes(language) ? language : "uz";
   const H = useMemo(() => makeHelpers(lang), [lang]);
   const { t } = H;
@@ -424,7 +425,7 @@ export default function Donat() {
               onClick={() => { setItemId(it.id); setErr(""); }}
             >
               <span className="dn-cur" aria-hidden="true">
-                {curImgUrl(game.slug) ? <img src={curImgUrl(game.slug)} alt="" width="26" height="26" loading="lazy" /> : null}
+                {curImgUrl(game.slug) ? <img src={curImgUrl(game.slug)} alt="" width="26" height="26" /> : null}
               </span>
               <span className="sjs-starrow__n dn-pack__n">
                 {p ? <><b>{p.qty}</b> {p.unit}</> : H.tr(it.name)}
