@@ -91,19 +91,6 @@ export function telegramLoginUrl() {
   return `https://t.me/${BOT_USERNAME}?start=login`;
 }
 
-/** Telegram Login Widget javobi → sessiya (backend imzoni tekshiradi) */
-export async function loginWithWidget(tgUser) {
-  const r = await apiFetch("/api/web-auth/telegram-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(tgUser),
-  });
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok || !d?.user) throw new Error(d?.error || "LOGIN_FAILED");
-  setWebUser(d.user);
-  return d.user;
-}
-
 export async function logoutWeb() {
   try {
     await apiFetch("/api/web-auth/logout", { method: "POST" });
