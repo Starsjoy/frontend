@@ -28,6 +28,7 @@ const T = RU
       handedText: "Покупки StarsJoy теперь проходят на сайте. Если браузер не открылся, нажмите кнопку ниже.",
       reopen: "Открыть сайт",
       needTitle: "Войдите, чтобы купить",
+      needTitlePrivate: "Нужен вход",
       needText: "Нажмите кнопку: бот StarsJoy в Telegram пришлёт ссылку для входа и вернёт вас сюда. Вводить ничего не нужно.",
       later: "Позже",
       loginTitle: "Вход в StarsJoy",
@@ -41,6 +42,7 @@ const T = RU
       handedText: "StarsJoy'da xaridlar endi saytda bo'ladi. Brauzer ochilmagan bo'lsa, pastdagi tugmani bosing.",
       reopen: "Saytni ochish",
       needTitle: "Xarid uchun kirish",
+      needTitlePrivate: "Kirish kerak",
       needText: "Tugmani bosing: Telegram'dagi StarsJoy boti kirish havolasini yuboradi va sizni shu sahifaga qaytaradi. Hech narsa yozish shart emas.",
       later: "Keyinroq",
       loginTitle: "StarsJoy'ga kirish",
@@ -164,7 +166,9 @@ export default function TelegramGate({ children }) {
         <div className="tg-gate tg-gate--overlay" role="dialog" aria-modal="true">
           <div className="tg-gate-card">
             <LogoWordmark size={96} />
-            <h2 className="tg-gate-title tg-gate-title--mt">{T.needTitle}</h2>
+            <h2 className="tg-gate-title tg-gate-title--mt">
+              {["/history", "/profile", "/bonus", "/referral", "/challenges", "/notifications"].includes(loginPath) ? T.needTitlePrivate : T.needTitle}
+            </h2>
             <p className="tg-gate-text">{T.needText}</p>
             {note && <p className="tg-gate-note">{note}</p>}
             <div className="tg-gate-buttons">

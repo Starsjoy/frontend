@@ -169,3 +169,5 @@ button.tg-gate-btn { border: 0; font: inherit; cursor: pointer; width: 100%; }
 
 /* Xarid qadamidagi kirish oynasi (ilova ustida) */
 .tg-gate--overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(8, 12, 20, .78); backdrop-filter: blur(4px); padding: 16px; }
+.tg-gate--overlay .tg-gate-buttons { flex-direction: column; }
+.tg-gate--overlay .tg-gate-btn { width: 100%; }
