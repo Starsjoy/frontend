@@ -3837,7 +3837,7 @@ export default function AdminPanel() {
           <h3 className="settings-section-title">🌐 Xarid saytda (app.starsjoy.uz)</h3>
           <p className="settings-section-desc">
             Telegram qoidasi: bot va Mini App ichida raqamli mahsulot faqat Telegram Stars evaziga
-            sotiladi. Yoqilsa, Mini App mijozni tanib, brauzerdagi saytga o‘tkazadi — xarid o‘sha
+            sotiladi. Yoqilsa, Mini App mijozni tanib, brauzerdagi saytga o‘tkazadi va xarid o‘sha
             yerda bo‘ladi. Adminlar uchun Mini App avvalgidek ochiladi.
           </p>
           <div className="purchase-mode-settings">
