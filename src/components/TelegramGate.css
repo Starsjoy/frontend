@@ -166,3 +166,6 @@
 .tg-gate-note { margin: -10px 0 20px; padding: 10px 12px; border-radius: 12px; background: rgba(248, 113, 113, .12); color: #fca5a5; font-size: 14px; line-height: 1.4; }
 button.tg-gate-btn { border: 0; font: inherit; cursor: pointer; width: 100%; }
 .tg-gate-btn-icon { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+
+/* Telegram Login Widget konteyneri */
+.tg-gate-widget { display: flex; justify-content: center; min-height: 48px; margin: 0 0 16px; }

@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import LogoWordmark from "./Loaders/LogoWordmark";
 import {
   exchangeCode,
+  BOT_USERNAME,
   isInTelegram,
   loadWebUser,
+  loginWithWidget,
   openExternal,
   requestHandoff,
   telegramLoginUrl,
@@ -27,8 +29,9 @@ const T = RU
       handedText: "Покупки StarsJoy теперь проходят на сайте. Если браузер не открылся, нажмите кнопку ниже.",
       reopen: "Открыть сайт",
       loginTitle: "Вход в StarsJoy",
-      loginText: "Нажмите кнопку: бот StarsJoy в Telegram пришлёт ссылку для входа. Вводить ничего не нужно.",
-      login: "Войти через Telegram",
+      loginText: "Нажмите кнопку Telegram и подтвердите вход. Пароль и код не нужны.",
+      login: "Получить ссылку в боте",
+      loginFail: "Не удалось войти. Попробуйте ещё раз или получите ссылку в боте.",
       expired: "Ссылка устарела или уже использована. Войдите ещё раз.",
       help: "Поддержка",
     }
@@ -37,8 +40,9 @@ const T = RU
       handedText: "StarsJoy'da xaridlar endi saytda bo'ladi. Brauzer ochilmagan bo'lsa, pastdagi tugmani bosing.",
       reopen: "Saytni ochish",
       loginTitle: "StarsJoy'ga kirish",
-      loginText: "Tugmani bosing: Telegram'dagi StarsJoy boti kirish havolasini yuboradi. Hech narsa yozish shart emas.",
-      login: "Telegram orqali kirish",
+      loginText: "Telegram tugmasini bosing va kirishni tasdiqlang. Parol yoki kod kerak emas.",
+      login: "Botdan havola olish",
+      loginFail: "Kirib bo'lmadi. Qayta urinib ko'ring yoki botdan havola oling.",
       expired: "Havola eskirgan yoki ishlatilgan. Qaytadan kiring.",
       help: "Yordam",
     };
@@ -62,6 +66,36 @@ export default function TelegramGate({ children }) {
   const dev = import.meta.env.DEV;
   const [state, setState] = useState(dev ? "app" : "checking"); // checking | app | handed | login | blocked
   const [note, setNote] = useState("");
+  const widgetRef = useRef(null);
+
+  // Telegram Login Widget (BotFather: /setdomain app.starsjoy.uz). Bosilganda Telegram kirishni tasdiqlaydi.
+  useEffect(() => {
+    if (state !== "login" || !widgetRef.current) return;
+    window.onTelegramAuth = async (tgUser) => {
+      try {
+        await loginWithWidget(tgUser);
+        setNote("");
+        setState("app");
+      } catch {
+        setNote(T.loginFail);
+      }
+    };
+    const box = widgetRef.current;
+    box.innerHTML = "";
+    const s = document.createElement("script");
+    s.src = "https://telegram.org/js/telegram-widget.js?22";
+    s.async = true;
+    s.setAttribute("data-telegram-login", BOT_USERNAME);
+    s.setAttribute("data-size", "large");
+    s.setAttribute("data-radius", "12");
+    s.setAttribute("data-request-access", "write");
+    s.setAttribute("data-userpic", "false");
+    s.setAttribute("data-onauth", "onTelegramAuth(user)");
+    box.appendChild(s);
+    return () => {
+      box.innerHTML = "";
+    };
+  }, [state]);
 
   const handoff = useCallback(async (force) => {
     const d = await requestHandoff({ path: window.location.pathname, force });
@@ -153,8 +187,9 @@ export default function TelegramGate({ children }) {
           <h2 className="tg-gate-title tg-gate-title--mt">{T.loginTitle}</h2>
           <p className="tg-gate-text">{T.loginText}</p>
           {note && <p className="tg-gate-note">{note}</p>}
+          <div className="tg-gate-widget" ref={widgetRef} />
           <div className="tg-gate-buttons">
-            <a href={telegramLoginUrl()} className="tg-gate-btn tg-gate-btn-primary tg-gate-btn-icon">
+            <a href={telegramLoginUrl()} className="tg-gate-btn tg-gate-btn-secondary tg-gate-btn-icon">
               <TgIcon />
               {T.login}
             </a>
