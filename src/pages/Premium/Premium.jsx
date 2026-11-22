@@ -19,6 +19,7 @@ import {
   premiumApiPrefix,
 } from "../../utils/starsPurchaseRoute";
 import { useTranslation } from "../../context/LanguageContext";
+import { getTgUser } from "../../utils/webSession";
 // Bonus: har oy uchun +1 ⭐ (backend modules/rewards: premium_per_month)
 const PREMIUM_BONUS_PER_MONTH = 1;
 
@@ -235,7 +236,7 @@ export function PremiumPurchasePage({ variant = "fragment" }) {
   const fillMyUsername = () => {
     try {
       const tgUser =
-        window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
+        getTgUser()?.username;
 
       if (!tgUser) {
         alert("Telegram username topilmadi");

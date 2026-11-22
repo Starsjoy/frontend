@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import apiFetch from "../../utils/apiFetch";
 import { useTranslation } from "../../context/LanguageContext";
 import BonusView from "./BonusView";
+import { getTgUser } from "../../utils/webSession";
 
 const POLL_MS = 4000;
 
@@ -27,7 +28,7 @@ export default function Bonus() {
     }
   }, []);
 
-  const username = String(window?.Telegram?.WebApp?.initDataUnsafe?.user?.username || "");
+  const username = String(getTgUser()?.username || "");
 
   const load = useCallback(async () => {
     try {

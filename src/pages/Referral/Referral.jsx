@@ -7,6 +7,7 @@ import { useTranslation } from "../../context/LanguageContext";
 import { TGSSticker } from "../../components/TGSSticker";
 import referralSticker from "../../assets/AnimatedSticker_referal.tgs";
 import apiFetch from "../../utils/apiFetch";
+import { getTgUser } from "../../utils/webSession";
 
 // Gift IDlar - referral yechish uchun (minimum 50 stars)
 const GIFTS = [
@@ -84,7 +85,7 @@ export default function Referral() {
     const initTelegram = async () => {
       try {
         WebApp.ready();
-        const tgUser = WebApp?.initDataUnsafe?.user;
+        const tgUser = getTgUser();
 
         if (tgUser?.id) {
           const tgUserId = String(tgUser.id);

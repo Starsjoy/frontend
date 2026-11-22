@@ -159,3 +159,10 @@
   font-size: 13px;
   margin: 0;
 }
+
+/* Brauzer rejimi: "saytga o'tildi" va "Telegram orqali kirish" ekranlari */
+.tg-gate-title--mt { margin: 22px 0 10px; }
+.tg-gate-text { margin: 0 0 24px; color: #a3aec1; font-size: 15px; line-height: 1.5; }
+.tg-gate-note { margin: -10px 0 20px; padding: 10px 12px; border-radius: 12px; background: rgba(248, 113, 113, .12); color: #fca5a5; font-size: 14px; line-height: 1.4; }
+button.tg-gate-btn { border: 0; font: inherit; cursor: pointer; width: 100%; }
+.tg-gate-btn-icon { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }

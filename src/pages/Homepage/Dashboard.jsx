@@ -21,6 +21,7 @@ import { TgStar, GlobeIcon, SupportIcon, ChevronRight, HomeIcon, GiftIcon, Profi
 
 import actionCardSticker from "../../assets/5800655655995968830.tgs";
 import tilSticker from "../../assets/AnimatedSticker_til.tgs";
+import { getTgUser } from "../../utils/webSession";
 
 
 // Premium/Stars kartalaridagi mayda uchqunlar (katta yulduzlar statik)
@@ -187,16 +188,13 @@ export default function Dashboard() {
 
 
       const tgUser =
-        WebApp?.initDataUnsafe?.user?.username ||
-        window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
+        getTgUser()?.username;
 
       const tgUserId =
-        WebApp?.initDataUnsafe?.user?.id ||
-        window?.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        getTgUser()?.id;
 
       const tgPhoto =
-        WebApp?.initDataUnsafe?.user?.photo_url ||
-        window?.Telegram?.WebApp?.initDataUnsafe?.user?.photo_url;
+        getTgUser()?.photo_url;
 
       if (tgUser) {
         const clean = tgUser.replace("@", "");

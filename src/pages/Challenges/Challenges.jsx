@@ -7,6 +7,7 @@ import { TGSSticker } from "../../components/TGSSticker";
 import MissionSticker from "../../assets/AnimatedSticker_mission.tgs";
 import BannerSticker from "../../assets/AnimatedSticker_banner.tgs";import BannerSticker2 from "../../assets/AnimatedSticker_banner2.tgs";import diamondGif from "../../assets/diamond.gif";
 import starsGif from "../../assets/stars.gif";
+import { getTgUser } from "../../utils/webSession";
 
 export default function Challenges() {
   const { t } = useTranslation();
@@ -53,11 +54,9 @@ export default function Challenges() {
     try {
       WebApp.ready();
       const tgUser =
-        WebApp?.initDataUnsafe?.user?.username ||
-        window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
+        getTgUser()?.username;
       const tgUserId =
-        WebApp?.initDataUnsafe?.user?.id ||
-        window?.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        getTgUser()?.id;
 
       if (tgUser) {
         const clean = tgUser.replace("@", "");

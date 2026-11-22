@@ -7,6 +7,7 @@ import buyurtmalarSticker from "../../assets/AnimatedSticker_buyurtmalar.tgs";
 import starsGif from "../../assets/stars.gif";
 import diamondGif from "../../assets/diamond.gif";
 import apiFetch from "../../utils/apiFetch";
+import { getTgUser } from "../../utils/webSession";
 
 const getGiftStickerPath = (giftId) => {
   if (!giftId) return null;
@@ -70,8 +71,7 @@ export default function History() {
     try {
       WebApp.ready();
       const tgUserId =
-        WebApp?.initDataUnsafe?.user?.id ||
-        window?.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        getTgUser()?.id;
 
       if (tgUserId) {
         loadHistory(String(tgUserId));

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import apiFetch from "../utils/apiFetch";
 import "./SubscriptionGate.css";
+import { getTgUser } from "../utils/webSession";
 
 /**
  * 📢 Majburiy kanal obunasi ekrani (admin switch: force_subscription).
@@ -44,7 +45,7 @@ function pickLang() {
   } catch {
     /* localStorage yopiq */
   }
-  const code = (window?.Telegram?.WebApp?.initDataUnsafe?.user?.language_code || "uz").toLowerCase();
+  const code = (getTgUser()?.language_code || "uz").toLowerCase();
   if (code.startsWith("uz")) return "uz";
   if (["ru", "uk", "be", "kk"].includes(code)) return "ru";
   return "en";
@@ -54,7 +55,7 @@ function isExempt() {
   const path = window.location.pathname;
   if (path === "/starsadmin" || path.startsWith("/test")) return true;
   try {
-    const id = Number(window?.Telegram?.WebApp?.initDataUnsafe?.user?.id);
+    const id = Number(getTgUser()?.id);
     const admins = (import.meta.env.VITE_ADMIN_IDS || "").split(",").map((x) => Number(x.trim()));
     return Boolean(id) && admins.includes(id);
   } catch {

@@ -7,6 +7,7 @@ import { useTranslation } from "../../context/LanguageContext";
 import apiFetch from "../../utils/apiFetch";
 import { TGSSticker } from "../../components/TGSSticker";
 import tilSticker from "../../assets/AnimatedSticker_til.tgs";
+import { getTgUser } from "../../utils/webSession";
 
 export default function Profile() {
   const { t, language, setLanguage } = useTranslation();
@@ -27,16 +28,16 @@ export default function Profile() {
     let photoUrl = null;
 
     try {
-      if (WebApp.initDataUnsafe?.user) {
-        username = WebApp.initDataUnsafe.user.username || WebApp.initDataUnsafe.user.first_name;
-        photoUrl = WebApp.initDataUnsafe.user.photo_url;
+      if (getTgUser()) {
+        username = getTgUser().username || getTgUser().first_name;
+        photoUrl = getTgUser().photo_url;
       }
     } catch (e) {
       console.error("Telegram WebApp not ready");
     }
 
     const storedUser = localStorage.getItem("username");
-    if (storedUser && (!WebApp.initDataUnsafe?.user?.username)) {
+    if (storedUser && (!getTgUser()?.username)) {
       username = storedUser;
     }
 

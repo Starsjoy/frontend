@@ -17,6 +17,7 @@ import WebApp from "@twa-dev/sdk";
 import "./gift.css";
 import "../../ui/ui.css";
 import { TgStar, ChevronLeft } from "../../ui/Brand";
+import { getTgUser } from "../../utils/webSession";
 
 
 // Gift IDlar - har bir gift fayl nomi gift ID ga mos keladi (masalan: 5170145012310081615.tgs).
@@ -151,7 +152,7 @@ export default function Gift() {
   // Telegram username
   const fillMyUsername = () => {
     try {
-      const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
+      const tgUser = getTgUser()?.username;
       if (!tgUser) return;
       setUsername(tgUser);
     } catch {}

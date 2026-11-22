@@ -273,6 +273,9 @@ export default function AdminPanel() {
   const [forceSub, setForceSub] = useState(false);
   const [forceSubLoading, setForceSubLoading] = useState(false);
   const [delayNoticeLoading, setDelayNoticeLoading] = useState(false);
+  // Telegram qoidasi: Mini App mijozni brauzerdagi saytga (app.starsjoy.uz) o'tkazadi
+  const [webHandoff, setWebHandoff] = useState(false);
+  const [webHandoffLoading, setWebHandoffLoading] = useState(false);
 
   const [starsPurchaseMode, setStarsPurchaseMode] = useState("fragment");
   const [purchaseModeLoading, setPurchaseModeLoading] = useState(false);
@@ -400,6 +403,7 @@ export default function AdminPanel() {
     if (!data) return;
     if (data.maintenance !== undefined) setMaintenanceMode(Boolean(data.maintenance));
     if (data.delay_notice !== undefined) setDelayNotice(Boolean(data.delay_notice));
+    if (data.web_handoff !== undefined) setWebHandoff(Boolean(data.web_handoff));
     if (data.force_subscription !== undefined) setForceSub(Boolean(data.force_subscription));
     if (data.stars_purchase_mode) {
       setStarsPurchaseMode(
@@ -474,6 +478,22 @@ export default function AdminPanel() {
 
   };
 
+
+  const toggleWebHandoff = async () => {
+    setWebHandoffLoading(true);
+    try {
+      const res = await apiFetch("/api/admin/web-handoff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: !webHandoff }),
+      });
+      const data = await res.json();
+      if (res.ok) applySettingsFromApi(data);
+    } catch (err) {
+      console.error("Web handoff toggle xato:", err);
+    }
+    setWebHandoffLoading(false);
+  };
 
   const toggleDelayNotice = async () => {
     setDelayNoticeLoading(true);
@@ -3811,6 +3831,38 @@ export default function AdminPanel() {
               {forceSub
                 ? "Hozir: faqat kanalga obuna bo‘lganlar foydalana oladi."
                 : "Hozir: obuna majburiy emas."}
+            </p>
+          </div>
+
+          <h3 className="settings-section-title">🌐 Xarid saytda (app.starsjoy.uz)</h3>
+          <p className="settings-section-desc">
+            Telegram qoidasi: bot va Mini App ichida raqamli mahsulot faqat Telegram Stars evaziga
+            sotiladi. Yoqilsa, Mini App mijozni tanib, brauzerdagi saytga o‘tkazadi — xarid o‘sha
+            yerda bo‘ladi. Adminlar uchun Mini App avvalgidek ochiladi.
+          </p>
+          <div className="purchase-mode-settings">
+            <div className="purchase-mode-switch purchase-mode-switch--large">
+              <button
+                type="button"
+                className={`purchase-mode-btn ${!webHandoff ? "active paymee" : ""}`}
+                onClick={() => webHandoff && toggleWebHandoff()}
+                disabled={webHandoffLoading}
+              >
+                Mini App
+              </button>
+              <button
+                type="button"
+                className={`purchase-mode-btn ${webHandoff ? "active warn" : ""}`}
+                onClick={() => !webHandoff && toggleWebHandoff()}
+                disabled={webHandoffLoading}
+              >
+                Saytga o‘tkazish
+              </button>
+            </div>
+            <p className="settings-hint">
+              {webHandoff
+                ? "Hozir: Mini App ochilganda mijoz app.starsjoy.uz saytiga o‘tkaziladi."
+                : "Hozir: Mini App avvalgidek ishlaydi. Sayt ham ochiq — u yerga botdan kirish mumkin."}
             </p>
           </div>
 

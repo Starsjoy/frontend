@@ -29,6 +29,7 @@ import apiFetch from "./utils/apiFetch";
 import SubscriptionGate from "./components/SubscriptionGate";
 
 import ErrorBoundary from "./components/ErrorBoundary";
+import { getTgUser } from "./utils/webSession";
 
 // Yangi foydalanuvchilar uchun til tanlashni ta'minlaydi
 function LanguageGate({ children }) {
@@ -55,7 +56,7 @@ function App() {
     
     // Admin tekshiruvi - Telegram user ID
     try {
-      const tgUserId = window?.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+      const tgUserId = getTgUser()?.id;
       if (tgUserId) {
         // Admin ID larini .env dan olish (VITE_ADMIN_IDS=123,456,789)
         const adminIds = (import.meta.env.VITE_ADMIN_IDS || '').split(',').map(id => Number(id.trim()));

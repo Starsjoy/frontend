@@ -9,6 +9,7 @@ import PaymentTransfer from "../../components/PaymentTransfer/PaymentTransfer";
 import PaymentStatus from "../../components/PaymentTransfer/PaymentStatus";
 import { toStage, resolvePolledStatus, polledStatusOf, isPaidStatus } from "../../components/PaymentTransfer/paymentStage";
 import "./Discount.css";
+import { getTgUser } from "../../utils/webSession";
 
 const POLLING_DURATION = 8 * 60 * 1000;
 
@@ -111,7 +112,7 @@ export default function Discount() {
   // Telegramdan username olish
   const fillMyUsername = () => {
     try {
-      const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
+      const tgUser = getTgUser()?.username;
       if (!tgUser) {
         alert("Telegram username topilmadi");
         return;
@@ -145,7 +146,7 @@ export default function Discount() {
   // Telegram username auto-fill
   useEffect(() => {
     try {
-      const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user?.username;
+      const tgUser = getTgUser()?.username;
       if (tgUser) {
         setUsername(tgUser);
       }
