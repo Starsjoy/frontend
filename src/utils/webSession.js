@@ -86,9 +86,9 @@ export function openExternal(url) {
   window.location.href = url;
 }
 
-/** Saytdan "Telegram orqali kirish": botning Mini App'i ochiladi va saytga qaytaradi */
+/** Saytdan "Telegram orqali kirish": bot ochiladi va bir martalik kirish havolasini yuboradi (Mini App'siz) */
 export function telegramLoginUrl() {
-  return `https://t.me/${BOT_USERNAME}/starsjoy?startapp=web`;
+  return `https://t.me/${BOT_USERNAME}?start=login`;
 }
 
 export async function logoutWeb() {
