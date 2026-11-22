@@ -58,7 +58,10 @@ export default function AdminAiWarnings({ onSend, onCount }) {
       await onSend?.(kind(it.order_type), Number(it.order_id), it.status);
       // Haqiqiy holatni kutamiz: to'langani yetkazilgani degani emas (90 soniyagacha)
       let state = "pending";
-      for (let i = 0; i < 45 && state === "pending"; i++) {
+      // Donat'ni StarsPaymee o'yin serveri orqali bir necha daqiqada bajaradi: uzoqroq kutamiz
+      const isDonat = /donat/.test(it.order_type || "");
+      const maxTries = isDonat ? 150 : 45;
+      for (let i = 0; i < maxTries && state === "pending"; i++) {
         const r = await apiFetch(`/api/admin/ai-warnings/order/${it.order_id}`);
         const d = await r.json().catch(() => ({}));
         state = d.state || "pending";
@@ -76,7 +79,11 @@ export default function AdminAiWarnings({ onSend, onCount }) {
         alert(`❌ #${it.order_id} yetkazilmadi (xato). Warning bo'limida tekshiring.`);
       } else {
         setSendState((s) => ({ ...s, [it.id]: undefined }));
-        alert(`#${it.order_id} hali yetkazilmadi, buyurtmani tekshiring.`);
+        alert(
+          isDonat
+            ? `⏳ #${it.order_id} StarsPaymee'da bajarilmoqda. Bir necha daqiqadan keyin Donat bo'limida tekshiring.`
+            : `#${it.order_id} hali yetkazilmadi, buyurtmani tekshiring.`
+        );
       }
       const lr = await apiFetch("/api/admin/ai-warnings");
       const last = await lr.json().catch(() => null);
