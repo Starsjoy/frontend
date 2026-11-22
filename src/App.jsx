@@ -20,6 +20,7 @@ import TestPaymentStates from "./pages/Test/TestPaymentStates";
 import TestBonus from "./pages/Test/TestBonus";
 import Bonus from "./pages/Bonus/Bonus";
 import Donat from "./pages/Donat/Donat";
+import ModeRoute from "./components/ModeRoute";
 import { LanguageProvider, useTranslation } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
@@ -127,10 +128,10 @@ function App() {
               <OnboardingTour />
               <Routes>
                 <Route path="/" element={<Dashboard/>} />
-                <Route path="/stars" element={<UsdtStars />} />
+                <Route path="/stars" element={<ModeRoute kind="stars"><UsdtStars /></ModeRoute>} />
                 <Route path="/usdtstars" element={<Navigate to="/stars" replace />} />
                 <Route path="/paymeestars" element={<PaymeeStars />} />
-                <Route path="/premium" element={<UsdtPremium />} />
+                <Route path="/premium" element={<ModeRoute kind="premium"><UsdtPremium /></ModeRoute>} />
                 <Route path="/usdtpremium" element={<Navigate to="/premium" replace />} />
                 <Route path="/paymeepremium" element={<PaymeePremium />} />
                 <Route path="/referral" element={<Referral />} />
