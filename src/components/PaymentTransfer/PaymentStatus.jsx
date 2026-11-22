@@ -153,6 +153,7 @@ export default function PaymentStatus({
   onClose,
   onDone,
   onRetry,
+  children,           // ixtiyoriy qo'shimcha blok (Donat: aktivatsiya kodi/havolasi)
   embedded = false,   // /test sahifasidagi ramka uchun: portal va scroll-lock'siz
 }) {
   const { t } = useTranslation();
@@ -272,6 +273,8 @@ export default function PaymentStatus({
             <code>{txId}</code>
           </div>
         )}
+
+        {children}
       </div>
 
       <div className="pt-bottom">

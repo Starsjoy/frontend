@@ -436,7 +436,8 @@
     "item": {
       "stars": "Stars",
       "premium": "Premium",
-      "gift": "подарок"
+      "gift": "подарок",
+      "donat": "донат"
     },
     "guide": "Инструкция",
     "guideTitle": "Как оплатить",

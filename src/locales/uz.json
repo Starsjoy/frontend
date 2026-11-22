@@ -437,7 +437,8 @@
     "item": {
       "stars": "Stars",
       "premium": "Premium",
-      "gift": "sovg'a"
+      "gift": "sovg'a",
+      "donat": "donat"
     },
     "guide": "Qo'llanma",
     "guideTitle": "Qanday to'lash kerak",

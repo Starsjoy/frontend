@@ -112,6 +112,8 @@ export default function PaymentTransfer({
   item = "stars",
   onClose,
   onPaid,
+  onCancel,         // ixtiyoriy: "Bekor qilish" tugmasi (Donat sahifasi)
+  cancelLabel,
   embedded = false, // /test sahifasidagi telefon ramkasi uchun: portal va scroll-lock'siz
 }) {
   const { t } = useTranslation();
@@ -190,6 +192,11 @@ export default function PaymentTransfer({
         <button type="button" className="pt-cta" onClick={onPaid}>
           {t("transfer.paid")}
         </button>
+        {onCancel && (
+          <button type="button" className="ps-ghost ps-ghost--spaced" onClick={onCancel}>
+            {cancelLabel}
+          </button>
+        )}
       </div>
 
       {guideOpen && <Guide t={t} amountText={amountText} onClose={() => setGuideOpen(false)} />}

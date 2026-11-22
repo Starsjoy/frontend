@@ -436,7 +436,8 @@
     "item": {
       "stars": "Stars",
       "premium": "Premium",
-      "gift": "gift"
+      "gift": "gift",
+      "donat": "top-up"
     },
     "guide": "Guide",
     "guideTitle": "How to pay",

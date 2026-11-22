@@ -212,6 +212,8 @@ export function useTranslation() {
     t,
     language,
     setLanguage: changeLanguage,
+    // Serverga yozmasdan (login talab qilinmaydi) — Donat sahifasi uchun
+    setLanguageLocal: setLanguage,
     languageChosen,
     markLanguageChosen,
     onboardingCompleted,

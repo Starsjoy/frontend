@@ -19,6 +19,7 @@ import MaintenancePage from "./pages/Maintenance/MaintenancePage";
 import TestPaymentStates from "./pages/Test/TestPaymentStates";
 import TestBonus from "./pages/Test/TestBonus";
 import Bonus from "./pages/Bonus/Bonus";
+import Donat from "./pages/Donat/Donat";
 import { LanguageProvider, useTranslation } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
@@ -30,6 +31,26 @@ import SubscriptionGate from "./components/SubscriptionGate";
 
 import ErrorBoundary from "./components/ErrorBoundary";
 import { getTgUser } from "./utils/webSession";
+
+// Donat: donat.starsjoy.uz (istalgan yo'l) yoki /donat — login, til tanlash va obuna
+// darvozalarisiz alohida yengil daraxt. Telegram akkaunt kerak emas.
+const IS_DONAT_ENTRY =
+  window.location.hostname.startsWith("donat.") ||
+  window.location.pathname === "/donat" ||
+  window.location.pathname.startsWith("/donat/");
+
+// Donat'ga birinchi kirgan mijoz: ?lang= yoki brauzer tili (LanguageProvider shu qiymat bilan boshlanadi)
+if (IS_DONAT_ENTRY) {
+  try {
+    const q = new URLSearchParams(window.location.search).get("lang");
+    if (["uz", "ru", "en"].includes(q)) localStorage.setItem("language", q);
+    else if (!localStorage.getItem("language") && (navigator.language || "").toLowerCase().startsWith("ru")) {
+      localStorage.setItem("language", "ru");
+    }
+  } catch {
+    /* localStorage yopiq */
+  }
+}
 
 // Yangi foydalanuvchilar uchun til tanlashni ta'minlaydi
 function LanguageGate({ children }) {
@@ -77,6 +98,22 @@ function App() {
     return <MaintenancePage />;
   }
 
+  if (IS_DONAT_ENTRY) {
+    return (
+      <ErrorBoundary>
+        <ThemeProvider>
+          <LanguageProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="*" element={<Donat />} />
+              </Routes>
+            </BrowserRouter>
+          </LanguageProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <TelegramGate>
@@ -109,6 +146,7 @@ function App() {
                 <Route path="/test" element={<TestPaymentStates />} />
                 <Route path="/test/bonus" element={<TestBonus />} />
                 <Route path="/bonus" element={<Bonus />} />
+                <Route path="/donat" element={<Donat />} />
               </Routes>
             </BrowserRouter>
             </SubscriptionGate>

@@ -1,0 +1,107 @@
+/* Donat sahifasi: Stars sahifasi (.sjs-*) ustiga ozgina qo'shimcha. Hammasi .dn-* */
+
+.dn-root { --dn-amber: #ffcb2e; }
+
+.dn-lang {
+  position: absolute; top: calc(14px + var(--tg-safe-top, 0px)); right: 16px; margin: 0;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .02em;
+}
+
+/* Sarlavha: 3 ta o'yin rasmi yoki tanlangan o'yin logotipi */
+.dn-hero { padding-top: 40px; }
+.dn-hero__stack { position: relative; display: flex; justify-content: center; height: 104px; }
+.dn-hero__stack::before {
+  content: ""; position: absolute; inset: -26px 10%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(59, 130, 255, .34), transparent);
+}
+.dn-hero__img {
+  position: relative; width: 84px; height: 84px; border-radius: 22px; object-fit: cover;
+  border: 3px solid var(--bg); box-shadow: 0 10px 26px rgba(0, 0, 0, .45);
+}
+.dn-hero__img:nth-child(1) { transform: translate(18px, 14px) rotate(-10deg); }
+.dn-hero__img:nth-child(2) { z-index: 2; width: 96px; height: 96px; }
+.dn-hero__img:nth-child(3) { transform: translate(-18px, 14px) rotate(10deg); }
+.dn-hero--game { padding-bottom: 18px; }
+.dn-hero__one { position: relative; display: grid; place-items: center; height: 104px; }
+.dn-hero__one::before {
+  content: ""; position: absolute; inset: -24px 22%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(59, 130, 255, .34), transparent);
+}
+.dn-hero__logo {
+  position: relative; width: 96px; height: 96px; border-radius: 24px; object-fit: cover;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .45);
+}
+.dn-art-fallback {
+  display: grid; place-items: center; background: var(--grad); color: #fff;
+  font-size: 30px; font-weight: 720; text-transform: uppercase;
+}
+
+/* O'yinlar to'ri */
+.dn-games { gap: 10px; }
+.dn-game { gap: 6px; padding: 12px 6px; }
+.dn-game:disabled { cursor: default; }
+.dn-game.is-off { opacity: .45; }
+.dn-game__img { width: 64px; height: 64px; border-radius: 16px; object-fit: cover; }
+.dn-game__img.dn-art-fallback { font-size: 24px; }
+.dn-game__title {
+  font-size: 13.5px; font-weight: 640; line-height: 1.2; text-align: center;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.4em;
+}
+.dn-game .sjg-card__price { font-size: 12px; font-weight: 560; color: var(--muted); white-space: normal; text-align: center; }
+.dn-game.is-active .sjg-card__price { color: var(--blue-ink); }
+
+/* Paket qatorlari */
+.dn-cur { flex: none; width: 34px; height: 30px; display: grid; place-items: center; }
+.dn-cur img { width: 26px; height: 26px; object-fit: contain; }
+.dn-pack__n { font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
+.dn-pack__n b { font-weight: 680; }
+.dn-gap { margin-top: 12px; }
+
+/* Akkaunt */
+.dn-idgrid { display: grid; grid-template-columns: 1fr 112px; gap: 8px; }
+.dn-checkbtn {
+  width: 100%; height: 46px; margin-top: 8px; border: 0; border-radius: 12px;
+  background: var(--blue-soft); color: var(--blue-ink); font-size: 15px; font-weight: 620; font-family: inherit; cursor: pointer;
+}
+.dn-help {
+  display: inline-flex; align-items: center; gap: 4px; margin: 12px 2px 6px; padding: 0; border: 0; background: none;
+  color: var(--blue-ink); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
+}
+.dn-help svg { transition: transform .25s ease; }
+.dn-help.is-open svg { transform: rotate(180deg); }
+
+/* Tasdiq */
+.dn-summary { padding: 2px 0; }
+.dn-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 13px 14px; font-size: 14px; }
+.dn-row + .dn-row { border-top: 1px solid var(--line); }
+.dn-row > span { flex: none; color: var(--muted); }
+.dn-row > b { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 0; text-align: right; font-weight: 620; overflow-wrap: anywhere; }
+.dn-row small { font-size: 12.5px; font-weight: 500; color: var(--blue-ink); }
+.dn-warn { color: var(--dn-amber); }
+
+.dn-err { position: fixed; left: 16px; right: 16px; bottom: calc(86px + var(--tg-safe-bottom, 0px)); z-index: 41; max-width: 448px; margin: 0 auto; padding: 10px 12px; border-radius: 12px; background: #2a1a1f; text-align: center; }
+.dn-btnspin { display: inline-block; width: 20px; height: 20px; vertical-align: middle; border: 2.5px solid rgba(255, 255, 255, .35); border-top-color: #fff; border-radius: 50%; animation: sjs-spin .8s linear infinite; }
+
+/* Holatlar: yuklanmoqda, yopiq, xato */
+.dn-loading { margin-top: 40px; }
+.dn-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); text-align: center; }
+.dn-state > b { font-size: 17px; font-weight: 680; }
+.dn-state > p { font-size: 14px; line-height: 1.45; color: var(--muted); }
+.dn-state__cta { flex: none; width: 100%; }
+.dn-support { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--blue-ink); font-size: 14.5px; font-weight: 600; text-decoration: none; }
+
+/* Faol buyurtma kartasi (oyna yopilganda) */
+.dn-active { margin: 0 0 18px; border-color: rgba(59, 130, 255, .35); }
+
+/* To'lov ekranlari ustidagi qo'shimchalar */
+.dn-cancel { z-index: 1001; }
+.dn-cancel .pc-sub { line-height: 1.45; }
+.dn-cancel__yes { color: #ff8a8a !important; }
+.dn-secret { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding: 14px 16px; border-radius: 16px; background: var(--pt-surface); }
+.dn-secret__code {
+  display: flex !important; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+  padding: 12px 14px !important; border-radius: 12px !important; background: var(--pt-surface-2) !important;
+}
+.dn-secret__code code { font-size: 16px; font-weight: 700; color: var(--pt-amount); overflow-wrap: anywhere; text-align: left; }
+.dn-secret__code span { flex: none; font-size: 13px; font-weight: 600; color: var(--pt-accent); }
+a.dn-secret__btn { display: grid !important; place-items: center; text-decoration: none; }
